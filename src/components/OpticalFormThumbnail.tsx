@@ -36,20 +36,20 @@ export function OpticalFormThumbnail({
         <rect width="100" height="141.4" fill="#ffffff" rx="1.5" />
 
         {/* 4 Köşe Tespit Kareleri (Corner Finder Patterns) */}
-        <rect x="3.5" y="3.5" width="4.5" height="4.5" fill="#0f172a" rx="0.5" />
-        <rect x="92" y="3.5" width="4.5" height="4.5" fill="#0f172a" rx="0.5" />
-        <rect x="3.5" y="133.4" width="4.5" height="4.5" fill="#0f172a" rx="0.5" />
-        <rect x="92" y="133.4" width="4.5" height="4.5" fill="#0f172a" rx="0.5" />
+        <rect x="3.5" y="3.5" width="4.5" height="4.5" fill="#18181b" rx="0.5" />
+        <rect x="92" y="3.5" width="4.5" height="4.5" fill="#18181b" rx="0.5" />
+        <rect x="3.5" y="133.4" width="4.5" height="4.5" fill="#18181b" rx="0.5" />
+        <rect x="92" y="133.4" width="4.5" height="4.5" fill="#18181b" rx="0.5" />
 
         {/* Başlık Çizgileri & Kurum İskeleti */}
-        <rect x="16" y="5" width="68" height="2" fill="#0f766e" rx="0.5" />
-        <rect x="25" y="8" width="50" height="1.2" fill="#94a3b8" rx="0.4" />
+        <rect x="16" y="5" width="68" height="2" fill="#27272a" rx="0.5" />
+        <rect x="25" y="8" width="50" height="1.2" fill="#a1a1aa" rx="0.4" />
 
         {/* Öğrenci No & Kitapçık Izgarası (Üst Alan) */}
         <g transform="translate(10, 13)">
           {/* Öğrenci No Kutusu */}
-          <rect x="0" y="0" width="38" height="16" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="0.5" rx="1" />
-          <text x="2" y="3.5" fontSize="2.2" fill="#64748b" fontWeight="bold">NO</text>
+          <rect x="0" y="0" width="38" height="16" fill="#fafafa" stroke="#d4d4d8" strokeWidth="0.5" rx="1" />
+          <text x="2" y="3.5" fontSize="2.2" fill="#71717a" fontWeight="bold">NO</text>
           {Array.from({ length: displayedDigits }).map((_, dIdx) => (
             <g key={dIdx} transform={`translate(${6 + dIdx * (30 / displayedDigits)}, 1.5)`}>
               {Array.from({ length: 4 }).map((_, rIdx) => (
@@ -58,8 +58,8 @@ export function OpticalFormThumbnail({
                   cx="1.2"
                   cy={3 + rIdx * 2.8}
                   r="0.85"
-                  fill={dIdx === 0 && rIdx === 1 ? '#0f766e' : '#ffffff'}
-                  stroke="#0f766e"
+                  fill={dIdx === 0 && rIdx === 1 ? '#27272a' : '#ffffff'}
+                  stroke="#27272a"
                   strokeWidth="0.35"
                 />
               ))}
@@ -67,19 +67,19 @@ export function OpticalFormThumbnail({
           ))}
 
           {/* Kitapçık Kutusu */}
-          <rect x="42" y="0" width="38" height="16" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="0.5" rx="1" />
-          <text x="44" y="3.5" fontSize="2.2" fill="#64748b" fontWeight="bold">KİTAPÇIK</text>
+          <rect x="42" y="0" width="38" height="16" fill="#fafafa" stroke="#d4d4d8" strokeWidth="0.5" rx="1" />
+          <text x="44" y="3.5" fontSize="2.2" fill="#71717a" fontWeight="bold">KİTAPÇIK</text>
           {['A', 'B', 'C', 'D'].slice(0, template.supportedBooklets.length).map((bk, bIdx) => (
             <g key={bk} transform={`translate(${45 + bIdx * 8}, 7)`}>
               <circle
                 cx="2"
                 cy="2"
                 r="1.5"
-                fill={bIdx === 0 ? '#0f766e' : '#ffffff'}
-                stroke="#0f766e"
+                fill={bIdx === 0 ? '#27272a' : '#ffffff'}
+                stroke="#27272a"
                 strokeWidth="0.4"
               />
-              <text x="2" y="2.7" fontSize="1.8" fill={bIdx === 0 ? '#ffffff' : '#0f766e'} textAnchor="middle" fontWeight="bold">
+              <text x="2" y="2.7" fontSize="1.8" fill={bIdx === 0 ? '#ffffff' : '#27272a'} textAnchor="middle" fontWeight="bold">
                 {bk}
               </text>
             </g>
@@ -101,8 +101,8 @@ export function OpticalFormThumbnail({
                   y="0"
                   width={colWidth - 2}
                   height={Math.min(96, qCountInCol * 3.8 + 4)}
-                  fill="#f8fafc"
-                  stroke="#e2e8f0"
+                  fill="#fafafa"
+                  stroke="#e4e4e7"
                   strokeWidth="0.4"
                   rx="1"
                 />
@@ -115,7 +115,7 @@ export function OpticalFormThumbnail({
                   return (
                     <g key={rowIdx} transform={`translate(2, ${y})`}>
                       {/* Soru Numarası */}
-                      <text x="1.5" y="1.8" fontSize="1.8" fill="#64748b" fontWeight="600" textAnchor="end">
+                      <text x="1.5" y="1.8" fontSize="1.8" fill="#71717a" fontWeight="600" textAnchor="end">
                         {qNum}
                       </text>
 
@@ -131,8 +131,8 @@ export function OpticalFormThumbnail({
                             cx={cx}
                             cy="1.2"
                             r="0.85"
-                            fill={isFilled ? '#0f766e' : '#ffffff'}
-                            stroke="#0f766e"
+                            fill={isFilled ? '#27272a' : '#ffffff'}
+                            stroke="#27272a"
                             strokeWidth="0.35"
                           />
                         );

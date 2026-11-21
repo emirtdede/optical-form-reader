@@ -708,6 +708,11 @@ export function applyThemeToDocument(
   root.style.setProperty('--bg-elevated', tokens.surface);
   root.style.setProperty('--bg-subtle', tokens.surfaceSubtle);
   root.style.setProperty('--bg-surface', tokens.surfaceSubtle);
+  root.style.setProperty('--bg-card', tokens.surface);
+  root.style.setProperty('--bg-hover', tokens.surfaceHover);
+  root.style.setProperty('--border-subtle', tokens.border);
+  root.style.setProperty('--accent-color', tokens.accent);
+  root.style.setProperty('--text-main', tokens.textPrimary);
   root.style.setProperty('--text', tokens.textPrimary);
   root.style.setProperty('--text-soft', tokens.textSecondary);
   root.style.setProperty('--text-faint', tokens.textMuted);

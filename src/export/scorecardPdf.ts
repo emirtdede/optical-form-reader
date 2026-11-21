@@ -36,7 +36,7 @@ export function buildStudentScorecardDoc(
   const margin = 14;
 
   // 1. Üst Başlık Banner
-  doc.setFillColor(15, 23, 42); // slate-900
+  doc.setFillColor(24, 24, 27); // slate-900
   doc.rect(margin, 12, pageWidth - margin * 2, 22, 'F');
 
   doc.setTextColor(255, 255, 255);
@@ -57,7 +57,7 @@ export function buildStudentScorecardDoc(
   doc.setDrawColor(226, 232, 240);
   doc.roundedRect(margin, 38, pageWidth - margin * 2, 26, 2, 2, 'FD');
 
-  doc.setTextColor(15, 23, 42);
+  doc.setTextColor(24, 24, 27);
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   const displayName = sanitizePdfText(student.studentFullName || `Ogrenci ${student.studentNumber}`);
@@ -131,7 +131,7 @@ export function buildStudentScorecardDoc(
       head: [['Ders / Bolum', 'Soru Araligi', 'Soru', 'D', 'Y', 'B', 'Net', 'Puan', 'Harf']],
       body: sectionBody,
       headStyles: {
-        fillColor: [30, 41, 59],
+        fillColor: [39, 39, 42],
         textColor: 255,
         fontSize: 7.5,
         fontStyle: 'bold',

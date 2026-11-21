@@ -1656,7 +1656,7 @@ html[data-app-icon="monochrome-contrast"] {
   transition: background-color 110ms cubic-bezier(0.2, 0, 0, 1), color 110ms cubic-bezier(0.2, 0, 0, 1);
 }
 
-.pp-split-nav-link > span {
+.pp-split-nav-link>span {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1899,6 +1899,7 @@ html.dark .pp-autosave-pill {
 }
 
 @media (max-width: 640px) {
+
   .pp-bento-strip,
   .pp-bento-strip--3 {
     grid-template-columns: 1fr;
@@ -2734,3 +2735,32 @@ body.pp-density-compact .pp-bento-panel {
 body.pp-density-compact .v-list-row {
   padding: 9px 12px;
 }
+
+/* ===== Unified minimal scrollbars + button sizing (v1.0.0) ===== */
+* { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+*:hover { scrollbar-color: var(--border-strong) transparent; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: transparent; border-radius: 9999px; }
+*:hover > ::-webkit-scrollbar-thumb, :hover::-webkit-scrollbar-thumb { background: var(--border-strong); }
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+::-webkit-scrollbar-corner { background: transparent; }
+/* Keep vertical scrollbar clear of the floating window controls */
+.desktop-main::-webkit-scrollbar-track { margin-top: 3rem; margin-bottom: 0.5rem; }
+.desktop-main { scrollbar-gutter: stable; }
+.modal-body::-webkit-scrollbar-track { margin-block: 6px; }
+
+/* All buttons share one size */
+.button, .button-small, .button-large, .template-print-btn {
+  min-height: 40px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 650;
+  gap: 8px;
+  box-sizing: border-box;
+}
+.template-print-btn { width: 40px; min-width: 40px; padding: 0; }
+.button svg, .button-small svg, .button-large svg { width: 16px; height: 16px; flex-shrink: 0; }
+.drop-zone-actions .button, .drop-zone-actions .camera-scan-btn { min-height: 40px; }
