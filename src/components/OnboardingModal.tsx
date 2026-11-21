@@ -1,23 +1,20 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   ArrowRight,
   BookOpen,
   Camera,
-  Check,
   CheckCircle2,
   Cpu,
-  Eye,
   FileSpreadsheet,
+  Globe,
   LayoutGrid,
   Moon,
   Palette,
-  Plus,
   Rocket,
   ScanLine,
   ShieldCheck,
-  Sparkles,
   Sun,
   X,
   ZoomIn,
@@ -26,12 +23,8 @@ import { APP_VERSION, VELLIUM_BRAND } from '../brand/vellium';
 import { useI18n } from '../i18n/I18nContext';
 import type { LanguageCode } from '../i18n/languages';
 import {
-  buildCustomColorTheme,
   CUSTOM_THEME_ID,
-  CUSTOM_THEME_PRESETS,
   normalizeHexColor,
-  UI_SCALE_PRESETS,
-  type AppIconVariant,
   type ThemeId,
 } from '../theme/themes';
 import { useThemeContext } from '../theme/ThemeContext';
@@ -44,14 +37,13 @@ export interface OnboardingModalProps {
 
 const TOTAL_STEPS = 4;
 
-const QUICK_THEMES: readonly ThemeId[] = [
-  'obsidian',
-  'slate',
-  'blue',
-  'emerald',
-  'purple',
-  'orange',
+const ONBOARDING_QUICK_THEMES: ReadonlyArray<{ id: ThemeId; swatch: string }> = [
+  { id: 'obsidian', swatch: '#e4e4e7' },
+  { id: 'blue', swatch: '#3b82f6' },
+  { id: 'emerald', swatch: '#34d399' },
 ];
+
+const ONBOARDING_ZOOM_OPTIONS = [90, 100, 110, 125] as const;
 
 export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
   const navigate = useNavigate();
@@ -60,24 +52,16 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
     mode,
     themeId,
     customAccent,
-    appIconVariant,
     uiScale,
-    highContrast,
-    themes,
     setMode,
     setThemeId,
     setCustomAccent,
-    setAppIconVariant,
     setUiScale,
-    setHighContrast,
   } = useThemeContext();
 
   const isTr = lang === 'tr';
   const [step, setStep] = useState(0);
   const [hexDraft, setHexDraft] = useState(customAccent);
-
-  const customThemeMeta = useMemo(() => buildCustomColorTheme(customAccent), [customAccent]);
-  const contrastRatio = mode === 'dark' ? customThemeMeta.contrastDark : customThemeMeta.contrastLight;
 
   if (!isOpen) return null;
 
@@ -89,7 +73,6 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
     }
   };
 
-  const quickThemes = themes.filter((th) => QUICK_THEMES.includes(th.id));
   const isCustomTheme = themeId === CUSTOM_THEME_ID;
 
   return (
@@ -274,220 +257,172 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
             </div>
           )}
 
-          {/* STEP 3: Appearance, Custom Color HEX, App Icon & Accessibility Zoom */}
+          {/* STEP 3: Minimal, Uncluttered 4-Row Quick Setup */}
           {step === 2 && (
             <div className="pp-onboarding-step" data-testid="onboarding-step-3">
               <div className="pp-onboarding-step-head">
                 <h2 className="pp-onboarding-heading">
                   {isTr
-                    ? 'Görünüm, Özel Renk, İkon ve Erişilebilirlik'
-                    : 'Appearance, Custom Color, Icon & Accessibility'}
+                    ? 'Hızlı Görünüm ve Erişilebilirlik Ayarları'
+                    : 'Quick Appearance & Accessibility Setup'}
                 </h2>
                 <p className="pp-onboarding-lead">
                   {isTr
-                    ? 'Çalışma alanınızı, özel renk kodunuzu (HEX), görev çubuğu ikonunuzu ve yakınlaştırma yüzdesini hemen özelleştirin.'
-                    : 'Personalize your language, custom HEX theme color, taskbar/desktop icon, and UI zoom percentage.'}
+                    ? 'Temel tercihlerinizi seçin. Tüm 15 renk temasına, 18 uygulama ikonuna ve detaylı ayarlara istediğiniz zaman Ayarlar sayfasından ulaşabilirsiniz.'
+                    : 'Choose your core preferences. All 15 color themes, 18 app icons, and advanced options are always available in Settings.'}
                 </p>
               </div>
 
-              <div className="pp-onboarding-prefs-grid">
-                {/* Language & Mode Row */}
-                <div className="pp-onboarding-pref-row">
-                  <span className="pp-onboarding-pref-label">
-                    {isTr ? 'Arayüz Dili (73 Dil)' : 'Interface Language (73 Locales)'}
-                  </span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <select
-                      className="pp-select pp-select-compact"
-                      value={lang}
-                      aria-label={isTr ? 'Arayüz Dili' : 'Interface Language'}
-                      onChange={(e) => setLanguage(e.target.value as LanguageCode)}
-                    >
-                      {languages.map((item) => (
-                        <option key={item.code} value={item.code}>
-                          {item.nativeName} ({item.englishName})
-                        </option>
-                      ))}
-                    </select>
+              <div className="pp-onboarding-clean-list">
+                {/* Row 1: Language */}
+                <div className="pp-onboarding-clean-row">
+                  <div className="pp-onboarding-clean-copy">
+                    <span className="pp-onboarding-clean-title">
+                      <Globe size={15} />
+                      <span>{isTr ? 'Uygulama Dili' : 'Application Language'}</span>
+                    </span>
+                    <span className="pp-onboarding-clean-sub">
+                      {isTr ? '73 dil desteği (TR / EN tam çeviri)' : '73 supported locales'}
+                    </span>
+                  </div>
+                  <select
+                    className="pp-select pp-select-compact"
+                    value={lang}
+                    aria-label={isTr ? 'Arayüz Dili' : 'Interface Language'}
+                    onChange={(e) => setLanguage(e.target.value as LanguageCode)}
+                  >
+                    {languages.map((item) => (
+                      <option key={item.code} value={item.code}>
+                        {item.nativeName} ({item.englishName})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Row 2: Light / Dark Mode */}
+                <div className="pp-onboarding-clean-row">
+                  <div className="pp-onboarding-clean-copy">
+                    <span className="pp-onboarding-clean-title">
+                      {mode === 'dark' ? <Moon size={15} /> : <Sun size={15} />}
+                      <span>{isTr ? 'Görünüm Modu' : 'Appearance Mode'}</span>
+                    </span>
+                    <span className="pp-onboarding-clean-sub">
+                      {isTr ? 'Göz yormayan koyu veya açık çalışma yüzeyi' : 'Dark or light workspace surface'}
+                    </span>
+                  </div>
+                  <div className="pp-inline-segmented">
                     <button
                       type="button"
-                      className={`pp-btn-secondary ${mode === 'light' ? 'is-active' : ''}`}
-                      onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
+                      className={`pp-inline-seg-btn ${mode === 'dark' ? 'is-active' : ''}`}
+                      onClick={() => setMode('dark')}
                     >
-                      {mode === 'dark' ? <Moon size={14} /> : <Sun size={14} />}
-                      <span>{mode === 'dark' ? t.settingsModal.darkMode : t.settingsModal.lightMode}</span>
+                      <Moon size={13} />
+                      <span>{t.settingsModal.darkMode}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`pp-inline-seg-btn ${mode === 'light' ? 'is-active' : ''}`}
+                      onClick={() => setMode('light')}
+                    >
+                      <Sun size={13} />
+                      <span>{t.settingsModal.lightMode}</span>
                     </button>
                   </div>
                 </div>
 
-                {/* Quick Theme + Custom HEX Color Studio */}
-                <div className="pp-onboarding-pref-block">
-                  <div className="pp-onboarding-pref-head">
-                    <span className="pp-onboarding-pref-label">
-                      <Palette size={14} />
-                      <span>{isTr ? 'Renk Teması & Özel HEX Kodu' : 'Color Theme & Custom HEX'}</span>
+                {/* Row 3: Accent Theme + Custom HEX */}
+                <div className="pp-onboarding-clean-row">
+                  <div className="pp-onboarding-clean-copy">
+                    <span className="pp-onboarding-clean-title">
+                      <Palette size={15} />
+                      <span>{isTr ? 'Vurgu Rengi ve Özel Tema' : 'Accent Theme & Custom HEX'}</span>
                     </span>
-                    {isCustomTheme && (
-                      <span className="pp-contrast-pill">
-                        WCAG AA · {contrastRatio.toFixed(1)}:1
-                      </span>
-                    )}
+                    <span className="pp-onboarding-clean-sub">
+                      {isTr ? 'Hazır palet seçin veya özel HEX renk kodu girin' : 'Pick a preset or enter a custom HEX color'}
+                    </span>
                   </div>
-                  <div className="pp-onboarding-theme-chips">
-                    {quickThemes.map((th) => {
-                      const active = themeId === th.id;
-                      const sw = mode === 'dark' ? th.swatchDark : th.swatch;
+                  <div className="pp-onboarding-swatch-bar">
+                    {ONBOARDING_QUICK_THEMES.map((item) => {
+                      const active = themeId === item.id;
                       return (
                         <button
-                          key={th.id}
+                          key={item.id}
                           type="button"
-                          className={`v-theme-chip ${active ? 'is-active' : ''}`}
-                          onClick={() => setThemeId(th.id)}
+                          className={`pp-onboarding-swatch-pill ${active ? 'is-active' : ''}`}
+                          onClick={() => setThemeId(item.id)}
+                          title={getThemeName(item.id)}
                         >
-                          <span className="v-theme-chip-left">
-                            <span className="v-theme-swatch" style={{ backgroundColor: sw }} />
-                            <span className="v-theme-label">{getThemeName(th.id)}</span>
-                          </span>
-                          {active && <Check size={13} className="v-check-icon" />}
+                          <span className="v-theme-swatch" style={{ backgroundColor: item.swatch }} />
+                          <span>{getThemeName(item.id)}</span>
                         </button>
                       );
                     })}
                     <button
                       type="button"
                       data-testid="onboarding-custom-theme-btn"
-                      className={`v-theme-chip v-theme-chip--custom ${isCustomTheme ? 'is-active' : ''}`}
+                      className={`pp-onboarding-swatch-pill ${isCustomTheme ? 'is-active' : ''}`}
                       onClick={() => setThemeId(CUSTOM_THEME_ID)}
                     >
-                      <span className="v-theme-chip-left">
-                        <span
-                          className="v-theme-swatch v-theme-swatch--plus"
-                          style={isCustomTheme ? { backgroundColor: customAccent } : undefined}
-                        >
-                          {!isCustomTheme && <Plus size={11} />}
-                        </span>
-                        <span className="v-theme-label">
-                          {isTr ? `Özel (${customAccent})` : `Custom (${customAccent})`}
-                        </span>
-                      </span>
-                      {isCustomTheme && <Check size={13} className="v-check-icon" />}
+                      <span
+                        className="v-theme-swatch"
+                        style={{ backgroundColor: customAccent }}
+                      />
+                      <span>{isTr ? 'Özel' : 'Custom'}</span>
                     </button>
-                  </div>
-
-                  {isCustomTheme && (
-                    <div className="pp-custom-color-bar">
-                      <input
-                        type="color"
-                        className="pp-color-wheel"
-                        value={customAccent}
-                        aria-label={isTr ? 'Özel renk seçici' : 'Custom color picker'}
-                        onChange={(e) => {
-                          setHexDraft(e.target.value.toUpperCase());
-                          setCustomAccent(e.target.value);
-                        }}
-                      />
-                      <input
-                        type="text"
-                        className="pp-hex-input"
-                        value={hexDraft}
-                        maxLength={7}
-                        placeholder="#3B82F6"
-                        aria-label={isTr ? 'Özel HEX renk kodu' : 'Custom HEX color code'}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          setHexDraft(v);
-                          const norm = normalizeHexColor(v);
-                          if (norm) setCustomAccent(norm);
-                        }}
-                      />
-                      <div className="pp-custom-preset-dots">
-                        {CUSTOM_THEME_PRESETS.map((p) => (
-                          <button
-                            key={p.hex}
-                            type="button"
-                            className={`pp-preset-dot ${customAccent === p.hex ? 'is-active' : ''}`}
-                            style={{ backgroundColor: p.hex }}
-                            title={`${isTr ? p.labelTr : p.labelEn} (${p.hex})`}
-                            onClick={() => {
-                              setHexDraft(p.hex);
-                              setCustomAccent(p.hex);
-                            }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* App Icon Quick Picker */}
-                <div className="pp-onboarding-pref-row">
-                  <span className="pp-onboarding-pref-label">
-                    <Sparkles size={14} />
-                    <span>{isTr ? 'Uygulama ve Görev Çubuğu İkonu' : 'App & Taskbar Icon'}</span>
-                  </span>
-                  <div className="pp-onboarding-icon-pills">
-                    {(
-                      [
-                        { id: 'theme-auto', label: isTr ? 'Tema Uyumlu' : 'Auto Theme' },
-                        { id: 'monochrome-dark', label: isTr ? 'Koyu' : 'Dark' },
-                        { id: 'monochrome-light', label: isTr ? 'Açık' : 'Light' },
-                        { id: 'theme-custom', label: isTr ? 'Özel Renk' : 'Custom' },
-                      ] as Array<{ id: AppIconVariant; label: string }>
-                    ).map((ic) => (
-                      <button
-                        key={ic.id}
-                        type="button"
-                        className={`pp-icon-mini-btn ${appIconVariant === ic.id ? 'is-active' : ''}`}
-                        onClick={() => setAppIconVariant(ic.id)}
-                      >
-                        <ProductMark
-                          variant={ic.id}
-                          activeThemeId={themeId}
-                          mode={mode}
-                          customAccent={customAccent}
-                          className="pp-icon-mini-svg"
+                    {isCustomTheme && (
+                      <div className="pp-onboarding-inline-hex">
+                        <input
+                          type="color"
+                          className="pp-color-wheel-sm"
+                          value={customAccent}
+                          aria-label={isTr ? 'Özel renk seçici' : 'Custom color picker'}
+                          onChange={(e) => {
+                            const v = e.target.value.toUpperCase();
+                            setHexDraft(v);
+                            setCustomAccent(v);
+                          }}
                         />
-                        <span>{ic.label}</span>
-                      </button>
-                    ))}
+                        <input
+                          type="text"
+                          className="pp-hex-input-sm"
+                          value={hexDraft}
+                          maxLength={7}
+                          aria-label={isTr ? 'Özel HEX renk kodu' : 'Custom HEX color code'}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            setHexDraft(v);
+                            const norm = normalizeHexColor(v);
+                            if (norm) setCustomAccent(norm);
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Accessibility UI Scale & High Contrast */}
-                <div className="pp-onboarding-pref-row">
-                  <span className="pp-onboarding-pref-label">
-                    <ZoomIn size={14} />
-                    <span>
-                      {isTr ? `Yakınlaştırma: %${uiScale}` : `UI Zoom: ${uiScale}%`}
+                {/* Row 4: Accessibility UI Zoom */}
+                <div className="pp-onboarding-clean-row">
+                  <div className="pp-onboarding-clean-copy">
+                    <span className="pp-onboarding-clean-title">
+                      <ZoomIn size={15} />
+                      <span>{isTr ? 'Yakınlaştırma Yüzdesi' : 'Interface Zoom Scale'}</span>
                     </span>
-                  </span>
-                  <div className="pp-zoom-pills">
-                    {UI_SCALE_PRESETS.map((preset) => (
+                    <span className="pp-onboarding-clean-sub">
+                      {isTr ? 'Klavyeden Ctrl + (+) / (-) ile her an değiştirilebilir' : 'Adjust anytime via Ctrl + (+) / (-)'}
+                    </span>
+                  </div>
+                  <div className="pp-inline-segmented" role="group" aria-label={isTr ? 'Yakınlaştırma Yüzdesi' : 'Interface Zoom Scale'}>
+                    {ONBOARDING_ZOOM_OPTIONS.map((preset) => (
                       <button
                         key={preset}
                         type="button"
-                        className={`pp-zoom-pill ${uiScale === preset ? 'is-active' : ''}`}
+                        className={`pp-inline-seg-btn ${uiScale === preset ? 'is-active' : ''}`}
                         onClick={() => setUiScale(preset)}
                       >
                         %{preset}
                       </button>
                     ))}
                   </div>
-                </div>
-
-                <div className="pp-onboarding-pref-row">
-                  <span className="pp-onboarding-pref-label">
-                    <Eye size={14} />
-                    <span>{isTr ? 'Yüksek Kontrast Modu (Erişilebilirlik)' : 'High Contrast Mode (Accessibility)'}</span>
-                  </span>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={highContrast}
-                    className={`v-pill-toggle ${highContrast ? 'is-active' : ''}`}
-                    onClick={() => setHighContrast(!highContrast)}
-                  >
-                    {highContrast ? t.settingsModal.onLabel : t.settingsModal.offLabel}
-                  </button>
                 </div>
               </div>
             </div>

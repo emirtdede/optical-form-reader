@@ -1,0 +1,81 @@
+{
+  "suite": "Optical Form Reader v1.0.0 - TestSprite 110 End-User Scenario Verification",
+  "executedAt": "2026-11-21T21:22:34.325Z",
+  "totalScenarios": 110,
+  "passedScenarios": 110,
+  "failedScenarios": 0,
+  "groups": [
+    {
+      "id": "TS-001..TS-002",
+      "name": "Onboarding Step 1 & Clean Initial DB",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "id": "TS-003",
+      "name": "Onboarding Step 2 3-Stage Workflow",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "id": "TS-004..TS-006",
+      "name": "Onboarding Step 3 Uncluttered 4-Row Layout & Live Custom HEX",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "id": "TS-007..TS-008",
+      "name": "Onboarding Step 4 Completion & Persistence",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "id": "TS-009..TS-016",
+      "name": "Desktop Shell Zero Topbar & 6 Primary Sidebar Items",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "id": "TS-039..TS-045",
+      "name": "Live Camera Auto-Capture Modal & Monochrome Theme",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "id": "TS-046..TS-055",
+      "name": "Templates 2-Row Toolbar & Monochrome Preview Modal (Zero Navy)",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "id": "TS-056..TS-067",
+      "name": "ResultsPage Empty State & Analytics Engine",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "id": "TS-068..TS-073",
+      "name": "GuidePage 2nd-Sidebar Split Layout & 2B Simulator",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "id": "TS-074..TS-090",
+      "name": "SettingsPage Zero Box-Inside-Box (border=0px) & Single-Line Zoom Alignment",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "id": "TS-091..TS-104",
+      "name": "AboutPage Bento Layout, 9 Legal Docs & Security Allowlist",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "id": "TS-105..TS-110",
+      "name": "Responsive Layout at 860x600 Min Window Size (Zero Overflow)",
+      "status": "PASS",
+      "details": ""
+    }
+  ]
+}

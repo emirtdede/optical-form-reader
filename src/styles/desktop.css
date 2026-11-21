@@ -3395,3 +3395,283 @@ html[data-large-focus="true"] :focus-visible {
     align-items: flex-start;
   }
 }
+
+/* ===== Eliminate Box-Inside-Box & Align Settings / Onboarding Cleanly ===== */
+.pp-bento-panel {
+  padding: 16px 20px;
+  gap: 12px;
+}
+
+/* Remove nested border/box when v-list-card sits inside pp-bento-panel */
+.pp-bento-panel > .v-list-card {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  margin-block: -6px;
+}
+
+.pp-bento-panel > .v-list-card > .v-list-row {
+  padding: 12px 0;
+  gap: 20px;
+}
+
+/* 5-column theme grid: 15 themes = 3 exact rows of 5 (zero orphan items) */
+.v-theme-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+/* 6-column icon grid: 18 icons = 3 exact rows of 6 (zero orphan items) */
+.v-icon-grid--extended {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.v-icon-grid--extended .v-icon-card {
+  min-height: 76px;
+  padding: 10px 6px;
+  gap: 6px;
+}
+
+/* Custom HEX Studio flush inside theme panel (no box-inside-box) */
+.pp-custom-theme-studio {
+  margin-top: 4px;
+  padding: 14px 0 2px;
+  border: none;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.pp-custom-studio-head {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+/* Single-line right-aligned Accessibility Zoom Bar */
+.pp-zoom-inline-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-subtle, var(--bg-subtle));
+  flex-shrink: 0;
+}
+
+.pp-zoom-inline-bar .pp-zoom-step-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+}
+
+.pp-zoom-inline-bar .pp-zoom-step-btn:hover:not(:disabled) {
+  background: var(--surface-hover, var(--bg-elevated));
+}
+
+.pp-zoom-inline-bar .pp-zoom-pills {
+  gap: 2px;
+}
+
+.pp-zoom-inline-bar .pp-zoom-pill {
+  height: 28px;
+  padding: 0 9px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  font-size: 12px;
+}
+
+.pp-zoom-inline-bar .pp-zoom-pill:hover:not(.is-active) {
+  background: var(--surface-hover, var(--bg-elevated));
+  color: var(--text-primary, var(--text));
+}
+
+.pp-zoom-inline-bar .pp-zoom-pill.is-active {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+/* Onboarding Step 3 Clean Single-List Rows */
+.pp-onboarding-clean-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-subtle, var(--bg-subtle));
+  padding: 2px 16px;
+}
+
+.pp-onboarding-clean-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.pp-onboarding-clean-row:last-child {
+  border-bottom: none;
+}
+
+.pp-onboarding-clean-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pp-onboarding-clean-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--text-primary, var(--text));
+}
+
+.pp-onboarding-clean-sub {
+  font-size: 11.5px;
+  color: var(--text-muted, var(--text-faint));
+}
+
+.pp-inline-segmented {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--surface, var(--bg-elevated));
+  flex-shrink: 0;
+}
+
+.pp-inline-seg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary, var(--text-soft));
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.pp-inline-seg-btn.is-active {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+
+.pp-onboarding-swatch-bar {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.pp-onboarding-swatch-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface, var(--bg-elevated));
+  color: var(--text-secondary, var(--text-soft));
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pp-onboarding-swatch-pill.is-active {
+  border-color: var(--border-strong);
+  color: var(--text-primary, var(--text));
+  background: var(--surface-hover, var(--bg-subtle));
+}
+
+.pp-onboarding-inline-hex {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pp-color-wheel-sm {
+  width: 28px;
+  height: 30px;
+  padding: 1px;
+  border-radius: 7px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface, var(--bg-elevated));
+  cursor: pointer;
+}
+
+.pp-hex-input-sm {
+  width: 78px;
+  height: 30px;
+  padding: 0 7px;
+  border-radius: 7px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface, var(--bg-elevated));
+  color: var(--text-primary, var(--text));
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+@media (max-width: 960px) {
+  .v-theme-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .v-icon-grid--extended {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Micro-polish: Custom Studio header & Update Result Box flush (zero box-inside-box) */
+.pp-custom-theme-studio {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.pp-custom-studio-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pp-update-result-box {
+  padding: 14px 0 2px;
+  border: none;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+}
+
+.pp-update-assets-chips {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.pp-update-assets-chips .pp-btn-secondary {
+  justify-content: flex-start;
+}

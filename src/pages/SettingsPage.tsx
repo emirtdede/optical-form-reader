@@ -1034,13 +1034,7 @@ export function SettingsPage() {
                         {themeId !== CUSTOM_THEME_ID && <Plus size={11} />}
                       </span>
                       <span className="v-theme-label">
-                        {themeId === CUSTOM_THEME_ID
-                          ? isTr
-                            ? `Özel (${customAccent})`
-                            : `Custom (${customAccent})`
-                          : isTr
-                            ? '+ Özel Renk'
-                            : '+ Custom Color'}
+                        {isTr ? 'Özel Renk' : 'Custom Color'}
                       </span>
                     </span>
                     {themeId === CUSTOM_THEME_ID && <Check size={14} className="v-check-icon" />}
@@ -1244,8 +1238,8 @@ export function SettingsPage() {
 
               <div className="pp-bento-panel">
                 <div className="v-list-card">
-                  {/* Zoom Percentage Row */}
-                  <div className="v-list-row v-list-row--wrap">
+                  {/* Zoom Percentage Row - Single Horizontal Line Alignment */}
+                  <div className="v-list-row">
                     <div>
                       <p className="v-row-title">
                         <ZoomIn size={14} style={{ display: 'inline', verticalAlign: '-2px', marginRight: 6 }} />
@@ -1253,48 +1247,22 @@ export function SettingsPage() {
                       </p>
                       <p className="v-row-desc">
                         {isTr
-                          ? 'Tüm metinleri, butonları ve optik form önizlemelerini %80 ile %150 arasında ölçeklendirir (Klavye: Ctrl + +, Ctrl + -, Ctrl + 0).'
-                          : 'Scales all typography, controls, and optical form previews between 80% and 150% (Keyboard: Ctrl + +, Ctrl + -, Ctrl + 0).'}
+                          ? 'Arayüzü %80 ile %150 arasında ölçeklendirir (Klavye: Ctrl + +, Ctrl + -, Ctrl + 0).'
+                          : 'Scales interface between 80% and 150% (Keyboard: Ctrl + +, Ctrl + -, Ctrl + 0).'}
                       </p>
                     </div>
-                    <div className="pp-zoom-controls-wrap">
-                      <div className="pp-zoom-stepper">
-                        <button
-                          type="button"
-                          data-testid="ui-scale-dec"
-                          className="pp-zoom-step-btn"
-                          disabled={uiScale <= UI_SCALE_LIMITS.min}
-                          aria-label={isTr ? 'Yakınlaştırmayı azalt' : 'Decrease zoom'}
-                          onClick={() => setUiScale(uiScale - UI_SCALE_LIMITS.step)}
-                        >
-                          <Minus size={14} />
-                        </button>
-                        <span className="pp-zoom-value-badge" data-testid="ui-scale-value">
-                          %{uiScale}
-                        </span>
-                        <button
-                          type="button"
-                          data-testid="ui-scale-inc"
-                          className="pp-zoom-step-btn"
-                          disabled={uiScale >= UI_SCALE_LIMITS.max}
-                          aria-label={isTr ? 'Yakınlaştırmayı artır' : 'Increase zoom'}
-                          onClick={() => setUiScale(uiScale + UI_SCALE_LIMITS.step)}
-                        >
-                          <Plus size={14} />
-                        </button>
-                        {uiScale !== 100 && (
-                          <button
-                            type="button"
-                            data-testid="ui-scale-reset"
-                            className="pp-btn-secondary"
-                            onClick={() => setUiScale(100)}
-                          >
-                            <RotateCcw size={13} />
-                            <span>{isTr ? 'Sıfırla' : 'Reset'}</span>
-                          </button>
-                        )}
-                      </div>
-                      <div className="pp-zoom-pills" role="group" aria-label={isTr ? 'Yakınlaştırma yüzdesi' : 'Zoom percentage'}>
+                    <div className="pp-zoom-inline-bar" role="group" aria-label={isTr ? 'Yakınlaştırma yüzdesi' : 'Zoom percentage'}>
+                      <button
+                        type="button"
+                        data-testid="ui-scale-dec"
+                        className="pp-zoom-step-btn"
+                        disabled={uiScale <= UI_SCALE_LIMITS.min}
+                        aria-label={isTr ? 'Yakınlaştırmayı azalt' : 'Decrease zoom'}
+                        onClick={() => setUiScale(uiScale - UI_SCALE_LIMITS.step)}
+                      >
+                        <Minus size={13} />
+                      </button>
+                      <div className="pp-zoom-pills">
                         {UI_SCALE_PRESETS.map((preset) => (
                           <button
                             key={preset}
@@ -1308,6 +1276,31 @@ export function SettingsPage() {
                           </button>
                         ))}
                       </div>
+                      <span className="sr-only" data-testid="ui-scale-value">
+                        %{uiScale}
+                      </span>
+                      <button
+                        type="button"
+                        data-testid="ui-scale-inc"
+                        className="pp-zoom-step-btn"
+                        disabled={uiScale >= UI_SCALE_LIMITS.max}
+                        aria-label={isTr ? 'Yakınlaştırmayı artır' : 'Increase zoom'}
+                        onClick={() => setUiScale(uiScale + UI_SCALE_LIMITS.step)}
+                      >
+                        <Plus size={13} />
+                      </button>
+                      {uiScale !== 100 && (
+                        <button
+                          type="button"
+                          data-testid="ui-scale-reset"
+                          className="pp-zoom-step-btn"
+                          title={isTr ? 'Sıfırla (%100)' : 'Reset (100%)'}
+                          aria-label={isTr ? 'Sıfırla' : 'Reset'}
+                          onClick={() => setUiScale(100)}
+                        >
+                          <RotateCcw size={13} />
+                        </button>
+                      )}
                     </div>
                   </div>
 
