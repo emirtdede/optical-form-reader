@@ -799,7 +799,7 @@ export function ScannerPage() {
             </div>
 
             <p style={{ margin: '4px 0 0', color: 'var(--text-soft)', fontSize: '13.5px' }}>
-              {activeTemplate.questionCount} Soru · {activeTemplate.sectionsCount} Bölüm · {activeTemplate.choiceCount} Şık ({activeTemplate.choices.join('–')}) · {activeTemplate.studentIdDigits || 8} Haneli Numara · {activeTemplate.supportedBooklets.join('/')} Kitapçık
+              {activeTemplate.questionCount} Soru · {activeTemplate.sectionsCount} Bölüm · {activeTemplate.choiceCount} Şık ({activeTemplate.choices.join('-')}) · {activeTemplate.studentIdDigits || 8} Haneli Numara · {activeTemplate.supportedBooklets.join('/')} Kitapçık
             </p>
 
             {/* Hızlı Şablon Seçim Hapları (Pill Grid) */}
@@ -1015,7 +1015,7 @@ export function ScannerPage() {
           <div><label htmlFor="session-title">Değerlendirme adı</label><input id="session-title" value={title} maxLength={80} disabled={processing} placeholder="Örn: 8-A LGS Deneme Sınavı" onChange={(event) => setTitle(event.target.value)} /></div>
           <div><label htmlFor="partition-mode">Parçalama yöntemi</label><select id="partition-mode" value={settings.partitionMode} disabled={processing} onChange={(event) => applySettings({ ...settings, partitionMode: event.target.value as ProcessingSettings['partitionMode'] })}><option value="size">Part başına form</option><option value="count">Toplam part sayısı</option></select></div>
           <div><label htmlFor="partition-value">{settings.partitionMode === 'size' ? 'Part boyutu' : 'Part sayısı'}</label><input id="partition-value" type="number" min="1" max={Math.max(1, queue.length)} value={settings.partitionMode === 'size' ? settings.partSize : settings.partCount} disabled={processing} onChange={(event) => applySettings({ ...settings, [settings.partitionMode === 'size' ? 'partSize' : 'partCount']: Number(event.target.value) })} /></div>
-          <div><label htmlFor="concurrency">Eşzamanlı iş</label><select id="concurrency" value={settings.concurrency} disabled={processing} onChange={(event) => applySettings({ ...settings, concurrency: Number(event.target.value) as ProcessingSettings['concurrency'] })}><option value={1}>1 — En düşük bellek</option><option value={2}>2 — Dengeli</option><option value={3}>3 — Hızlı</option><option value={4}>4 — Güçlü cihaz</option></select></div>
+          <div><label htmlFor="concurrency">Eşzamanlı iş</label><select id="concurrency" value={settings.concurrency} disabled={processing} onChange={(event) => applySettings({ ...settings, concurrency: Number(event.target.value) as ProcessingSettings['concurrency'] })}><option value={1}>1 - En düşük bellek</option><option value={2}>2 - Dengeli</option><option value={3}>3 - Hızlı</option><option value={4}>4 - Güçlü cihaz</option></select></div>
           <div><label htmlFor="duplicate-mode">Yinelenen form</label><select id="duplicate-mode" value={settings.duplicateMode} disabled={processing} onChange={(event) => applySettings({ ...settings, duplicateMode: event.target.value as ProcessingSettings['duplicateMode'] })}><option value="skip">Tamamlananı atla</option><option value="reprocess">Sıfırdan yeniden işle</option></select></div>
         </div>
         <div className="config-summary"><Layers3 size={16} /><span>{queue.length || 0} form · {settings.partCount} part · part başına en fazla {settings.partSize} form · dosya adına göre doğal alfabetik sıra</span></div>

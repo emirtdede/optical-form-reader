@@ -14,11 +14,13 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
+  Sparkles,
   X,
 } from 'lucide-react';
 import { APP_VERSION, getVelliumLegalUrls, VELLIUM_BRAND } from '../brand/vellium';
 import { ProductMark, VelliumMark } from '../components/Brand';
 import { useAppData } from '../context/AppDataContext';
+import { useAppSettings } from '../context/AppSettingsContext';
 import { useI18n } from '../i18n/I18nContext';
 import { LEGAL_LAST_UPDATED } from '../i18n/legal';
 import type { LegalDocId } from '../i18n/types';
@@ -27,6 +29,7 @@ import { getDesktopAppInfo, isDesktopShell, openExternalUrl, type DesktopAppInfo
 export function AboutPage() {
   const { lang, t, legalDocs } = useI18n();
   const { sessions } = useAppData();
+  const { openOnboarding } = useAppSettings();
   const [appInfo, setAppInfo] = useState<DesktopAppInfo | null>(null);
   const [activeLegalDocId, setActiveLegalDocId] = useState<LegalDocId | null>(null);
 
@@ -102,6 +105,14 @@ export function AboutPage() {
           <p className="pp-page-subtitle">{t.meta.tagline}</p>
         </div>
         <div className="pp-page-header-actions">
+          <button
+            type="button"
+            className="pp-btn-secondary"
+            onClick={openOnboarding}
+          >
+            <Sparkles size={14} />
+            <span>{isTr ? 'Karşılama Rehberi' : 'Welcome Guide'}</span>
+          </button>
           <button
             type="button"
             className="pp-btn-secondary"
@@ -194,7 +205,7 @@ export function AboutPage() {
               <ProductMark className="pp-about-product-logo" />
               <div style={{ minWidth: 0 }}>
                 <h2 className="pp-about-product-title">
-                  {t.meta.productName} — {VELLIUM_BRAND.brandName}
+                  {t.meta.productName} - {VELLIUM_BRAND.brandName}
                 </h2>
                 <p className="pp-about-product-sub">{t.meta.tagline}</p>
               </div>
@@ -285,7 +296,7 @@ export function AboutPage() {
             </div>
             <div className="pp-kpi-card">
               <span className="pp-kpi-label">{isTr ? 'Şablon Kapasitesi' : 'Form Capacity'}</span>
-              <p className="pp-kpi-value">1–160 {isTr ? 'Soru' : 'Questions'}</p>
+              <p className="pp-kpi-value">1-160 {isTr ? 'Soru' : 'Questions'}</p>
             </div>
           </div>
           <p className="v-row-desc" style={{ margin: 0 }}>

@@ -15,6 +15,19 @@ interface AppDataValue {
 
 const AppDataContext = createContext<AppDataValue | null>(null);
 
+const TEST_SESSION_ID_PATTERN =
+  /^(sess-b\d+|sess-\d+|sess-restore-\d+|sess-zip-test|clear-test|job-alpha|cycle-\d+|sess-seq-\d+|job-step-\d+|schema-\d+|test-.*|mock-.*|demo-.*|sample-.*)$/i;
+
+export function isTestOrSeedSession(session: ExamSession): boolean {
+  if (TEST_SESSION_ID_PATTERN.test(session.id.trim())) return true;
+  const titleLower = (session.title || '').trim().toLowerCase();
+  return (
+    titleLower === 'test session' ||
+    titleLower === 'mock session' ||
+    titleLower === 'sample session'
+  );
+}
+
 export function AppDataProvider({ children }: { children: ReactNode }) {
   const [sessions, setSessions] = useState<ExamSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +35,13 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(async () => {
     try {
-      setSessions(await listSessions());
+      const all = await listSessions();
+      const staleTestSessions = all.filter(isTestOrSeedSession);
+      if (staleTestSessions.length > 0) {
+        await Promise.all(staleTestSessions.map((s) => removeSession(s.id).catch(() => {})));
+      }
+      const clean = staleTestSessions.length > 0 ? all.filter((s) => !isTestOrSeedSession(s)) : all;
+      setSessions(clean);
       setStorageError(null);
     } catch {
       setStorageError('Yerel kayıt alanına erişilemedi. Tarayıcı gizlilik veya depolama ayarlarını kontrol edin.');

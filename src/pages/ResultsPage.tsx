@@ -582,7 +582,7 @@ export function ResultsPage() {
         ) : (
           <section className="data-panel">
             <div className="panel-tools"><div><h2>İşlenen kaynaklar</h2><p>Tamamlanan, atlanan ve okunamayan her kaynak bu listede izlenir.</p></div><span>{jobs.length} iş</span></div>
-            <div className="table-scroll"><table><thead><tr><th>Kaynak</th><th>Part</th><th>Durum</th><th>Öğrenci no</th><th>Açıklama</th><th>Güncelleme</th></tr></thead><tbody>{jobs.slice(0, visibleJobCount).map((job) => <tr key={job.id}><td><strong>{job.sourceName}</strong></td><td>{job.partIndex + 1}</td><td><span className={`job-status status-${job.status}`}>{job.status === 'completed' ? 'Tamamlandı' : job.status === 'skipped' ? 'Atlandı' : job.status === 'error' ? 'Okunamadı' : 'Bekliyor'}</span></td><td>{job.studentNumber ?? '—'}</td><td>{job.error ?? '—'}</td><td>{formatDate(job.updatedAt)}</td></tr>)}</tbody></table></div>
+            <div className="table-scroll"><table><thead><tr><th>Kaynak</th><th>Part</th><th>Durum</th><th>Öğrenci no</th><th>Açıklama</th><th>Güncelleme</th></tr></thead><tbody>{jobs.slice(0, visibleJobCount).map((job) => <tr key={job.id}><td><strong>{job.sourceName}</strong></td><td>{job.partIndex + 1}</td><td><span className={`job-status status-${job.status}`}>{job.status === 'completed' ? 'Tamamlandı' : job.status === 'skipped' ? 'Atlandı' : job.status === 'error' ? 'Okunamadı' : 'Bekliyor'}</span></td><td>{job.studentNumber ?? '-'}</td><td>{job.error ?? '-'}</td><td>{formatDate(job.updatedAt)}</td></tr>)}</tbody></table></div>
             {visibleJobCount < jobs.length && <button className="button button-ghost table-more" type="button" onClick={() => setVisibleJobCount((current) => current + 250)}>Sonraki 250 işi göster</button>}
           </section>
         )}
@@ -678,7 +678,7 @@ function StudentReview({ session, student, onClose, onSave, onPdf }: { session: 
   async function submit() {
     const normalizedNumber = studentNumber.replace(/\s+/g, '').slice(0, 24);
     if (!/^[A-Za-z0-9_-]{3,24}$/.test(normalizedNumber)) {
-      setError('Öğrenci numarası 3–24 harf, rakam, tire veya alt çizgi içermelidir.');
+      setError('Öğrenci numarası 3-24 harf, rakam, tire veya alt çizgi içermelidir.');
       return;
     }
     try {
@@ -758,7 +758,7 @@ function StudentReview({ session, student, onClose, onSave, onPdf }: { session: 
                   {recalculated.score.sections.map((sec) => (
                     <tr key={sec.sectionId}>
                       <td><strong>{sec.name}</strong></td>
-                      <td>{sec.startQuestion}–{sec.endQuestion}</td>
+                      <td>{sec.startQuestion}-{sec.endQuestion}</td>
                       <td className="text-success">{sec.correct}</td>
                       <td className="text-danger">{sec.wrong}</td>
                       <td>{sec.blank}</td>
@@ -816,7 +816,7 @@ function StudentReview({ session, student, onClose, onSave, onPdf }: { session: 
                   </button>
                 ))}
                 <button type="button" className={answer.marked === null ? 'is-selected' : ''} onClick={() => updateAnswer(answer.question, null)} aria-label={`${answer.question}. soruyu boş olarak işaretle`}>
-                  —
+                  -
                 </button>
               </div>
             </div>

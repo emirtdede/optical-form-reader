@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+1118
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+-
+# Project-supplied machine translation (Google Translate); pending native review
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+$(^Name) ማዋቀር
+# ^UninstallCaption
+$(^Name) አራግፍ
+# ^LicenseSubCaption
+የፍቃድ ስምምነት
+# ^ComponentsSubCaption
+: የመጫኛ አማራጮች
+# ^DirSubCaption
+: የመጫኛ አቃፊ
+# ^InstallingSubCaption
+: በመጫን ላይ
+# ^CompletedSubCaption
+: ተጠናቀቀ
+# ^UnComponentsSubCaption
+የማራገፍ አማራጮች
+# ^UnDirSubCaption
+: የማራገፊያ አቃፊ
+# ^ConfirmSubCaption
+: ማረጋገጫ
+# ^UninstallingSubCaption
+፦ በማራገፍ ላይ
+# ^UnCompletedSubCaption
+: ተጠናቀቀ
+# ^BackBtn
+< ተመለስ
+# ^NextBtn
+ቀጣይ >
+# ^AgreeBtn
+እስማማለሁ።
+# ^AcceptBtn
+የፍቃድ ስምምነቱን ውሎች ተቀብያለሁ
+# ^DontAcceptBtn
+የፍቃድ ውሉን አልቀበልም።
+# ^InstallBtn
+ጫን
+# ^UninstallBtn
+አራግፍ
+# ^CancelBtn
+ሰርዝ
+# ^CloseBtn
+ዝጋ
+# ^BrowseBtn
+አስስ...
+# ^ShowDetailsBtn
+ዝርዝሮችን አሳይ
+# ^ClickNext
+ለመቀጠል ቀጣይ የሚለውን ጠቅ ያድርጉ።
+# ^ClickInstall
+መጫኑን ለመጀመር ጫንን ጠቅ ያድርጉ።
+# ^ClickUninstall
+ማራገፉን ለመጀመር አራግፍ የሚለውን ጠቅ ያድርጉ።
+# ^Name
+ስም
+# ^Completed
+ተጠናቀቀ
+# ^LicenseText
+እባክዎ $(^NameDA) ከመጫንዎ በፊት የፍቃድ ስምምነቱን ይመልከቱ። ሁሉንም የስምምነት ውሎች ከተቀበሉ፣ እስማማለሁ የሚለውን ጠቅ ያድርጉ።
+# ^LicenseTextCB
+እባክዎ $(^NameDA) ከመጫንዎ በፊት የፍቃድ ስምምነቱን ይመልከቱ። ሁሉንም የስምምነት ውሎች ከተቀበሉ፣ ከዚህ በታች ያለውን አመልካች ሳጥን ጠቅ ያድርጉ። $_CLICK
+# ^LicenseTextRB
+እባክዎ $(^NameDA) ከመጫንዎ በፊት የፍቃድ ስምምነቱን ይመልከቱ። ሁሉንም የስምምነት ውሎች ከተቀበሉ, ከታች ያለውን የመጀመሪያውን አማራጭ ይምረጡ. $_CLICK
+# ^UnLicenseText
+እባክዎ $(^NameDA) ን ከማራገፍዎ በፊት የፍቃድ ስምምነቱን ይከልሱ። ሁሉንም የስምምነት ውሎች ከተቀበሉ፣ እስማማለሁ የሚለውን ጠቅ ያድርጉ።
+# ^UnLicenseTextCB
+እባክዎ $(^NameDA) ን ከማራገፍዎ በፊት የፍቃድ ስምምነቱን ይከልሱ። ሁሉንም የስምምነት ውሎች ከተቀበሉ፣ ከዚህ በታች ያለውን አመልካች ሳጥን ጠቅ ያድርጉ። $_CLICK
+# ^UnLicenseTextRB
+እባክዎ $(^NameDA) ን ከማራገፍዎ በፊት የፍቃድ ስምምነቱን ይከልሱ። ሁሉንም የስምምነት ውሎች ከተቀበሉ, ከታች ያለውን የመጀመሪያውን አማራጭ ይምረጡ. $_CLICK
+# ^Custom
+ብጁ
+# ^ComponentsText
+ሊጭኑዋቸው የሚፈልጓቸውን ክፍሎች ያረጋግጡ እና መጫን የማይፈልጉትን አካላት ምልክት ያንሱ። $_CLICK
+# ^ComponentsSubText1
+የመጫኛውን አይነት ይምረጡ፡-
+# ^ComponentsSubText2_NoInstTypes
+የሚጫኑ ክፍሎችን ይምረጡ፡-
+# ^ComponentsSubText2
+ወይም፣ ለመጫን የሚፈልጓቸውን አማራጭ ክፍሎችን ይምረጡ፡-
+# ^UnComponentsText
+ለማራገፍ የሚፈልጓቸውን ክፍሎች ያረጋግጡ እና ማራገፍ የማይፈልጓቸውን ክፍሎች ምልክት ያንሱ። $_CLICK
+# ^UnComponentsSubText1
+የማራገፍ አይነት ይምረጡ፡-
+# ^UnComponentsSubText2_NoInstTypes
+ለማራገፍ ክፍሎችን ይምረጡ፡-
+# ^UnComponentsSubText2
+ወይም፣ ለማራገፍ የሚፈልጉትን አማራጭ ክፍሎችን ይምረጡ፡-
+# ^DirText
+ማዋቀር $(^NameDA) በሚከተለው አቃፊ ውስጥ ይጭናል። በተለየ አቃፊ ውስጥ ለመጫን አስስ የሚለውን ጠቅ ያድርጉ እና ሌላ አቃፊ ይምረጡ። $_CLICK
+# ^DirSubText
+መድረሻ አቃፊ
+# ^DirBrowseText
+$(^NameDA) ን ለመጫን አቃፊውን ይምረጡ፡-
+# ^UnDirText
+ማዋቀር $(^NameDA) ከሚከተለው አቃፊ ያራግፋል። ከተለየ አቃፊ ለማራገፍ አስስ የሚለውን ጠቅ ያድርጉ እና ሌላ አቃፊ ይምረጡ። $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+$(^NameDA) ን ለማራገፍ አቃፊውን ይምረጡ፡-
+# ^SpaceAvailable
+"ቦታ ይገኛል:"
+# ^SpaceRequired
+"ቦታ ያስፈልጋል:"
+# ^UninstallingText
+$(^NameDA) ከሚከተለው አቃፊ ይራገፋል። $_CLICK
+# ^UninstallingSubText
+ማራገፍ ከ፡
+# ^FileError
+ለመጻፍ ፋይል መክፈት ላይ ስህተት: \r\nZXQ9QX$0\r\n\r\n መጫኑን ለማቆም አቋርጥ ጠቅ ያድርጉ፣\r\n እንደገና ለመሞከር ይሞክሩ፣ወይም ይህን ፋይል ለመዝለል ይሞክሩ።
+# ^FileError_NoIgnore
+ለመጻፍ ፋይል መክፈት ላይ ስህተት: \r\nZZXQ9QX$0Z\r\n\r\n ጠቅ ​​ያድርጉ እንደገና ለመሞከር ይሞክሩ ወይም መጫኑን ለማቆም\r\n ይሰርዙ።
+# ^CantWrite
+"መጻፍ አይቻልም:"
+# ^CopyFailed
+መቅዳት አልተሳካም።
+# ^CopyTo
+"ቅዳ ወደ"
+# ^Registering
+"መመዝገብ:"
+# ^Unregistering
+"ያልተመዘገበ:"
+# ^SymbolNotFound
+"ምልክት ማግኘት አልተቻለም:"
+# ^CouldNotLoad
+"መጫን አልተቻለም:"
+# ^CreateFolder
+"አቃፊ ፍጠር:"
+# ^CreateShortcut
+"አቋራጭ ፍጠር:"
+# ^CreatedUninstaller
+"ማራገፊያ ተፈጥሯል:"
+# ^Delete
+"ፋይሉን ሰርዝ:"
+# ^DeleteOnReboot
+"እንደገና ሲነሳ ሰርዝ"
+# ^ErrorCreatingShortcut
+"አቋራጭ መፍጠር ላይ ስህተት:"
+# ^ErrorCreating
+"መፍጠር ላይ ስህተት:"
+# ^ErrorDecompressing
+ውሂብ መፍታት ላይ ስህተት! የተበላሸ ጫኝ?
+# ^ErrorRegistering
+DLL መመዝገብ ላይ ስህተት
+# ^ExecShell
+"ExecShell:"
+# ^Exec
+"አስፈጽም:"
+# ^Extract
+"ማውጣት:"
+# ^ErrorWriting
+"Extract: ወደ ፋይል መጻፍ ስህተት"
+# ^InvalidOpcode
+ጫኚ ተበላሽቷል፡ ልክ ያልሆነ ኦፕኮድ
+# ^NoOLE
+"OLE የለም ለ:"
+# ^OutputFolder
+"የውጤት አቃፊ:"
+# ^RemoveFolder
+"አቃፊን አስወግድ:"
+# ^RenameOnReboot
+"እንደገና ሲነሳ እንደገና ይሰይሙ:"
+# ^Rename
+"ዳግም ሰይም:"
+# ^Skipped
+"ተዘሏል:"
+# ^CopyDetails
+ዝርዝሮችን ወደ ቅንጥብ ሰሌዳ ቅዳ
+# ^LogInstall
+የመጫን ሂደትን ይመዝግቡ
+# ^Byte
+ለ
+# ^Kilo
+ ኬ
+# ^Mega
+ ኤም
+# ^Giga
+ ጂ

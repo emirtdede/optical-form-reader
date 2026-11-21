@@ -84,7 +84,7 @@ export interface LanguageMeta {
 }
 
 /**
- * 73 Global Languages — 1:1 parity with Power Pilot (`ALL_LANGUAGES`), Dev Cleaner & Agendamea.
+ * 73 Global Languages - 1:1 parity with Power Pilot (`ALL_LANGUAGES`), Dev Cleaner & Agendamea.
  * Turkish (tr) and English (en) are fully translated in this release.
  * All other 71 languages are registered and fall back cleanly to English (en)
  * until their JSON translation catalogs are added under `src/i18n/locales/`.

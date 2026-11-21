@@ -188,7 +188,7 @@ export function SectionConfigPanel({
                       <div className="preset-title">
                         1 Bölüm <span className="preset-subtitle">(Tek Parça)</span>
                       </div>
-                      <div className="preset-detail">1 – 100. sorular (Tüm Sınav)</div>
+                      <div className="preset-detail">1 - 100. sorular (Tüm Sınav)</div>
                     </div>
                     {isCurrentPreset(1) && <Check size={14} className="preset-check-icon" />}
                   </button>
@@ -204,7 +204,7 @@ export function SectionConfigPanel({
                       <div className="preset-title">
                         2 Bölüm <span className="preset-subtitle">(2 Eşit Parça)</span>
                       </div>
-                      <div className="preset-detail">1–50 ve 51–100 (50'şer soru)</div>
+                      <div className="preset-detail">1-50 ve 51-100 (50'şer soru)</div>
                     </div>
                     {isCurrentPreset(2) && <Check size={14} className="preset-check-icon" />}
                   </button>
@@ -220,7 +220,7 @@ export function SectionConfigPanel({
                       <div className="preset-title">
                         4 Bölüm <span className="preset-subtitle">(Varsayılan)</span>
                       </div>
-                      <div className="preset-detail">1–25, 26–50, 51–75, 76–100 (25'er soru)</div>
+                      <div className="preset-detail">1-25, 26-50, 51-75, 76-100 (25'er soru)</div>
                     </div>
                     {isCurrentPreset(4) && <Check size={14} className="preset-check-icon" />}
                   </button>
@@ -266,7 +266,7 @@ export function SectionConfigPanel({
                   onChange={(e) => handleUpdateSection(idx, { startQuestion: Number(e.target.value) })}
                 />
               </div>
-              <span className="range-sep">—</span>
+              <span className="range-sep">-</span>
               <div>
                 <label htmlFor={`sec-end-${idx}`}>Bitiş</label>
                 <input
@@ -343,7 +343,7 @@ export function SectionConfigPanel({
             <div className="section-weights-list">
               {sections.map((section, idx) => (
                 <div key={section.id || idx} className="section-weight-row">
-                  <span><strong>{section.name || `Bölüm ${idx + 1}`}</strong> ({section.startQuestion}–{section.endQuestion}. Sorular):</span>
+                  <span><strong>{section.name || `Bölüm ${idx + 1}`}</strong> ({section.startQuestion}-{section.endQuestion}. Sorular):</span>
                   <div className="weight-input-box">
                     <input
                       type="number"

@@ -30,7 +30,7 @@ assert(fs.existsSync(OUTPUT_MSIX), `MSIX artifact missing: ${OUTPUT_MSIX}`);
 const msixStat = fs.statSync(OUTPUT_MSIX);
 assert(
   msixStat.size > 4_000_000,
-  `MSIX artifact unexpectedly small (${msixStat.size} bytes) — ensure dist/ assets were embedded via tauri build.`,
+  `MSIX artifact unexpectedly small (${msixStat.size} bytes) - ensure dist/ assets were embedded via tauri build.`,
 );
 
 const manifestPath = path.join(STAGE_DIR, 'AppxManifest.xml');

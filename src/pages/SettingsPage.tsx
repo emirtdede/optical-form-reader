@@ -12,12 +12,16 @@ import {
   Database,
   Download,
   ExternalLink,
+  Eye,
   Globe,
   HardDrive,
   Keyboard,
   Mail,
+  Minus,
   Moon,
+  PackageCheck,
   Palette,
+  Plus,
   RefreshCw,
   RotateCcw,
   Search,
@@ -31,6 +35,7 @@ import {
   Upload,
   Volume2,
   X,
+  ZoomIn,
 } from 'lucide-react';
 import { APP_VERSION, VELLIUM_BRAND } from '../brand/vellium';
 import { BackupVaultModal } from '../components/BackupVaultModal';
@@ -49,9 +54,18 @@ import { exportAllSessionsJson } from '../export/exporters';
 import { useI18n } from '../i18n/I18nContext';
 import type { LanguageCode } from '../i18n/languages';
 import { getDesktopAppInfo, isDesktopShell, openExternalUrl, type DesktopAppInfo } from '../platform/runtime';
+import { checkForAppUpdates, type UpdateCheckResult } from '../platform/updates';
 import { importProcessingJobs, importSessions, listProcessingJobs } from '../storage/database';
 import { useThemeContext } from '../theme/ThemeContext';
-import type { AppIconVariant } from '../theme/themes';
+import {
+  buildCustomColorTheme,
+  CUSTOM_THEME_ID,
+  CUSTOM_THEME_PRESETS,
+  normalizeHexColor,
+  UI_SCALE_LIMITS,
+  UI_SCALE_PRESETS,
+  type AppIconVariant,
+} from '../theme/themes';
 
 export type SettingsSectionId =
   | 'general'
@@ -93,13 +107,21 @@ export function SettingsPage() {
   const {
     mode,
     themeId,
+    customAccent,
     reduceMotion,
     appIconVariant,
+    uiScale,
+    highContrast,
+    largeFocusRing,
     themes,
     setMode,
     setThemeId,
+    setCustomAccent,
     setReduceMotion,
     setAppIconVariant,
+    setUiScale,
+    setHighContrast,
+    setLargeFocusRing,
   } = useThemeContext();
   const { sessions, refresh, deleteAll } = useAppData();
   const {
@@ -111,6 +133,7 @@ export function SettingsPage() {
     applyPresetProfile,
     notify,
     sendTestNotification,
+    openOnboarding,
     logs,
     recordLog,
     clearLogs,
@@ -136,10 +159,53 @@ export function SettingsPage() {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [recordingKey, setRecordingKey] = useState<keyof ShortcutBindings | null>(null);
   const [appInfo, setAppInfo] = useState<DesktopAppInfo | null>(null);
+  const [hexDraft, setHexDraft] = useState<string>(customAccent);
+  const [invalidHex, setInvalidHex] = useState(false);
+  const [updateCheckState, setUpdateCheckState] = useState<{
+    loading: boolean;
+    result: UpdateCheckResult | null;
+  }>({ loading: false, result: null });
 
   const jsonFileInputRef = useRef<HTMLInputElement>(null);
   const settingsFileInputRef = useRef<HTMLInputElement>(null);
   const paneRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setHexDraft(customAccent);
+    setInvalidHex(false);
+  }, [customAccent]);
+
+  const customThemeMeta = useMemo(() => buildCustomColorTheme(customAccent), [customAccent]);
+  const customContrast = mode === 'dark' ? customThemeMeta.contrastDark : customThemeMeta.contrastLight;
+
+  async function handleCheckUpdates() {
+    setUpdateCheckState((prev) => ({ ...prev, loading: true }));
+    try {
+      const res = await checkForAppUpdates();
+      setUpdateCheckState({ loading: false, result: res });
+      recordLog(
+        'info',
+        'updates',
+        `Checked for updates (${res.installChannel}): current=v${res.currentVersion}, latest=v${res.latestVersion}`,
+      );
+      notify({
+        message: res.managedByStore
+          ? isTr
+            ? 'Bu kopya Microsoft Store (MSIX) tarafından otomatik güncellenmektedir.'
+            : 'This installation is automatically updated by Microsoft Store (MSIX).'
+          : res.available
+            ? isTr
+              ? `Yeni sürüm mevcut: v${res.latestVersion}`
+              : `New version available: v${res.latestVersion}`
+            : isTr
+              ? `Optik Form Okuyucu güncel (v${res.currentVersion}).`
+              : `Optical Form Reader is up to date (v${res.currentVersion}).`,
+        type: res.available ? 'info' : 'success',
+      });
+    } catch {
+      setUpdateCheckState({ loading: false, result: null });
+    }
+  }
 
   useEffect(() => {
     setActiveSection(initialSec);
@@ -348,8 +414,12 @@ export function SettingsPage() {
     resetAllPrefs();
     setMode('dark');
     setThemeId('obsidian');
+    setCustomAccent('#3B82F6');
     setAppIconVariant('monochrome-dark');
     setReduceMotion(false);
+    setUiScale(100);
+    setHighContrast(false);
+    setLargeFocusRing(false);
     setConfirmResetOpen(false);
     notify({
       message: isTr
@@ -512,7 +582,7 @@ export function SettingsPage() {
         </nav>
       </aside>
 
-      {/* Right Content Pane — Shows ONLY the Active Sub-Page */}
+      {/* Right Content Pane - Shows ONLY the Active Sub-Page */}
       <div ref={paneRef} className="pp-split-content-pane">
         <div className="pp-split-content-inner">
           <div className="pp-page-header">
@@ -695,7 +765,123 @@ export function SettingsPage() {
                       {prefs.confirmExternalLinks ? t.settingsModal.onLabel : t.settingsModal.offLabel}
                     </button>
                   </div>
+
+                  <div className="v-list-row">
+                    <div>
+                      <p className="v-row-title">
+                        {isTr
+                          ? 'Karşılama ve Uygulama Tanıtım Rehberi'
+                          : 'Welcome & Onboarding Tour'}
+                      </p>
+                      <p className="v-row-desc">
+                        {isTr
+                          ? 'Optik Form Okuyucu iş akışını, özel tema/ikon seçicisini ve erişilebilirlik ayarlarını adım adım tanıtan karşılama penceresini açar.'
+                          : 'Opens the 4-step welcome guide introducing the optical grading workflow, custom theme studio, icon picker, and accessibility tools.'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      data-testid="open-onboarding-btn"
+                      className="pp-btn-secondary"
+                      onClick={openOnboarding}
+                    >
+                      <Sparkles size={14} />
+                      <span>{isTr ? 'Karşılama Turunu Aç' : 'Open Welcome Tour'}</span>
+                    </button>
+                  </div>
                 </div>
+              </div>
+
+              <div className="pp-section-bar">
+                <span className="pp-section-bar-icon">
+                  <PackageCheck size={15} />
+                </span>
+                <h2 className="pp-section-bar-title">
+                  {isTr
+                    ? 'Güncelleme Sistemi ve Dağıtım Kanalları (MSIX + GitHub Releases)'
+                    : 'Update Engine & Distribution Channels (MSIX + GitHub Releases)'}
+                </h2>
+              </div>
+
+              <div className="pp-bento-panel">
+                <div className="v-list-card">
+                  <div className="v-list-row">
+                    <div>
+                      <p className="v-row-title">
+                        {isTr ? 'Aktif Kurulum ve Güncelleme Kanalı' : 'Active Install & Update Channel'}
+                      </p>
+                      <p className="v-row-desc">
+                        {appInfo?.isPackagedMsix || appInfo?.installChannel === 'msixStore'
+                          ? isTr
+                            ? 'Microsoft Store (MSIX) paketi - güncellemeler Microsoft Store tarafından arka planda otomatik yönetilir. Ayrıca tüm paket türleri (MSIX, Setup.exe, MSI, Portable.exe) GitHub Releases üzerinde SHA-256 doğrulamalı olarak yayınlanır.'
+                            : 'Microsoft Store (MSIX) package - updates are managed automatically by Microsoft Store. All package formats (MSIX, Setup.exe, MSI, Portable.exe) are also published on GitHub Releases with SHA-256 checksums.'
+                          : isTr
+                            ? 'Doğrulanmış GitHub Releases CDN + Microsoft Store (MSIX) çift kanallı güncelleme mimarisi aktif. Her sürümde MSIX, 73 dilli Setup.exe, kurumsal MSI ve Portable.exe paketleri yayınlanır.'
+                            : 'Verified dual-channel GitHub Releases CDN + Microsoft Store (MSIX) update engine active. Every release ships MSIX, 73-language Setup.exe, MSI, and Portable.exe packages.'}
+                      </p>
+                    </div>
+                    <div className="v-row-actions">
+                      <button
+                        type="button"
+                        data-testid="check-updates-btn"
+                        className="pp-btn-primary"
+                        disabled={updateCheckState.loading}
+                        onClick={() => void handleCheckUpdates()}
+                      >
+                        <RefreshCw size={14} />
+                        <span>
+                          {updateCheckState.loading
+                            ? isTr
+                              ? 'Denetleniyor...'
+                              : 'Checking...'
+                            : isTr
+                              ? 'Güncellemeleri Denetle'
+                              : 'Check for Updates'}
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        className="pp-btn-secondary"
+                        onClick={() => void openExternalUrl(`${VELLIUM_BRAND.repositoryUrl}/releases`)}
+                      >
+                        <ExternalLink size={14} />
+                        <span>{isTr ? 'Tüm Paketler (GitHub)' : 'All Packages (GitHub)'}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {updateCheckState.result && (
+                  <div className="pp-update-result-box" role="status">
+                    <div className="pp-update-result-head">
+                      <CheckCircle2 size={15} />
+                      <strong>
+                        {updateCheckState.result.available
+                          ? isTr
+                            ? `Yeni Sürüm Bulundu: v${updateCheckState.result.latestVersion}`
+                            : `New Update Available: v${updateCheckState.result.latestVersion}`
+                          : isTr
+                            ? `Sürüm Güncel: v${updateCheckState.result.currentVersion} (${updateCheckState.result.installChannel.toUpperCase()})`
+                            : `Up to Date: v${updateCheckState.result.currentVersion} (${updateCheckState.result.installChannel.toUpperCase()})`}
+                      </strong>
+                    </div>
+                    <div className="pp-update-assets-chips">
+                      {updateCheckState.result.assets.map((asset) => (
+                        <button
+                          key={asset.name}
+                          type="button"
+                          className="pp-btn-secondary"
+                          onClick={() => void openExternalUrl(asset.downloadUrl)}
+                        >
+                          <Download size={13} />
+                          <span>
+                            {asset.name} ({asset.channel.toUpperCase()})
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="pp-section-bar">
@@ -737,10 +923,10 @@ export function SettingsPage() {
                         })
                       }
                     >
-                      <option value={1}>{isTr ? '1 — En Düşük Bellek' : '1 — Lowest Memory'}</option>
-                      <option value={2}>{isTr ? '2 — Dengeli (Önerilen)' : '2 — Balanced (Recommended)'}</option>
-                      <option value={3}>{isTr ? '3 — Hızlı' : '3 — Fast'}</option>
-                      <option value={4}>{isTr ? '4 — Maksimum Hız' : '4 — Maximum Speed'}</option>
+                      <option value={1}>{isTr ? '1 - En Düşük Bellek' : '1 - Lowest Memory'}</option>
+                      <option value={2}>{isTr ? '2 - Dengeli (Önerilen)' : '2 - Balanced (Recommended)'}</option>
+                      <option value={3}>{isTr ? '3 - Hızlı' : '3 - Fast'}</option>
+                      <option value={4}>{isTr ? '4 - Maksimum Hız' : '4 - Maximum Speed'}</option>
                     </select>
                   </label>
 
@@ -764,7 +950,7 @@ export function SettingsPage() {
             </section>
           )}
 
-          {/* SUB-PAGE 2: APPEARANCE, ICON & LANGUAGE */}
+          {/* SUB-PAGE 2: APPEARANCE, ICON, ACCESSIBILITY & LANGUAGE */}
           {activeSection === 'appearance' && (
             <section id="settings-sec-appearance" className="pp-settings-section">
               <div className="pp-section-bar">
@@ -801,7 +987,7 @@ export function SettingsPage() {
                 <div className="v-group-head" style={{ marginTop: '4px' }}>
                   <h3>{t.settingsModal.colorThemeTitle}</h3>
                   <span className="v-mono-meta">
-                    {themes.length} {t.settingsModal.themesCountUnit}
+                    {themes.length + 1} {t.settingsModal.themesCountUnit}
                   </span>
                 </div>
                 <div className="v-theme-grid">
@@ -828,10 +1014,138 @@ export function SettingsPage() {
                       </button>
                     );
                   })}
+
+                  {/* Empty / Custom HEX Color Theme Button */}
+                  <button
+                    type="button"
+                    data-testid="custom-theme-add-btn"
+                    aria-pressed={themeId === CUSTOM_THEME_ID}
+                    className={`v-theme-chip v-theme-chip--custom ${themeId === CUSTOM_THEME_ID ? 'is-active' : ''}`}
+                    onClick={() => setThemeId(CUSTOM_THEME_ID)}
+                  >
+                    <span className="v-theme-chip-left">
+                      <span
+                        className="v-theme-swatch v-theme-swatch--plus"
+                        style={
+                          themeId === CUSTOM_THEME_ID ? { backgroundColor: customAccent } : undefined
+                        }
+                        aria-hidden="true"
+                      >
+                        {themeId !== CUSTOM_THEME_ID && <Plus size={11} />}
+                      </span>
+                      <span className="v-theme-label">
+                        {themeId === CUSTOM_THEME_ID
+                          ? isTr
+                            ? `Özel (${customAccent})`
+                            : `Custom (${customAccent})`
+                          : isTr
+                            ? '+ Özel Renk'
+                            : '+ Custom Color'}
+                      </span>
+                    </span>
+                    {themeId === CUSTOM_THEME_ID && <Check size={14} className="v-check-icon" />}
+                  </button>
                 </div>
+
+                {/* Custom HEX Color Studio (Always visible when Custom Theme is selected or expandable) */}
+                {themeId === CUSTOM_THEME_ID && (
+                  <div
+                    className="pp-custom-theme-studio"
+                    data-testid="custom-theme-studio"
+                    role="region"
+                    aria-label={isTr ? 'Özel Tema Renk Stüdyosu' : 'Custom Theme Color Studio'}
+                  >
+                    <div className="pp-custom-studio-head">
+                      <div>
+                        <strong className="pp-custom-studio-title">
+                          {isTr ? 'Özel Renk Kodu (HEX) Stüdyosu' : 'Custom HEX Color Studio'}
+                        </strong>
+                        <p className="v-row-desc" style={{ margin: 0 }}>
+                          {isTr
+                            ? 'İstediğiniz HEX renk kodunu girin (örn. #3B82F6). Arka plan, yüzey, kenarlık ve metin kontrastları otomatik olarak WCAG 2.2 AA standardına uyarlanır.'
+                            : 'Enter any HEX color code (e.g. #3B82F6). Surfaces, borders, and foreground contrast automatically adapt to WCAG 2.2 AA standards.'}
+                        </p>
+                      </div>
+                      <span className="pp-contrast-pill">
+                        <ShieldCheck size={13} />
+                        <span>WCAG AA · {customContrast.toFixed(1)}:1</span>
+                      </span>
+                    </div>
+
+                    <div className="pp-custom-color-bar">
+                      <input
+                        type="color"
+                        className="pp-color-wheel"
+                        value={customAccent}
+                        aria-label={isTr ? 'Renk seçici' : 'Color picker'}
+                        onChange={(e) => {
+                          const v = e.target.value.toUpperCase();
+                          setHexDraft(v);
+                          setInvalidHex(false);
+                          setCustomAccent(v);
+                        }}
+                      />
+                      <input
+                        type="text"
+                        data-testid="custom-theme-hex-input"
+                        className={`pp-hex-input ${invalidHex ? 'is-invalid' : ''}`}
+                        value={hexDraft}
+                        maxLength={7}
+                        spellCheck={false}
+                        placeholder="#3B82F6"
+                        aria-label={isTr ? 'HEX renk kodu' : 'HEX color code'}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          setHexDraft(raw);
+                          const norm = normalizeHexColor(raw);
+                          if (norm) {
+                            setInvalidHex(false);
+                            setCustomAccent(norm);
+                          } else {
+                            setInvalidHex(raw.trim().length > 0);
+                          }
+                        }}
+                        onBlur={() => {
+                          const norm = normalizeHexColor(hexDraft);
+                          if (norm) {
+                            setHexDraft(norm);
+                            setInvalidHex(false);
+                          } else {
+                            setHexDraft(customAccent);
+                            setInvalidHex(false);
+                          }
+                        }}
+                      />
+                      <div className="pp-custom-preset-dots" role="group" aria-label={isTr ? 'Hazır özel renkler' : 'Custom color presets'}>
+                        {CUSTOM_THEME_PRESETS.map((preset) => (
+                          <button
+                            key={preset.hex}
+                            type="button"
+                            className={`pp-preset-dot ${customAccent.toUpperCase() === preset.hex.toUpperCase() ? 'is-active' : ''}`}
+                            style={{ backgroundColor: preset.hex }}
+                            title={`${isTr ? preset.labelTr : preset.labelEn} (${preset.hex})`}
+                            aria-label={`${isTr ? preset.labelTr : preset.labelEn} ${preset.hex}`}
+                            onClick={() => {
+                              setHexDraft(preset.hex);
+                              setInvalidHex(false);
+                              setCustomAccent(preset.hex);
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    {invalidHex && (
+                      <p className="pp-hex-error" role="alert">
+                        {isTr
+                          ? 'Lütfen geçerli bir HEX renk kodu girin (örn. #3B82F6 veya #09F).'
+                          : 'Please enter a valid HEX color code (e.g. #3B82F6 or #09F).'}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* Monochrome App Icon Picker */}
+              {/* Theme & Custom-Color Synchronized App Icon Picker */}
               <div className="pp-section-bar">
                 <span className="pp-section-bar-icon">
                   <Sparkles size={15} />
@@ -843,19 +1157,51 @@ export function SettingsPage() {
 
               <div className="pp-bento-panel">
                 <p id="v-app-icon-desc" className="v-row-desc" style={{ margin: 0 }}>
-                  {t.settingsModal.appIconDesc}
+                  {isTr
+                    ? 'Seçtiğiniz ikon; uygulama içi marka logosunu, pencere başlığını, Windows Görev Çubuğunu (Taskbar), Sistem Tepsisini (System Tray) ve Masaüstü / Başlat Menüsü kısayol ikonunu (.lnk) gerçek zamanlı olarak günceller.'
+                    : 'Your selected icon updates the in-app brand mark, window icon, Windows Taskbar, System Tray, and Desktop / Start Menu shortcut (.lnk) in real time.'}
                 </p>
                 <div
-                  className="v-icon-grid"
+                  className="v-icon-grid v-icon-grid--extended"
                   role="group"
                   aria-labelledby="v-app-icon-label"
                   aria-describedby="v-app-icon-desc"
                 >
                   {(
                     [
-                      { id: 'monochrome-dark', label: t.settingsModal.appIconMonochromeDark },
-                      { id: 'monochrome-light', label: t.settingsModal.appIconMonochromeLight },
-                      { id: 'monochrome-contrast', label: t.settingsModal.appIconMonochromeContrast },
+                      {
+                        id: 'theme-auto',
+                        label: isTr ? 'Tema ile Otomatik' : 'Auto Match Theme',
+                      },
+                      {
+                        id: 'monochrome-dark',
+                        label: t.settingsModal.appIconMonochromeDark,
+                      },
+                      {
+                        id: 'monochrome-light',
+                        label: t.settingsModal.appIconMonochromeLight,
+                      },
+                      {
+                        id: 'monochrome-contrast',
+                        label: t.settingsModal.appIconMonochromeContrast,
+                      },
+                      { id: 'theme-slate', label: isTr ? 'Gri (Slate)' : 'Slate' },
+                      { id: 'theme-navy', label: isTr ? 'Lacivert (Navy)' : 'Navy' },
+                      { id: 'theme-blue', label: isTr ? 'Mavi (Blue)' : 'Blue' },
+                      { id: 'theme-cyan', label: isTr ? 'Turkuaz (Cyan)' : 'Cyan' },
+                      { id: 'theme-indigo', label: isTr ? 'İndigo' : 'Indigo' },
+                      { id: 'theme-purple', label: isTr ? 'Mor (Purple)' : 'Purple' },
+                      { id: 'theme-pink', label: isTr ? 'Pembe (Pink)' : 'Pink' },
+                      { id: 'theme-red', label: isTr ? 'Kırmızı (Red)' : 'Red' },
+                      { id: 'theme-orange', label: isTr ? 'Turuncu (Orange)' : 'Orange' },
+                      { id: 'theme-yellow', label: isTr ? 'Sarı (Yellow)' : 'Yellow' },
+                      { id: 'theme-emerald', label: isTr ? 'Zümrüt (Emerald)' : 'Emerald' },
+                      { id: 'theme-grass', label: isTr ? 'Çimen Yeşili' : 'Forest' },
+                      { id: 'theme-lime', label: isTr ? 'Açık Yeşil (Lime)' : 'Lime' },
+                      {
+                        id: 'theme-custom',
+                        label: isTr ? `Özel (${customAccent})` : `Custom (${customAccent})`,
+                      },
                     ] as Array<{ id: AppIconVariant; label: string }>
                   ).map((opt) => {
                     const selected = appIconVariant === opt.id;
@@ -863,11 +1209,18 @@ export function SettingsPage() {
                       <button
                         key={opt.id}
                         type="button"
+                        data-testid={`app-icon-card-${opt.id}`}
                         aria-pressed={selected}
                         className={`v-icon-card ${selected ? 'is-active' : ''}`}
                         onClick={() => setAppIconVariant(opt.id)}
                       >
-                        <ProductMark variant={opt.id} className="v-icon-card-preview" />
+                        <ProductMark
+                          variant={opt.id}
+                          activeThemeId={themeId}
+                          mode={mode}
+                          customAccent={customAccent}
+                          className="v-icon-card-preview"
+                        />
                         <span className="v-icon-card-label">{opt.label}</span>
                         {selected && <Check size={14} className="v-icon-card-check" />}
                       </button>
@@ -879,9 +1232,134 @@ export function SettingsPage() {
                 </p>
               </div>
 
-              {/* UI Density & Reduce Motion */}
+              {/* Accessibility, UI Zoom Percentage, High Contrast & Density */}
+              <div id="v-accessibility-section" className="pp-section-bar">
+                <span className="pp-section-bar-icon">
+                  <Eye size={15} />
+                </span>
+                <h2 className="pp-section-bar-title">
+                  {isTr ? 'Erişilebilirlik ve Yakınlaştırma' : 'Accessibility & UI Zoom'}
+                </h2>
+              </div>
+
               <div className="pp-bento-panel">
                 <div className="v-list-card">
+                  {/* Zoom Percentage Row */}
+                  <div className="v-list-row v-list-row--wrap">
+                    <div>
+                      <p className="v-row-title">
+                        <ZoomIn size={14} style={{ display: 'inline', verticalAlign: '-2px', marginRight: 6 }} />
+                        {isTr ? 'Yakınlaştırma Yüzdesi (Arayüz Ölçeği)' : 'Interface Zoom Percentage (UI Scale)'}
+                      </p>
+                      <p className="v-row-desc">
+                        {isTr
+                          ? 'Tüm metinleri, butonları ve optik form önizlemelerini %80 ile %150 arasında ölçeklendirir (Klavye: Ctrl + +, Ctrl + -, Ctrl + 0).'
+                          : 'Scales all typography, controls, and optical form previews between 80% and 150% (Keyboard: Ctrl + +, Ctrl + -, Ctrl + 0).'}
+                      </p>
+                    </div>
+                    <div className="pp-zoom-controls-wrap">
+                      <div className="pp-zoom-stepper">
+                        <button
+                          type="button"
+                          data-testid="ui-scale-dec"
+                          className="pp-zoom-step-btn"
+                          disabled={uiScale <= UI_SCALE_LIMITS.min}
+                          aria-label={isTr ? 'Yakınlaştırmayı azalt' : 'Decrease zoom'}
+                          onClick={() => setUiScale(uiScale - UI_SCALE_LIMITS.step)}
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span className="pp-zoom-value-badge" data-testid="ui-scale-value">
+                          %{uiScale}
+                        </span>
+                        <button
+                          type="button"
+                          data-testid="ui-scale-inc"
+                          className="pp-zoom-step-btn"
+                          disabled={uiScale >= UI_SCALE_LIMITS.max}
+                          aria-label={isTr ? 'Yakınlaştırmayı artır' : 'Increase zoom'}
+                          onClick={() => setUiScale(uiScale + UI_SCALE_LIMITS.step)}
+                        >
+                          <Plus size={14} />
+                        </button>
+                        {uiScale !== 100 && (
+                          <button
+                            type="button"
+                            data-testid="ui-scale-reset"
+                            className="pp-btn-secondary"
+                            onClick={() => setUiScale(100)}
+                          >
+                            <RotateCcw size={13} />
+                            <span>{isTr ? 'Sıfırla' : 'Reset'}</span>
+                          </button>
+                        )}
+                      </div>
+                      <div className="pp-zoom-pills" role="group" aria-label={isTr ? 'Yakınlaştırma yüzdesi' : 'Zoom percentage'}>
+                        {UI_SCALE_PRESETS.map((preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            data-testid={`ui-scale-preset-${preset}`}
+                            aria-pressed={uiScale === preset}
+                            className={`pp-zoom-pill ${uiScale === preset ? 'is-active' : ''}`}
+                            onClick={() => setUiScale(preset)}
+                          >
+                            %{preset}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* High Contrast Mode */}
+                  <div className="v-list-row">
+                    <div>
+                      <p className="v-row-title">
+                        {isTr ? 'Yüksek Kontrast Modu (WCAG AAA)' : 'High Contrast Mode (WCAG AAA)'}
+                      </p>
+                      <p className="v-row-desc">
+                        {isTr
+                          ? 'Kenarlıkları, metin keskinliğini ve form ayrımlarını yüksek görünürlük için güçlendirir.'
+                          : 'Boosts border definition, text legibility, and control boundaries for maximum visibility.'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      data-testid="high-contrast-switch"
+                      role="switch"
+                      aria-checked={highContrast}
+                      className={`v-pill-toggle ${highContrast ? 'is-active' : ''}`}
+                      onClick={() => setHighContrast(!highContrast)}
+                    >
+                      {highContrast ? t.settingsModal.onLabel : t.settingsModal.offLabel}
+                    </button>
+                  </div>
+
+                  {/* Enhanced Focus Ring */}
+                  <div className="v-list-row">
+                    <div>
+                      <p className="v-row-title">
+                        {isTr ? 'Belirgin Klavye Odak Halkası' : 'Enhanced Keyboard Focus Ring'}
+                      </p>
+                      <p className="v-row-desc">
+                        {isTr
+                          ? 'Tab tuşuyla gezinirken aktif buton ve girdilerin etrafında kalın odak çerçevesi gösterir.'
+                          : 'Renders a prominent 3px focus outline around active buttons and inputs during Tab navigation.'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      data-testid="large-focus-switch"
+                      role="switch"
+                      aria-checked={largeFocusRing}
+                      className={`v-pill-toggle ${largeFocusRing ? 'is-active' : ''}`}
+                      onClick={() => setLargeFocusRing(!largeFocusRing)}
+                    >
+                      {largeFocusRing ? t.settingsModal.onLabel : t.settingsModal.offLabel}
+                    </button>
+                  </div>
+
+                  {/* UI Density */}
                   <div className="v-list-row">
                     <div>
                       <p className="v-row-title">{isTr ? 'Arayüz Yoğunluğu' : 'Interface Density'}</p>
@@ -902,6 +1380,7 @@ export function SettingsPage() {
                     </select>
                   </div>
 
+                  {/* Reduce Motion */}
                   <div className="v-list-row">
                     <div>
                       <p className="v-row-title">{t.settingsModal.reduceMotionTitle}</p>
@@ -1296,7 +1775,7 @@ export function SettingsPage() {
                         ? 'Görünümler Arası Hızlı Geçiş (Tara / Şablon / Sonuç / Doküman / Ayarlar / Hakkında)'
                         : 'Switch Workspace Views (Scan / Templates / Results / Docs / Settings / About)'}
                     </span>
-                    <kbd className="pp-kbd">Alt + 1 – 6</kbd>
+                    <kbd className="pp-kbd">Alt + 1 - 6</kbd>
                   </div>
                 </div>
 

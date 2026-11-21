@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+1099
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+-
+# Project-supplied machine translation (Google Translate); pending native review
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+$(^Name) ಸೆಟಪ್
+# ^UninstallCaption
+$(^Name) ಅಸ್ಥಾಪಿಸು
+# ^LicenseSubCaption
+: ಪರವಾನಗಿ ಒಪ್ಪಂದ
+# ^ComponentsSubCaption
+: ಅನುಸ್ಥಾಪನಾ ಆಯ್ಕೆಗಳು
+# ^DirSubCaption
+: ಅನುಸ್ಥಾಪನ ಫೋಲ್ಡರ್
+# ^InstallingSubCaption
+: ಸ್ಥಾಪಿಸಲಾಗುತ್ತಿದೆ
+# ^CompletedSubCaption
+: ಪೂರ್ಣಗೊಂಡಿದೆ
+# ^UnComponentsSubCaption
+: ಅಸ್ಥಾಪನೆ ಆಯ್ಕೆಗಳು
+# ^UnDirSubCaption
+: ಅಸ್ಥಾಪನೆ ಫೋಲ್ಡರ್
+# ^ConfirmSubCaption
+: ದೃಢೀಕರಣ
+# ^UninstallingSubCaption
+: ಅಸ್ಥಾಪಿಸಲಾಗುತ್ತಿದೆ
+# ^UnCompletedSubCaption
+: ಪೂರ್ಣಗೊಂಡಿದೆ
+# ^BackBtn
+< ಹಿಂದೆ
+# ^NextBtn
+ಮುಂದೆ >
+# ^AgreeBtn
+ನಾನು ಒಪ್ಪುತ್ತೇನೆ
+# ^AcceptBtn
+ನಾನು ಪರವಾನಗಿ ಒಪ್ಪಂದದ ನಿಯಮಗಳನ್ನು ಒಪ್ಪಿಕೊಳ್ಳುತ್ತೇನೆ
+# ^DontAcceptBtn
+ನಾನು ಪರವಾನಗಿ ಒಪ್ಪಂದದ ನಿಯಮಗಳನ್ನು ಒಪ್ಪಿಕೊಳ್ಳುವುದಿಲ್ಲ
+# ^InstallBtn
+ಸ್ಥಾಪಿಸಿ
+# ^UninstallBtn
+ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ
+# ^CancelBtn
+ರದ್ದುಮಾಡಿ
+# ^CloseBtn
+ಮುಚ್ಚಿ
+# ^BrowseBtn
+ಬ್ರೌಸ್ ಮಾಡಿ...
+# ^ShowDetailsBtn
+ವಿವರಗಳನ್ನು ತೋರಿಸಿ
+# ^ClickNext
+ಮುಂದುವರೆಯಲು ಮುಂದೆ ಕ್ಲಿಕ್ ಮಾಡಿ.
+# ^ClickInstall
+ಅನುಸ್ಥಾಪನೆಯನ್ನು ಪ್ರಾರಂಭಿಸಲು ಸ್ಥಾಪಿಸು ಕ್ಲಿಕ್ ಮಾಡಿ.
+# ^ClickUninstall
+ಅಸ್ಥಾಪನೆಯನ್ನು ಪ್ರಾರಂಭಿಸಲು ಅಸ್ಥಾಪಿಸು ಕ್ಲಿಕ್ ಮಾಡಿ.
+# ^Name
+ಹೆಸರು
+# ^Completed
+ಪೂರ್ಣಗೊಂಡಿದೆ
+# ^LicenseText
+$(^NameDA) ಅನ್ನು ಸ್ಥಾಪಿಸುವ ಮೊದಲು ದಯವಿಟ್ಟು ಪರವಾನಗಿ ಒಪ್ಪಂದವನ್ನು ಪರಿಶೀಲಿಸಿ. ನೀವು ಒಪ್ಪಂದದ ಎಲ್ಲಾ ನಿಯಮಗಳನ್ನು ಒಪ್ಪಿಕೊಂಡರೆ, ನಾನು ಒಪ್ಪುತ್ತೇನೆ ಕ್ಲಿಕ್ ಮಾಡಿ.
+# ^LicenseTextCB
+$(^NameDA) ಅನ್ನು ಸ್ಥಾಪಿಸುವ ಮೊದಲು ದಯವಿಟ್ಟು ಪರವಾನಗಿ ಒಪ್ಪಂದವನ್ನು ಪರಿಶೀಲಿಸಿ. ನೀವು ಒಪ್ಪಂದದ ಎಲ್ಲಾ ನಿಯಮಗಳನ್ನು ಒಪ್ಪಿಕೊಂಡರೆ, ಕೆಳಗಿನ ಚೆಕ್ ಬಾಕ್ಸ್ ಅನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ. $_CLICK
+# ^LicenseTextRB
+$(^NameDA) ಅನ್ನು ಸ್ಥಾಪಿಸುವ ಮೊದಲು ದಯವಿಟ್ಟು ಪರವಾನಗಿ ಒಪ್ಪಂದವನ್ನು ಪರಿಶೀಲಿಸಿ. ನೀವು ಒಪ್ಪಂದದ ಎಲ್ಲಾ ನಿಯಮಗಳನ್ನು ಒಪ್ಪಿಕೊಂಡರೆ, ಕೆಳಗಿನ ಮೊದಲ ಆಯ್ಕೆಯನ್ನು ಆರಿಸಿ. $_CLICK
+# ^UnLicenseText
+$(^NameDA) ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡುವ ಮೊದಲು ದಯವಿಟ್ಟು ಪರವಾನಗಿ ಒಪ್ಪಂದವನ್ನು ಪರಿಶೀಲಿಸಿ. ನೀವು ಒಪ್ಪಂದದ ಎಲ್ಲಾ ನಿಯಮಗಳನ್ನು ಒಪ್ಪಿಕೊಂಡರೆ, ನಾನು ಒಪ್ಪುತ್ತೇನೆ ಕ್ಲಿಕ್ ಮಾಡಿ.
+# ^UnLicenseTextCB
+$(^NameDA) ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡುವ ಮೊದಲು ದಯವಿಟ್ಟು ಪರವಾನಗಿ ಒಪ್ಪಂದವನ್ನು ಪರಿಶೀಲಿಸಿ. ನೀವು ಒಪ್ಪಂದದ ಎಲ್ಲಾ ನಿಯಮಗಳನ್ನು ಒಪ್ಪಿಕೊಂಡರೆ, ಕೆಳಗಿನ ಚೆಕ್ ಬಾಕ್ಸ್ ಅನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ. $_CLICK
+# ^UnLicenseTextRB
+$(^NameDA) ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡುವ ಮೊದಲು ದಯವಿಟ್ಟು ಪರವಾನಗಿ ಒಪ್ಪಂದವನ್ನು ಪರಿಶೀಲಿಸಿ. ನೀವು ಒಪ್ಪಂದದ ಎಲ್ಲಾ ನಿಯಮಗಳನ್ನು ಒಪ್ಪಿಕೊಂಡರೆ, ಕೆಳಗಿನ ಮೊದಲ ಆಯ್ಕೆಯನ್ನು ಆರಿಸಿ. $_CLICK
+# ^Custom
+ಕಸ್ಟಮ್
+# ^ComponentsText
+ನೀವು ಸ್ಥಾಪಿಸಲು ಬಯಸುವ ಘಟಕಗಳನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತು ನೀವು ಸ್ಥಾಪಿಸಲು ಬಯಸದ ಘಟಕಗಳನ್ನು ಗುರುತಿಸಬೇಡಿ. $_CLICK
+# ^ComponentsSubText1
+ಅನುಸ್ಥಾಪನೆಯ ಪ್ರಕಾರವನ್ನು ಆಯ್ಕೆಮಾಡಿ:
+# ^ComponentsSubText2_NoInstTypes
+ಅನುಸ್ಥಾಪಿಸಲು ಘಟಕಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ:
+# ^ComponentsSubText2
+ಅಥವಾ, ನೀವು ಸ್ಥಾಪಿಸಲು ಬಯಸುವ ಐಚ್ಛಿಕ ಘಟಕಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ:
+# ^UnComponentsText
+ನೀವು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಬಯಸುವ ಘಟಕಗಳನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತು ನೀವು ಅಸ್ಥಾಪಿಸಲು ಬಯಸದ ಘಟಕಗಳನ್ನು ಅನ್‌ಚೆಕ್ ಮಾಡಿ. $_CLICK
+# ^UnComponentsSubText1
+ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಪ್ರಕಾರವನ್ನು ಆಯ್ಕೆಮಾಡಿ:
+# ^UnComponentsSubText2_NoInstTypes
+ಅಸ್ಥಾಪಿಸಲು ಘಟಕಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ:
+# ^UnComponentsSubText2
+ಅಥವಾ, ನೀವು ಅಸ್ಥಾಪಿಸಲು ಬಯಸುವ ಐಚ್ಛಿಕ ಘಟಕಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ:
+# ^DirText
+ಸೆಟಪ್ ಕೆಳಗಿನ ಫೋಲ್ಡರ್‌ನಲ್ಲಿ $(^NameDA) ಅನ್ನು ಸ್ಥಾಪಿಸುತ್ತದೆ. ಬೇರೆ ಫೋಲ್ಡರ್‌ನಲ್ಲಿ ಸ್ಥಾಪಿಸಲು, ಬ್ರೌಸ್ ಕ್ಲಿಕ್ ಮಾಡಿ ಮತ್ತು ಇನ್ನೊಂದು ಫೋಲ್ಡರ್ ಆಯ್ಕೆಮಾಡಿ. $_CLICK
+# ^DirSubText
+ಗಮ್ಯಸ್ಥಾನ ಫೋಲ್ಡರ್
+# ^DirBrowseText
+$(^NameDA) ಅನ್ನು ಸ್ಥಾಪಿಸಲು ಫೋಲ್ಡರ್ ಅನ್ನು ಆಯ್ಕೆ ಮಾಡಿ:
+# ^UnDirText
+ಸೆಟಪ್ ಕೆಳಗಿನ ಫೋಲ್ಡರ್‌ನಿಂದ $(^NameDA) ಅನ್ನು ಅಸ್ಥಾಪಿಸುತ್ತದೆ. ಬೇರೆ ಫೋಲ್ಡರ್‌ನಿಂದ ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು, ಬ್ರೌಸ್ ಕ್ಲಿಕ್ ಮಾಡಿ ಮತ್ತು ಇನ್ನೊಂದು ಫೋಲ್ಡರ್ ಆಯ್ಕೆಮಾಡಿ. $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+$(^NameDA) ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಫೋಲ್ಡರ್ ಅನ್ನು ಆಯ್ಕೆ ಮಾಡಿ:
+# ^SpaceAvailable
+"ಸ್ಥಳ ಲಭ್ಯವಿದೆ:"
+# ^SpaceRequired
+"ಸ್ಪೇಸ್ ಅಗತ್ಯವಿದೆ:"
+# ^UninstallingText
+$(^NameDA) ಅನ್ನು ಈ ಕೆಳಗಿನ ಫೋಲ್ಡರ್‌ನಿಂದ ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗುತ್ತದೆ. $_CLICK
+# ^UninstallingSubText
+ಇದರಿಂದ ಅಸ್ಥಾಪಿಸಲಾಗುತ್ತಿದೆ:
+# ^FileError
+ಬರೆಯಲು ಫೈಲ್ ತೆರೆಯುವಲ್ಲಿ ದೋಷ: \r\n\r\n$0\r\n\r\n ಅನುಸ್ಥಾಪನೆಯನ್ನು ನಿಲ್ಲಿಸಲು ಸ್ಥಗಿತಗೊಳಿಸು ಕ್ಲಿಕ್ ಮಾಡಿ, \r\n ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು ಮರುಪ್ರಯತ್ನಿಸಿ, ಅಥವಾ \r\n ಈ ಫೈಲ್ ಅನ್ನು ಬಿಟ್ಟುಬಿಡಲು ನಿರ್ಲಕ್ಷಿಸಿ.
+# ^FileError_NoIgnore
+ಬರೆಯಲು ಫೈಲ್ ತೆರೆಯುವಲ್ಲಿ ದೋಷ: \r\n\r\n$0\r\n\r\n ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು ಮರುಪ್ರಯತ್ನಿಸಿ, ಅಥವಾ \r\n ಅನುಸ್ಥಾಪನೆಯನ್ನು ನಿಲ್ಲಿಸಲು ರದ್ದುಮಾಡಿ ಕ್ಲಿಕ್ ಮಾಡಿ.
+# ^CantWrite
+"ಬರೆಯಲು ಸಾಧ್ಯವಿಲ್ಲ:"
+# ^CopyFailed
+ನಕಲು ವಿಫಲವಾಗಿದೆ
+# ^CopyTo
+"ಇದಕ್ಕೆ ನಕಲಿಸಿ"
+# ^Registering
+"ನೋಂದಣಿ:"
+# ^Unregistering
+"ನೋಂದಣಿ ರದ್ದುಗೊಳಿಸಲಾಗುತ್ತಿದೆ:"
+# ^SymbolNotFound
+"ಚಿಹ್ನೆಯನ್ನು ಕಂಡುಹಿಡಿಯಲಾಗಲಿಲ್ಲ:"
+# ^CouldNotLoad
+"ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ:"
+# ^CreateFolder
+"ಫೋಲ್ಡರ್ ರಚಿಸಿ:"
+# ^CreateShortcut
+"ಶಾರ್ಟ್‌ಕಟ್ ರಚಿಸಿ:"
+# ^CreatedUninstaller
+"ಅಸ್ಥಾಪನೆಯನ್ನು ರಚಿಸಲಾಗಿದೆ:"
+# ^Delete
+"ಫೈಲ್ ಅಳಿಸಿ:"
+# ^DeleteOnReboot
+"ರೀಬೂಟ್‌ನಲ್ಲಿ ಅಳಿಸಿ:"
+# ^ErrorCreatingShortcut
+"ಶಾರ್ಟ್‌ಕಟ್ ರಚಿಸುವಲ್ಲಿ ದೋಷ:"
+# ^ErrorCreating
+"ಸೃಷ್ಟಿಸುವ ದೋಷ:"
+# ^ErrorDecompressing
+ಡೇಟಾವನ್ನು ಡಿಕಂಪ್ರೆಸ್ ಮಾಡುವಲ್ಲಿ ದೋಷ! ದೋಷಪೂರಿತ ಅನುಸ್ಥಾಪಕವೇ?
+# ^ErrorRegistering
+DLL ಅನ್ನು ನೋಂದಾಯಿಸುವಲ್ಲಿ ದೋಷ
+# ^ExecShell
+"ExecShell:"
+# ^Exec
+"ಕಾರ್ಯಗತಗೊಳಿಸಿ:"
+# ^Extract
+"ಹೊರತೆಗೆಯಿರಿ:"
+# ^ErrorWriting
+"ಹೊರತೆಗೆಯಿರಿ: ಫೈಲ್‌ಗೆ ಬರೆಯುವಲ್ಲಿ ದೋಷ"
+# ^InvalidOpcode
+ಸ್ಥಾಪಕ ದೋಷಪೂರಿತವಾಗಿದೆ: ಅಮಾನ್ಯ ಆಪ್‌ಕೋಡ್
+# ^NoOLE
+"ಇದಕ್ಕಾಗಿ OLE ಇಲ್ಲ:"
+# ^OutputFolder
+"ಔಟ್‌ಪುಟ್ ಫೋಲ್ಡರ್:"
+# ^RemoveFolder
+"ಫೋಲ್ಡರ್ ತೆಗೆದುಹಾಕಿ:"
+# ^RenameOnReboot
+"ರೀಬೂಟ್‌ನಲ್ಲಿ ಮರುಹೆಸರಿಸಿ:"
+# ^Rename
+"ಮರುಹೆಸರಿಸು:"
+# ^Skipped
+"ಸ್ಕಿಪ್ ಮಾಡಲಾಗಿದೆ:"
+# ^CopyDetails
+ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ಗೆ ವಿವರಗಳನ್ನು ನಕಲಿಸಿ
+# ^LogInstall
+ಲಾಗ್ ಅನುಸ್ಥಾಪನಾ ಪ್ರಕ್ರಿಯೆ
+# ^Byte
+ಬಿ
+# ^Kilo
+ ಕೆ
+# ^Mega
+ ಎಂ
+# ^Giga
+ ಜಿ

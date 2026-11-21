@@ -150,7 +150,7 @@ export function DesktopShell({ children }: DesktopShellProps) {
       />
 
       <div className="desktop-workspace">
-        {/* Invisible top drag region for frameless Windows 11 window movement — NO visible top bar */}
+        {/* Invisible top drag region for frameless Windows 11 window movement - NO visible top bar */}
         <div
           aria-hidden="true"
           className="desktop-drag-strip"

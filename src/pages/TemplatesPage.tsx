@@ -409,7 +409,7 @@ export function TemplatesPage() {
                           )}
                           <span className="badge badge-primary">{tmpl.questionCount} Soru</span>
                           <span className="badge badge-neutral">
-                            {tmpl.choiceCount} Şık ({tmpl.choices.length > 2 ? `${tmpl.choices[0]}–${tmpl.choices[tmpl.choices.length - 1]}` : tmpl.choices.join(', ')})
+                            {tmpl.choiceCount} Şık ({tmpl.choices.length > 2 ? `${tmpl.choices[0]}-${tmpl.choices[tmpl.choices.length - 1]}` : tmpl.choices.join(', ')})
                           </span>
                         </div>
                       </div>
@@ -574,7 +574,7 @@ export function TemplatesPage() {
             {/* Soru Sayısı Hap Buton Izgarası & Özel Sayı Girdisi */}
             <div className="custom-field-group">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <label>Soru Sayısı (1–160):</label>
+                <label>Soru Sayısı (1-160):</label>
                 <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--accent)' }}>
                   {customQCount} Soru
                 </span>
@@ -638,7 +638,7 @@ export function TemplatesPage() {
                     className={`segmented-item ${customCCount === 3 ? 'is-active' : ''}`}
                     onClick={() => setCustomCCount(3)}
                   >
-                    3 Şık (A–C)
+                    3 Şık (A-C)
                   </button>
                   <button
                     type="button"
@@ -647,7 +647,7 @@ export function TemplatesPage() {
                     className={`segmented-item ${customCCount === 4 ? 'is-active' : ''}`}
                     onClick={() => setCustomCCount(4)}
                   >
-                    4 Şık (A–D)
+                    4 Şık (A-D)
                   </button>
                   <button
                     type="button"
@@ -656,7 +656,7 @@ export function TemplatesPage() {
                     className={`segmented-item ${customCCount === 5 ? 'is-active' : ''}`}
                     onClick={() => setCustomCCount(5)}
                   >
-                    5 Şık (A–E)
+                    5 Şık (A-E)
                   </button>
                 </div>
               </div>
@@ -689,7 +689,7 @@ export function TemplatesPage() {
             {/* Öğrenci No Hanesi & Özel Hane Girişi */}
             <div className="custom-field-group">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <label>Öğrenci No Kodlama Hanesi (1–12):</label>
+                <label>Öğrenci No Kodlama Hanesi (1-12):</label>
                 <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--accent)' }}>
                   {customDigits} Haneli
                 </span>
@@ -787,10 +787,10 @@ export function TemplatesPage() {
                     <td>
                       {customQCount} Soru ·{' '}
                       {customCCount === 3
-                        ? 'A–C (3 Şık)'
+                        ? 'A-C (3 Şık)'
                         : customCCount === 4
-                          ? 'A–D (4 Şık)'
-                          : 'A–E (5 Şık)'}
+                          ? 'A-D (4 Şık)'
+                          : 'A-E (5 Şık)'}
                     </td>
                   </tr>
                   <tr>
@@ -949,7 +949,7 @@ export function TemplatesPage() {
               </li>
               <li>
                 <span className="standards-step-dot" />
-                <span>Minimum 150–300 DPI çözünürlük yüksek doğruluk sağlar.</span>
+                <span>Minimum 150-300 DPI çözünürlük yüksek doğruluk sağlar.</span>
               </li>
             </ul>
           </article>

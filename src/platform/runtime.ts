@@ -4,6 +4,9 @@
  */
 
 import { APP_VERSION, VELLIUM_BRAND } from '../brand/vellium';
+import type { AppIconPalette } from '../theme/themes';
+
+export type InstallChannel = 'msixStore' | 'installer' | 'portable';
 
 export interface DesktopAppInfo {
   version: string;
@@ -11,6 +14,8 @@ export interface DesktopAppInfo {
   runtime: 'tauri' | 'browser';
   identityName: string;
   isPackagedMsix: boolean;
+  installChannel?: InstallChannel;
+  installerLanguageLcid?: string | null;
 }
 
 declare global {
@@ -240,29 +245,44 @@ export async function openExternalUrl(url: string, options?: { skipConfirm?: boo
   await openExternalUrlDirect(url);
 }
 
-export async function setDesktopAppIconVariant(variant: string): Promise<void> {
+export async function setDesktopAppIconVariant(
+  variant: string,
+  palette?: AppIconPalette,
+): Promise<void> {
   if (!isTauriRuntime()) return;
   try {
     const { invoke } = await import('@tauri-apps/api/core');
-    await invoke('set_app_icon_variant', { variant });
+    await invoke('set_app_icon_variant', {
+      variant,
+      bg1: palette?.bg1 ?? null,
+      bg2: palette?.bg2 ?? null,
+      fg1: palette?.fg1 ?? null,
+      fg2: palette?.fg2 ?? null,
+      ring: palette?.ring ?? null,
+      laser: palette?.laser ?? null,
+    });
   } catch {
     // Non-fatal outside desktop runtime
   }
 }
 
 export async function getDesktopAppInfo(): Promise<DesktopAppInfo> {
-  const fallback: DesktopAppInfo = {
+  if (isTauriRuntime()) {
+    try {
+      const { invoke } = await import('@tauri-apps/api/core');
+      const info = await invoke<DesktopAppInfo>('get_app_info');
+      return info;
+    } catch {
+      // Fall through
+    }
+  }
+  return {
     version: APP_VERSION,
-    platform: isTauriRuntime() ? 'windows' : 'web',
+    platform: isDesktopShell() ? 'windows' : 'web',
     runtime: isTauriRuntime() ? 'tauri' : 'browser',
     identityName: VELLIUM_BRAND.msix.identityName,
     isPackagedMsix: false,
+    installChannel: 'portable',
+    installerLanguageLcid: null,
   };
-  if (!isTauriRuntime()) return fallback;
-  try {
-    const { invoke } = await import('@tauri-apps/api/core');
-    return await invoke<DesktopAppInfo>('get_app_info');
-  } catch {
-    return fallback;
-  }
 }

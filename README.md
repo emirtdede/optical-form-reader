@@ -1,7 +1,7 @@
 <div align="center">
   <img src="assets/vellium-banner.svg" alt="Vellium Banner" width="100%" />
 
-  # <img src="assets/icons/spark.svg" width="28" height="28" alt="" valign="middle" /> Optical Form Reader — Local-First Windows 11 & Web Optical Mark Recognition (OMR) Suite
+  # <img src="assets/icons/spark.svg" width="28" height="28" alt="" valign="middle" /> Optical Form Reader - Local-First Windows 11 & Web Optical Mark Recognition (OMR) Suite
 
   <p>
     <a href="#english-version"><img src="https://img.shields.io/badge/Language-English-000000?style=for-the-badge&logoColor=white" alt="English" /></a>
@@ -39,7 +39,7 @@ Designed for teachers, schools, universities, and examination centers, Optical F
 
 - **100% On-Device & Zero Telemetry:** Answer keys, student sheets, webcam frames, and gradebooks never leave your device. Raw images are released from memory immediately after evaluation while structured results are persisted locally in **IndexedDB**.
 - **Frameless 60 FPS Windows 11 Desktop Experience:** Built on **Tauri 2 (Rust)** with a minimal frameless shell, collapsible primary sidebar, split-view secondary sidebars for **Settings** and **Documentation**, system tray integration, in-app floating toasts, native Windows desktop notifications, and smart active-scan exit protection.
-- **1–160 Questions & Custom Vector PDF Form Generator:** Includes ready-to-print standard templates (10, 15, 20, 25, 30, 40, 50, 80, 90 LGS, 100, 120, 160 YKS) plus an interactive Custom Form Designer that generates print-calibrated A4 vector PDFs at 100% scale.
+- **1-160 Questions & Custom Vector PDF Form Generator:** Includes ready-to-print standard templates (10, 15, 20, 25, 30, 40, 50, 80, 90 LGS, 100, 120, 160 YKS) plus an interactive Custom Form Designer that generates print-calibrated A4 vector PDFs at 100% scale.
 - **28 Theme Combinations, 3 Monochrome Icons & 73 Languages:** Features 14 curated color themes across Light and Dark modes (`14 × 2 = 28` palettes), 3 selectable monochrome black-and-white brand icon variants synchronized across window, taskbar, and system tray, and a 73-language localization catalog (full Turkish and English translations with automatic English fallback for the remaining 71 locales).
 
 ---
@@ -49,17 +49,17 @@ Designed for teachers, schools, universities, and examination centers, Optical F
 ### <img src="assets/icons/cpu.svg" width="18" height="18" alt="" valign="middle" /> 1. On-Device OpenCV WASM Vision Pipeline
 - **4-Corner Fiducial Homography & Mesh Warping:** Automatically locates corner alignment squares, corrects camera tilt and paper curvature, and normalizes illumination using CLAHE and adaptive thresholding.
 - **Hands-Free Live Camera Auto-Capture:** Real-time webcam viewfinder locks onto the 4 fiducial corners and captures sheets automatically in 1 second when held parallel (`90°`).
-- **Multi-Worker Batch Queue & Resilient Checkpoints:** Processes JPG, PNG, WebP, multi-page PDFs, and ZIP archives across 1–4 concurrent Web Workers. Every graded sheet is checkpointed to IndexedDB immediately so interrupted sessions resume without re-scanning completed forms.
+- **Multi-Worker Batch Queue & Resilient Checkpoints:** Processes JPG, PNG, WebP, multi-page PDFs, and ZIP archives across 1-4 concurrent Web Workers. Every graded sheet is checkpointed to IndexedDB immediately so interrupted sessions resume without re-scanning completed forms.
 
 ### <img src="assets/icons/templates.svg" width="18" height="18" alt="" valign="middle" /> 2. Vector Optical Template Gallery & Custom Form Wizard
 - **12 Built-In Standard Templates:** Instant A4 vector PDF templates from 10-question quick quizzes to 90-question LGS and 160-question university/YKS exams.
-- **Custom A4 Optical Form Designer:** Configure question count (`1–160`), choice count (`3–5`, `A–E`), section count, student ID digits (`2–10`), exam title, and institution header, then export print-ready vector PDFs.
+- **Custom A4 Optical Form Designer:** Configure question count (`1-160`), choice count (`3-5`, `A-E`), section count, student ID digits (`2-10`), exam title, and institution header, then export print-ready vector PDFs.
 - **Automatic Template Recognition:** Detects template geometry and question layout from uploaded answer keys.
 
 ### <img src="assets/icons/chart.svg" width="18" height="18" alt="" valign="middle" /> 3. Psychometric Analytics, Bell Curve & Scorecards
 - **Multi-Booklet (`A / B / C / D`) & Penalty Rules:** Supports single or 4-booklet answer keys, custom section weights, and preset or custom wrong-answer penalty formulas (ÖSYM `4W = 1C`, MEB/LGS `3W = 1C`, or No Penalty).
 - **KR-20 Reliability & Distractor Matrix:** Computes Kuder-Richardson 20 internal consistency, item difficulty ($p$), point-biserial discrimination ($r_{jx}$), and per-choice distractor distributions.
-- **YÖK Relative Grading (T-Score Bell Curve):** One-click T-score transformation ($T = 50 + 10Z$) and automated `AA–FF` letter grade assignment.
+- **YÖK Relative Grading (T-Score Bell Curve):** One-click T-score transformation ($T = 50 + 10Z$) and automated `AA-FF` letter grade assignment.
 - **e-Okul Roster Matching & Rich Exports:** Matches scanned student IDs against Excel/CSV class rosters with fuzzy name matching; exports individual or bulk color **PDF Scorecards**, **XLSX** workbooks, **CSV** matrices, **JSON** backups, and **ZIP** archives.
 
 ### <img src="assets/icons/palette.svg" width="18" height="18" alt="" valign="middle" /> 4. Minimal Windows 11 Desktop Architecture
@@ -104,7 +104,7 @@ optical-form-reader/
 │   │   ├── AppShell.tsx             # Web topbar & responsive layout shell
 │   │   ├── Brand.tsx                # Theme-reactive monochrome ProductMark & official VelliumMark SVGs
 │   │   ├── CameraScannerModal.tsx   # Hands-free 4-corner live webcam auto-capture modal
-│   │   ├── CustomFormGenerator.tsx  # 1–160 question custom A4 vector PDF optical form designer
+│   │   ├── CustomFormGenerator.tsx  # 1-160 question custom A4 vector PDF optical form designer
 │   │   └── ...                      # ItemAnalysisView, RosterUploadModal, StudentScorecardModal, BackupVaultModal
 │   ├── context/
 │   │   ├── AppDataContext.tsx       # IndexedDB exam session & student result state provider
@@ -145,7 +145,7 @@ flowchart LR
     end
 
     subgraph Vision["On-Device OMR Engine (Web Workers)"]
-        Pool["OmrWorkerPool (1–4 Workers)"]
+        Pool["OmrWorkerPool (1-4 Workers)"]
         OpenCV["OpenCV.js WASM 5.0\n4-Corner Homography · Mesh Warp\nCLAHE · Bubble Classifier"]
         Scoring["Scoring & Psychometrics\nA/B/C/D Booklets · KR-20\nT-Score Bell Curve · Roster Match"]
     end
@@ -271,7 +271,7 @@ Copyright © 2026 **Vellium Teknoloji Anonim Şirketi**. All rights reserved.
 
 - **%100 Cihaz İçi ve Sıfır Telemetri:** Cevap anahtarları, öğrenci kağıtları, kamera görüntüleri ve not listeleri bilgisayarınızdan asla dışarı çıkmaz. Ham görüntüler okuma biter bitmez bellekten temizlenir; sonuçlar yalnızca yerel **IndexedDB** veritabanında saklanır.
 - **Çerçevesiz 60 FPS Windows 11 Masaüstü Deneyimi:** **Tauri 2 (Rust)** mimarisiyle üst çubuksuz minimal kabuk, daraltılabilir 1. kenar menüsü (`Form Tara`, `Şablonlar`, `Sonuçlar`, `Dokümantasyon`, `Ayarlar`, `Hakkında`), **Ayarlar** ve **Dokümantasyon** için 2. kenar menülü bölünmüş görünüm (`.pp-split-layout`), sistem tepsisi (system tray), uygulama içi bildirimler, yerel Windows masaüstü bildirimleri ve aktif tarama çıkış koruması sunar.
-- **1–160 Soru ve Özel Vektörel A4 PDF Form Üretici:** 12 hazır sınav şablonunun yanı sıra dilediğiniz soru, şık (`3–5`), bölüm ve kurum başlığıyla %100 baskı ölçeğinde vektörel A4 PDF optik form üreten Özel Form Sihirbazı içerir.
+- **1-160 Soru ve Özel Vektörel A4 PDF Form Üretici:** 12 hazır sınav şablonunun yanı sıra dilediğiniz soru, şık (`3-5`), bölüm ve kurum başlığıyla %100 baskı ölçeğinde vektörel A4 PDF optik form üreten Özel Form Sihirbazı içerir.
 - **28 Tema Kombinasyonu, 3 Monokrom İkon ve 73 Dil:** Açık ve koyu modda 14 renk teması (`14 × 2 = 28` palet), pencere/görev çubuğu/sistem tepsisiyle anında senkronize olan 3 siyah-beyaz monokrom ikon seçeneği ve 73 dil kataloğu (Türkçe ve İngilizce tam çeviri, diğer 71 dil için otomatik İngilizce fallback) sunar.
 
 ---
@@ -281,16 +281,16 @@ Copyright © 2026 **Vellium Teknoloji Anonim Şirketi**. All rights reserved.
 ### <img src="assets/icons/cpu.svg" width="18" height="18" alt="" valign="middle" /> 1. Yerel OpenCV WASM Görüntü İşleme Motoru
 - **4 Köşe Hizalama ve Perspektif Düzeltme:** Kağıdın 4 köşesindeki referans karelerini otomatik bulur, kamera açısını ve kağıt eğriliğini düzeltir, CLAHE ile gölgeleri dengeler.
 - **Canlı Kamera ile 1 Saniyede Eller Serbest Çekim:** Web kamerası vizörü 4 köşeyi kilitlediğinde deklanşöre basmaya gerek kalmadan formu otomatik yakalar.
-- **Çoklu İş Parçacığı ve Kesintiye Dayanıklı Checkpoint:** JPG, PNG, WebP, çok sayfalı PDF ve ZIP arşivlerini 1–4 eşzamanlı Web Worker ile işler. Her öğrenci sonucu anında IndexedDB'ye yazılır; işlem yarıda kesilse bile kaldığı yerden devam eder.
+- **Çoklu İş Parçacığı ve Kesintiye Dayanıklı Checkpoint:** JPG, PNG, WebP, çok sayfalı PDF ve ZIP arşivlerini 1-4 eşzamanlı Web Worker ile işler. Her öğrenci sonucu anında IndexedDB'ye yazılır; işlem yarıda kesilse bile kaldığı yerden devam eder.
 
 ### <img src="assets/icons/templates.svg" width="18" height="18" alt="" valign="middle" /> 2. Şablon Galerisi ve Özel Form Sihirbazı
 - **12 Hazır Standart Şablon:** 10 soruluk hızlı quizden 90 soruluk LGS ve 160 soruluk YKS/üniversite sınavlarına kadar baskıya hazır A4 şablonlar.
-- **Özel Form Tasarımcısı (`1–160` Soru):** Soru sayısı, şık sayısı (`A–C`, `A–D`, `A–E`), öğrenci numarası basamağı ve kurum adını belirleyerek milimetrik kalibre edilmiş vektörel PDF indirin.
+- **Özel Form Tasarımcısı (`1-160` Soru):** Soru sayısı, şık sayısı (`A-C`, `A-D`, `A-E`), öğrenci numarası basamağı ve kurum adını belirleyerek milimetrik kalibre edilmiş vektörel PDF indirin.
 
 ### <img src="assets/icons/chart.svg" width="18" height="18" alt="" valign="middle" /> 3. Akademik Analitik, Çan Eğrisi ve PDF Karneler
 - **Çoklu Kitapçık (`A / B / C / D`) ve Ceza Kuralları:** Her kitapçık için ayrı cevap anahtarı, bölüm katsayıları ve ÖSYM (`4Y=1D`), MEB/LGS (`3Y=1D`) veya cezasız puanlama.
 - **KR-20 Güvenirlik ve Madde/Çeldirici Analizi:** Sınavın KR-20 iç tutarlılık katsayısını, soru güçlük ($p$) ve ayırt edicilik ($r_{jx}$) indekslerini ve şık dağılım matrisini hesaplar.
-- **YÖK T-Skor Çan Eğrisi ve e-Okul Eşleştirme:** Tek tıkla bağıl harf notu (`AA–FF`) hesaplar; e-Okul Excel/CSV listesiyle öğrenci numaralarını ve isimleri otomatik eşleştirir; renkli **PDF Karneler**, **XLSX**, **CSV**, **JSON** ve **ZIP** çıktıları üretir.
+- **YÖK T-Skor Çan Eğrisi ve e-Okul Eşleştirme:** Tek tıkla bağıl harf notu (`AA-FF`) hesaplar; e-Okul Excel/CSV listesiyle öğrenci numaralarını ve isimleri otomatik eşleştirir; renkli **PDF Karneler**, **XLSX**, **CSV**, **JSON** ve **ZIP** çıktıları üretir.
 
 ### <img src="assets/icons/sliders.svg" width="18" height="18" alt="" valign="middle" /> 4. Bölünmüş Kenar Menülü Ayarlar, Bildirimler ve Çıkış Koruması
 - **2. Kenar Menülü Ayarlar Sayfası (`/ayarlar`):** Pop-up karmaşası yerine *Genel ve Davranış*, *Görünüm ve Dil*, *Bildirimler ve Ses*, *Klavye Kısayolları*, *Veri ve Yedekleme* ve *Tanılama ve Destek* alt sayfalarından oluşan odaklı sayfa mimarisi.

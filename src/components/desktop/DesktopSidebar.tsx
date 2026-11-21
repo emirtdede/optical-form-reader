@@ -107,7 +107,7 @@ export function DesktopSidebar({
             className="desktop-icon-btn"
             onClick={onToggleCollapse}
             aria-label={t.nav.expandSidebar}
-            title={`${t.meta.productName} — ${t.nav.expandSidebar}`}
+            title={`${t.meta.productName} - ${t.nav.expandSidebar}`}
             data-tauri-drag-region="false"
           >
             <ProductMark className="desktop-brand-mark" />

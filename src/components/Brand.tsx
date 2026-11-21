@@ -1,62 +1,43 @@
 import { useId, type SVGProps } from 'react';
-import type { AppIconVariant } from '../theme/themes';
+import {
+  DEFAULT_CUSTOM_ACCENT,
+  DEFAULT_THEME_ID,
+  resolveAppIconPalette,
+  type AppIconPalette,
+  type AppIconVariant,
+  type ThemeId,
+  type ThemeMode,
+} from '../theme/themes';
 
 export interface ProductMarkProps extends SVGProps<SVGSVGElement> {
-  /** Optional explicit monochrome variant preview (used in Settings icon picker cards). */
+  /** Optional explicit icon variant preview (used in Settings icon picker cards). */
   variant?: AppIconVariant;
+  /** Optional active theme ID for resolving `theme-auto`. */
+  activeThemeId?: ThemeId;
+  /** Optional mode for resolving `theme-auto`. */
+  mode?: ThemeMode;
+  /** Optional custom HEX color for resolving `theme-custom` or `theme-auto`. */
+  customAccent?: string;
+  /** Optional explicit palette override. */
+  palette?: AppIconPalette;
 }
 
-const VARIANT_PALETTES: Record<
-  AppIconVariant,
-  {
-    bg1: string;
-    bg2: string;
-    border: string;
-    fg1: string;
-    fg2: string;
-    ring: string;
-    ringOpacity: string;
-    laser: string;
-  }
-> = {
-  'monochrome-dark': {
-    bg1: '#09090b',
-    bg2: '#27272a',
-    border: 'rgba(255,255,255,0.14)',
-    fg1: '#ffffff',
-    fg2: '#d4d4d8',
-    ring: '#a1a1aa',
-    ringOpacity: '1',
-    laser: '#ffffff',
-  },
-  'monochrome-light': {
-    bg1: '#ffffff',
-    bg2: '#e4e4e7',
-    border: '#d4d4d8',
-    fg1: '#09090b',
-    fg2: '#27272a',
-    ring: '#71717a',
-    ringOpacity: '1',
-    laser: '#09090b',
-  },
-  'monochrome-contrast': {
-    bg1: '#000000',
-    bg2: '#000000',
-    border: 'rgba(255,255,255,0.22)',
-    fg1: '#ffffff',
-    fg2: '#ffffff',
-    ring: '#ffffff',
-    ringOpacity: '0.58',
-    laser: '#ffffff',
-  },
-};
-
-export function ProductMark({ variant, className, ...props }: ProductMarkProps) {
+export function ProductMark({
+  variant,
+  activeThemeId = DEFAULT_THEME_ID,
+  mode = 'dark',
+  customAccent = DEFAULT_CUSTOM_ACCENT,
+  palette,
+  className,
+  ...props
+}: ProductMarkProps) {
   const uid = useId().replace(/:/g, '');
   const bgId = `ofr-bg-${uid}`;
   const fgId = `ofr-fg-${uid}`;
   const laserId = `ofr-laser-${uid}`;
-  const pal = variant ? VARIANT_PALETTES[variant] : null;
+  const pal =
+    palette ??
+    (variant ? resolveAppIconPalette(variant, activeThemeId, mode, customAccent) : null);
 
   return (
     <svg
@@ -192,33 +173,11 @@ export function ProductMark({ variant, className, ...props }: ProductMarkProps) 
         strokeWidth="6"
       />
 
-      <circle
-        className={pal ? undefined : 'ofr-logo-ring'}
-        cx="88"
-        cy="128"
-        r="13"
-        fill="none"
-        stroke={pal?.ring}
-        opacity={pal?.ringOpacity}
-        strokeWidth="6"
-      />
+      <circle cx="88" cy="128" r="13" fill={`url(#${fgId})`} />
       <circle
         className={pal ? undefined : 'ofr-logo-ring'}
         cx="128"
         cy="128"
-        r="13"
-        fill="none"
-        stroke={pal?.ring}
-        opacity={pal?.ringOpacity}
-        strokeWidth="6"
-      />
-      <circle cx="168" cy="128" r="13" fill={`url(#${fgId})`} />
-
-      <circle cx="88" cy="168" r="13" fill={`url(#${fgId})`} />
-      <circle
-        className={pal ? undefined : 'ofr-logo-ring'}
-        cx="128"
-        cy="168"
         r="13"
         fill="none"
         stroke={pal?.ring}
@@ -228,7 +187,7 @@ export function ProductMark({ variant, className, ...props }: ProductMarkProps) 
       <circle
         className={pal ? undefined : 'ofr-logo-ring'}
         cx="168"
-        cy="168"
+        cy="128"
         r="13"
         fill="none"
         stroke={pal?.ring}
@@ -236,17 +195,68 @@ export function ProductMark({ variant, className, ...props }: ProductMarkProps) 
         strokeWidth="6"
       />
 
-      <rect x="30" y="125" width="196" height="6" rx="3" fill={`url(#${laserId})`} opacity="0.96" />
+      <circle
+        className={pal ? undefined : 'ofr-logo-ring'}
+        cx="88"
+        cy="168"
+        r="13"
+        fill="none"
+        stroke={pal?.ring}
+        opacity={pal?.ringOpacity}
+        strokeWidth="6"
+      />
+      <circle
+        className={pal ? undefined : 'ofr-logo-ring'}
+        cx="128"
+        cy="168"
+        r="13"
+        fill="none"
+        stroke={pal?.ring}
+        opacity={pal?.ringOpacity}
+        strokeWidth="6"
+      />
+      <circle cx="168" cy="168" r="13" fill={`url(#${fgId})`} />
+
+      <rect
+        x="26"
+        y="125.5"
+        width="204"
+        height="5"
+        rx="2.5"
+        fill={`url(#${laserId})`}
+      />
     </svg>
   );
 }
 
 export function VelliumMark(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 145 1024 818" role="img" aria-label="Vellium logosu" {...props}>
-      <g transform="translate(0 1024) scale(.1 -.1)" fill="currentColor">
-        <path d="M53 8745c-34-24-29-64 12-112 52-61 101-80 235-93 410-38 673-149 923-389 161-155 293-332 442-591 106-186 1284-2552 2777-5580 621-1260 655-1327 674-1334 22-8 47 38 236 422 773 1576 1151 2344 1548 3147 117 237 259 525 315 640 350 715 1261 2549 1313 2643 256 465 528 758 836 903 161 75 298 110 530 135 175 19 214 32 266 91 46 53 53 93 18 117-27 19-189 21-718 6-626-18-768-30-1008-86-260-61-467-156-682-313-97-71-300-274-374-374-147-198-178-257-674-1272-115-236-373-761-572-1165-200-404-504-1023-676-1375-369-754-336-690-354-690-8 0-67 106-141 255-185 368-886 1784-1431 2890-469 952-541 1092-626 1225-287 449-705 733-1233 839-228 46-487 61-1203 72-373 5-413 5-433-11Zm1717-370c184-30 402-121 560-234 171-121 350-325 463-527 55-99 606-1204 1367-2744 608-1230 930-1873 946-1890 12-13 16-13 28 0 13 13 278 547 751 1515 62 127 240 487 395 800 155 314 331 669 390 790 355 726 736 1487 780 1560 166 275 368 471 615 597 207 105 451 166 553 139 76-21 66-62-72-288-85-140-211-382-396-758-92-187-353-713-580-1170-792-1595-1317-2664-1742-3550-399-830-687-1410-702-1413-20-4-297 544-701 1388-430 899-2542 5154-2657 5355-26 44-80 137-121 208-86 146-94 169-73 202 24 37 64 41 196 20Z" />
-      </g>
+    <svg
+      viewBox="0 0 280 51"
+      fill="none"
+      role="img"
+      aria-label="Vellium"
+      {...props}
+    >
+      <path
+        d="M36.3 50.8C32.4 50.8 29.2 49.4 26.8 46.5C24.4 43.7 23.2 40.3 23.2 36.3V0.8H33.9V35.4C33.9 37.3 34.4 38.7 35.4 39.8C36.4 40.8 37.8 41.3 39.6 41.3H44.6L61.2 0.8H72.6L50.8 50.8H36.3ZM0.6 0.8H11.8L20.1 24.4L13.1 41.2L0.6 0.8Z"
+        fill="currentColor"
+      />
+      <path
+        d="M89.3 51C81.8 51 75.8 48.8 71.4 44.3C67 39.9 64.8 33.9 64.8 26.4C64.8 18.8 67 12.7 71.3 8.2C75.7 3.7 81.5 1.4 88.8 1.4C96.3 1.4 102.1 3.7 106.2 8.2C110.3 12.7 112.4 18.7 112.4 26.2V29.5H75.4C75.8 33.4 77.2 36.5 79.6 38.8C82.1 41.1 85.4 42.2 89.5 42.2C92.7 42.2 95.4 41.6 97.6 40.3C99.8 39 101.4 37.2 102.4 34.8H112.4C111 39.8 108.3 43.8 104.2 46.7C100.2 49.6 95.2 51 89.3 51ZM88.8 10.1C85 10.1 81.9 11.2 79.6 13.4C77.3 15.6 75.9 18.6 75.5 22.3H101.8C101.5 18.6 100.2 15.6 97.9 13.4C95.7 11.2 92.6 10.1 88.8 10.1Z"
+        fill="currentColor"
+      />
+      <path d="M120.4 0.8H130.9V50.8H120.4V0.8Z" fill="currentColor" />
+      <path d="M140.4 0.8H150.9V50.8H140.4V0.8Z" fill="currentColor" />
+      <path d="M160.4 0.8H170.9V50.8H160.4V0.8Z" fill="currentColor" />
+      <path
+        d="M196.1 51C189.7 51 184.7 49.1 181.2 45.4C177.7 41.7 175.9 36.5 175.9 29.9V0.8H186.4V29.2C186.4 33.2 187.3 36.3 189.2 38.5C191.1 40.7 193.9 41.8 197.6 41.8C201.3 41.8 204.2 40.7 206.2 38.5C208.2 36.3 209.2 33.2 209.2 29.2V0.8H219.7V29.9C219.7 36.5 217.9 41.7 214.2 45.4C210.6 49.1 204.5 51 196.1 51Z"
+        fill="currentColor"
+      />
+      <path
+        d="M228.8 0.8H238.9L254.1 35.8L269.3 0.8H279.4V50.8H269.2V18.8L255.8 49.3H252.4L239 18.8V50.8H228.8V0.8Z"
+        fill="currentColor"
+      />
     </svg>
   );
 }

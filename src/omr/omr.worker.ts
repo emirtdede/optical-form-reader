@@ -9,7 +9,7 @@ const WARP_WIDTH = 720;
 const WARP_HEIGHT = 700;
 const QUESTIONS_PER_SECTION = 25;
 const CHOICES = ['A', 'B', 'C', 'D', 'E'] as const;
-// The printed outline of an empty bubble occupies roughly 10–12% of the
+// The printed outline of an empty bubble occupies roughly 10-12% of the
 // cropped cell. Requiring 18% keeps outlines blank while still accepting
 // lightly shaded real-world marks.
 const MIN_FILL_RATIO = 0.18;

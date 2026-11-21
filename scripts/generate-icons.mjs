@@ -15,7 +15,7 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 
 /**
  * Monochrome Optical Form Reader vector mark (256x256 coordinate space).
- * Zero colored cyan/teal pixels — pure black/white/silver grayscale tones.
+ * Zero colored cyan/teal pixels - pure black/white/silver grayscale tones.
  */
 function buildOpticalMarkInner(idPrefix, palette) {
   const { bg1, bg2, border, fg1, fg2, ring, ringOpacity = '1', laser, withSquircle = true } = palette;
@@ -563,7 +563,7 @@ async function main() {
   }
 
   console.log(
-    '[icons:generate] OK — Monochrome icon variants (SVG/PNG/7-frame BMP+PNG ICO), NSIS 24-bit BMP installer/uninstaller graphics, Web/PWA icons, and Microsoft Store MSIX assets generated.',
+    '[icons:generate] OK - Monochrome icon variants (SVG/PNG/7-frame BMP+PNG ICO), NSIS 24-bit BMP installer/uninstaller graphics, Web/PWA icons, and Microsoft Store MSIX assets generated.',
   );
 }
 

@@ -44,7 +44,7 @@ const steps = [
     id: 'sablon',
     icon: Download,
     title: 'Şablonu seçin veya indirin',
-    text: 'Galeriden 10–160 soruluk standart formları ya da Özel Form Sihirbazı ile tasarladığınız şablonu A4 boyutunda (%100 ölçekle) yazdırın.',
+    text: 'Galeriden 10-160 soruluk standart formları ya da Özel Form Sihirbazı ile tasarladığınız şablonu A4 boyutunda (%100 ölçekle) yazdırın.',
   },
   {
     id: 'cevap-anahtari',
@@ -198,8 +198,8 @@ export function GuidePage() {
       group: isTr ? 'BAŞLANGIÇ VE STANDARTLAR' : 'GETTING STARTED',
       title: isTr ? 'Şablonlar ve %100 Baskı' : 'Templates & 100% Print Scale',
       summary: isTr
-        ? '10–160 soruluk hazır şablonlar, özel A4 form tasarımcısı ve %100 gerçek boyut yazdırma kuralı.'
-        : '10–160 question templates, custom A4 form wizard, and 100% actual-size printing calibration.',
+        ? '10-160 soruluk hazır şablonlar, özel A4 form tasarımcısı ve %100 gerçek boyut yazdırma kuralı.'
+        : '10-160 question templates, custom A4 form wizard, and 100% actual-size printing calibration.',
       keywords: 'şablon a4 pdf yazıcı baskı %100 ölçek gerçek boyut actual size 160 soru',
       icon: Printer,
     },
@@ -375,7 +375,7 @@ export function GuidePage() {
                   <Rocket size={15} />
                 </span>
                 <h2 className="pp-section-bar-title">
-                  {isTr ? 'Hızlı Başlangıç — 5 Adımda Optik Değerlendirme' : 'Quick Start — 5-Step Optical Grading'}
+                  {isTr ? 'Hızlı Başlangıç - 5 Adımda Optik Değerlendirme' : 'Quick Start - 5-Step Optical Grading'}
                 </h2>
               </div>
 
@@ -388,7 +388,7 @@ export function GuidePage() {
                   </div>
                   <div className="pp-kpi-card">
                     <span className="pp-kpi-label">{isTr ? 'Kapasite' : 'Capacity'}</span>
-                    <p className="pp-kpi-value">1–160 {isTr ? 'Soru' : 'Questions'}</p>
+                    <p className="pp-kpi-value">1-160 {isTr ? 'Soru' : 'Questions'}</p>
                     <p className="pp-kpi-sub">{isTr ? 'A / B / C / D Kitapçık' : 'A / B / C / D Booklets'}</p>
                   </div>
                   <div className="pp-kpi-card">
@@ -453,20 +453,20 @@ export function GuidePage() {
                     <LayoutTemplate size={15} />
                   </div>
                   <div className="pp-docs-cmd-row">
-                    <span className="v-row-title">10–30 Soru Hızlı Quiz</span>
+                    <span className="v-row-title">10-30 Soru Hızlı Quiz</span>
                     <span className="v-row-desc">Ders içi tarama ve kısa sınavlar için kompakt A4 düzeni.</span>
                   </div>
                   <div className="pp-docs-cmd-row">
-                    <span className="v-row-title">40–90 Soru LGS / Deneme</span>
+                    <span className="v-row-title">40-90 Soru LGS / Deneme</span>
                     <span className="v-row-desc">MEB 3 Yanlış = 1 Doğru ceza kuralıyla uyumlu çok bölümlü şablonlar.</span>
                   </div>
                   <div className="pp-docs-cmd-row">
-                    <span className="v-row-title">100–160 Soru YKS / Üniversite</span>
+                    <span className="v-row-title">100-160 Soru YKS / Üniversite</span>
                     <span className="v-row-desc">ÖSYM 4 Yanlış = 1 Doğru standardında yüksek yoğunluklu vektörel A4 formlar.</span>
                   </div>
                   <div className="pp-docs-cmd-row">
-                    <span className="v-row-title">Özel Form Sihirbazı (1–160 Soru)</span>
-                    <span className="v-row-desc">Soru sayısı, şık sayısı (3–5), öğrenci no hanesi ve kurum başlığını özelleştirip PDF indirin.</span>
+                    <span className="v-row-title">Özel Form Sihirbazı (1-160 Soru)</span>
+                    <span className="v-row-desc">Soru sayısı, şık sayısı (3-5), öğrenci no hanesi ve kurum başlığını özelleştirip PDF indirin.</span>
                   </div>
                 </div>
 
@@ -523,7 +523,7 @@ export function GuidePage() {
                 <div className="marking-rules-widget" style={{ marginTop: '8px' }}>
                   <div className="marking-demo-frame">
                     <div className="marking-interactive-header">
-                      <span>{isTr ? 'Canlı Baloncuk Okuma Simülatörü — Tıkla & Dene:' : 'Interactive Bubble Simulator:'}</span>
+                      <span>{isTr ? 'Canlı Baloncuk Okuma Simülatörü - Tıkla & Dene:' : 'Interactive Bubble Simulator:'}</span>
                       <button
                         type="button"
                         className="interactive-reset-btn"
@@ -691,7 +691,7 @@ export function GuidePage() {
                   <div className="pp-docs-cmd-row">
                     <span className="v-row-title">YÖK Bağıl Değerlendirme (T-Skor Çan Eğrisi)</span>
                     <span className="v-row-desc">
-                      Sınıf ortalaması ve standart sapmaya göre T-skoru (`T = 50 + 10 * Z`) ve harf notlarını (AA–FF) tek tıkla hesaplar.
+                      Sınıf ortalaması ve standart sapmaya göre T-skoru (`T = 50 + 10 * Z`) ve harf notlarını (AA-FF) tek tıkla hesaplar.
                     </span>
                   </div>
                   <div className="pp-docs-cmd-row">
@@ -745,7 +745,7 @@ export function GuidePage() {
                   </div>
                   <div className="pp-docs-cmd-row">
                     <span className="v-row-title">{isTr ? 'Çalışma alanları arası geçiş' : 'Switch workspace views'}</span>
-                    <kbd className="pp-kbd">Alt + 1 – 6</kbd>
+                    <kbd className="pp-kbd">Alt + 1 - 6</kbd>
                   </div>
                 </div>
 

@@ -128,7 +128,7 @@ describe('DesktopShell, 2nd-Sidebar SettingsPage, AboutPage, GuidePage & Exit Co
 
     // Switch to Appearance & Language sub-page in 2nd sidebar
     fireEvent.click(screen.getByRole('button', { name: 'Görünüm ve Dil' }));
-    expect(screen.getByText('14 tema')).toBeInTheDocument();
+    expect(screen.getByText('15 tema')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Mor' }));
     expect(document.documentElement.dataset.colorTheme).toBe('purple');
@@ -212,7 +212,7 @@ describe('DesktopShell, 2nd-Sidebar SettingsPage, AboutPage, GuidePage & Exit Co
 
     // 1. Active Scan Exit Confirmation
     fireEvent.click(screen.getByRole('button', { name: 'Trigger Active Scan Close' }));
-    expect(screen.getByText('Aktif Tarama Devam Ediyor — Çıkış Onayı')).toBeInTheDocument();
+    expect(screen.getByText('Aktif Tarama Devam Ediyor - Çıkış Onayı')).toBeInTheDocument();
     expect(screen.getByText('8-A LGS Deneme Sınavı (50 form)')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Taramayı Durdur ve Çık/i })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Vazgeç \(Taramaya Devam Et\)/i }));

@@ -500,7 +500,7 @@ export function SettingsModal({ isOpen, initialTab = 'appearance', onClose }: Se
                   </div>
                   <div className="v-shortcut-row">
                     <span>{t.settingsModal.shortcutSwitchViews}</span>
-                    <kbd>Alt + 1–5</kbd>
+                    <kbd>Alt + 1-5</kbd>
                   </div>
                   <div className="v-shortcut-row">
                     <span>{t.settingsModal.shortcutCloseModal}</span>

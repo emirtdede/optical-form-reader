@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+1130
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+-
+# Project-supplied machine translation (Google Translate); pending native review
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+$(^Name) Iṣeto
+# ^UninstallCaption
+Aifi si po $(^Name)
+# ^LicenseSubCaption
+: Iwe-aṣẹ Adehun
+# ^ComponentsSubCaption
+: Fifi sori Aw
+# ^DirSubCaption
+: Fifi sori Folda
+# ^InstallingSubCaption
+: fifi sori ẹrọ
+# ^CompletedSubCaption
+: Ti pari
+# ^UnComponentsSubCaption
+: Uninstallation Aw
+# ^UnDirSubCaption
+: Uninstallation Folda
+# ^ConfirmSubCaption
+: ìmúdájú
+# ^UninstallingSubCaption
+: Yiyokuro
+# ^UnCompletedSubCaption
+: Ti pari
+# ^BackBtn
+< &Pada
+# ^NextBtn
+&Itele >
+# ^AgreeBtn
+&Mo Gba
+# ^AcceptBtn
+&Mo gba awọn ofin ti Adehun Iwe-aṣẹ naa
+# ^DontAcceptBtn
+&Emi ko gba awọn ofin ti Adehun Iwe-aṣẹ naa
+# ^InstallBtn
+&Fi sori ẹrọ
+# ^UninstallBtn
+&Yọ kuro
+# ^CancelBtn
+Fagilee
+# ^CloseBtn
+&Sunmọ
+# ^BrowseBtn
+Ṣ&awakiri...
+# ^ShowDetailsBtn
+Ṣ&e afihan awọn alaye
+# ^ClickNext
+Tẹ Itele lati tẹsiwaju.
+# ^ClickInstall
+Tẹ Fi sori ẹrọ lati bẹrẹ fifi sori ẹrọ.
+# ^ClickUninstall
+Tẹ Aifi sii lati bẹrẹ yiyọ kuro.
+# ^Name
+Oruko
+# ^Completed
+Ti pari
+# ^LicenseText
+Jọwọ ṣe ayẹwo adehun iwe-aṣẹ ṣaaju fifi sori $(^NameDA). Ti o ba gba gbogbo awọn ofin ti adehun, tẹ Mo Gba.
+# ^LicenseTextCB
+Jọwọ ṣe ayẹwo adehun iwe-aṣẹ ṣaaju fifi sori $(^NameDA). Ti o ba gba gbogbo awọn ofin ti adehun, tẹ apoti ayẹwo ni isalẹ. $_CLICK
+# ^LicenseTextRB
+Jọwọ ṣe ayẹwo adehun iwe-aṣẹ ṣaaju fifi sori $(^NameDA). Ti o ba gba gbogbo awọn ofin adehun, yan aṣayan akọkọ ni isalẹ. $_CLICK
+# ^UnLicenseText
+Jọwọ ṣe ayẹwo adehun iwe-aṣẹ ṣaaju yiyọ $(^NameDA) kuro. Ti o ba gba gbogbo awọn ofin ti adehun, tẹ Mo Gba.
+# ^UnLicenseTextCB
+Jọwọ ṣe ayẹwo adehun iwe-aṣẹ ṣaaju yiyọ $(^NameDA) kuro. Ti o ba gba gbogbo awọn ofin ti adehun, tẹ apoti ayẹwo ni isalẹ. $_CLICK
+# ^UnLicenseTextRB
+Jọwọ ṣe ayẹwo adehun iwe-aṣẹ ṣaaju yiyọ $(^NameDA) kuro. Ti o ba gba gbogbo awọn ofin adehun, yan aṣayan akọkọ ni isalẹ. $_CLICK
+# ^Custom
+Aṣa
+# ^ComponentsText
+Ṣayẹwo awọn paati ti o fẹ lati fi sori ẹrọ ki o si ṣayẹwo awọn paati ti o ko fẹ lati fi sii. $_CLICK
+# ^ComponentsSubText1
+Yan iru fifi sori ẹrọ:
+# ^ComponentsSubText2_NoInstTypes
+Yan awọn paati lati fi sori ẹrọ:
+# ^ComponentsSubText2
+Tabi, yan awọn paati iyan ti o fẹ lati fi sii:
+# ^UnComponentsText
+Ṣayẹwo awọn paati ti o fẹ lati aifi si po ati uncheck awọn irinše ti o ko ba fẹ lati aifi si po. $_CLICK
+# ^UnComponentsSubText1
+Yan iru yiyọ kuro:
+# ^UnComponentsSubText2_NoInstTypes
+Yan awọn paati lati mu kuro:
+# ^UnComponentsSubText2
+Tabi, yan awọn paati iyan ti o fẹ lati mu kuro:
+# ^DirText
+Eto yoo fi $(^NameDA) sori ẹrọ ni folda atẹle. Lati fi sori ẹrọ ni oriṣiriṣi folda, tẹ Kiri ko si yan folda miiran. $_CLICK
+# ^DirSubText
+Ibi Folda
+# ^DirBrowseText
+Yan folda lati fi $(^NameDA) sori ẹrọ ni:
+# ^UnDirText
+Eto yoo mu $(^NameDA) kuro lati inu folda atẹle. Lati yọ kuro lati inu folda ọtọọtọ, tẹ Kiri ko si yan folda miiran. $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+Yan folda lati yọ $(^NameDA) kuro lati:
+# ^SpaceAvailable
+"Aaye wa:"
+# ^SpaceRequired
+"Aye beere:"
+# ^UninstallingText
+$(^NameDA) yoo jẹ yiyọ kuro lati inu folda atẹle. $_CLICK
+# ^UninstallingSubText
+Yiyokuro lati:
+# ^FileError
+Aṣiṣe ṣiṣi faili fun kikọ: \r\nZXQ9QX$0\r\n$0\r\n\r\nClick Abort lati da fifi sori ẹrọ duro,\r\nTun gbiyanju lẹẹkansi, tabi\r\n Foju lati foju faili yii.
+# ^FileError_NoIgnore
+Aṣiṣe ṣiṣi faili fun kikọ: \r\nZXQ9QX$0\r\n\r\nTẹ Tun gbiyanju lẹẹkansi, tabi\r\nCancel lati da fifi sori ẹrọ duro.
+# ^CantWrite
+"Ko le kọ:"
+# ^CopyFailed
+Daakọ kuna
+# ^CopyTo
+"Daakọ si"
+# ^Registering
+"Forukọsilẹ:"
+# ^Unregistering
+"Aigbasilẹ:"
+# ^SymbolNotFound
+"Ko le ri aami:"
+# ^CouldNotLoad
+"Ko le fifuye:"
+# ^CreateFolder
+"Ṣẹda folda:"
+# ^CreateShortcut
+"Ṣẹda ọna abuja:"
+# ^CreatedUninstaller
+"Aṣedasilẹ uninstaller:"
+# ^Delete
+"Pa faili rẹ:"
+# ^DeleteOnReboot
+"Paarẹ ni atunbere:"
+# ^ErrorCreatingShortcut
+"Aṣiṣe ṣiṣẹda ọna abuja:"
+# ^ErrorCreating
+"Aṣiṣe ṣiṣẹda:"
+# ^ErrorDecompressing
+Aṣiṣe idinku data! Insitola ti bajẹ?
+# ^ErrorRegistering
+Aṣiṣe fiforukọṣilẹ DLL
+# ^ExecShell
+ExecShell:
+# ^Exec
+"Ṣiṣe:"
+# ^Extract
+"Jade:"
+# ^ErrorWriting
+"Jade: aṣiṣe kikọ si faili"
+# ^InvalidOpcode
+Insitola ti bajẹ: opcode ti ko tọ
+# ^NoOLE
+"Ko si OLE fun:"
+# ^OutputFolder
+"Fódà àbájáde:"
+# ^RemoveFolder
+"Yọ folda kuro:"
+# ^RenameOnReboot
+"Tunrukọ lorukọ ni atunbere:"
+# ^Rename
+"Tun orukọ:"
+# ^Skipped
+"Ti fo:"
+# ^CopyDetails
+Daakọ Awọn alaye Si Agekuru
+# ^LogInstall
+Wọle ilana fifi sori ẹrọ
+# ^Byte
+B
+# ^Kilo
+ K
+# ^Mega
+ M
+# ^Giga
+ G

@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+1095
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+-
+# Project-supplied machine translation (Google Translate); pending native review
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+$(^Name) સેટઅપ
+# ^UninstallCaption
+$(^Name) અનઇન્સ્ટોલ કરો
+# ^LicenseSubCaption
+: લાયસન્સ કરાર
+# ^ComponentsSubCaption
+: સ્થાપન વિકલ્પો
+# ^DirSubCaption
+: સ્થાપન ફોલ્ડર
+# ^InstallingSubCaption
+: સ્થાપન
+# ^CompletedSubCaption
+: પૂર્ણ
+# ^UnComponentsSubCaption
+: અનઇન્સ્ટોલેશન વિકલ્પો
+# ^UnDirSubCaption
+: અનઇન્સ્ટોલેશન ફોલ્ડર
+# ^ConfirmSubCaption
+: પુષ્ટિ
+# ^UninstallingSubCaption
+: અનઇન્સ્ટોલ કરી રહ્યું છે
+# ^UnCompletedSubCaption
+: પૂર્ણ
+# ^BackBtn
+< પાછળ
+# ^NextBtn
+આગળ >
+# ^AgreeBtn
+હું સંમત છું
+# ^AcceptBtn
+હું લાયસન્સ કરારની શરતો સ્વીકારું છું
+# ^DontAcceptBtn
+હું લાયસન્સ કરારની શરતો સ્વીકારતો નથી
+# ^InstallBtn
+ઇન્સ્ટોલ કરો
+# ^UninstallBtn
+અનઇન્સ્ટોલ કરો
+# ^CancelBtn
+રદ કરો
+# ^CloseBtn
+બંધ કરો
+# ^BrowseBtn
+બ્રાઉઝ કરો...
+# ^ShowDetailsBtn
+વિગતો બતાવો
+# ^ClickNext
+ચાલુ રાખવા માટે આગળ ક્લિક કરો.
+# ^ClickInstall
+ઇન્સ્ટોલેશન શરૂ કરવા માટે ઇન્સ્ટોલ પર ક્લિક કરો.
+# ^ClickUninstall
+અનઇન્સ્ટોલેશન શરૂ કરવા માટે અનઇન્સ્ટોલ કરો પર ક્લિક કરો.
+# ^Name
+નામ
+# ^Completed
+પૂર્ણ થયું
+# ^LicenseText
+$(^NameDA) ઇન્સ્ટોલ કરતા પહેલા કૃપા કરીને લાયસન્સ કરારની સમીક્ષા કરો. જો તમે કરારની તમામ શરતો સ્વીકારો છો, તો હું સંમત છું ક્લિક કરો.
+# ^LicenseTextCB
+$(^NameDA) ઇન્સ્ટોલ કરતા પહેલા કૃપા કરીને લાયસન્સ કરારની સમીક્ષા કરો. જો તમે કરારની તમામ શરતો સ્વીકારો છો, તો નીચેના ચેક બોક્સને ક્લિક કરો. $_CLICK
+# ^LicenseTextRB
+$(^NameDA) ઇન્સ્ટોલ કરતા પહેલા કૃપા કરીને લાયસન્સ કરારની સમીક્ષા કરો. જો તમે કરારની તમામ શરતો સ્વીકારો છો, તો નીચેનો પ્રથમ વિકલ્પ પસંદ કરો. $_CLICK
+# ^UnLicenseText
+$(^NameDA) અનઇન્સ્ટોલ કરતા પહેલા કૃપા કરીને લાઇસન્સ કરારની સમીક્ષા કરો. જો તમે કરારની તમામ શરતો સ્વીકારો છો, તો હું સંમત છું ક્લિક કરો.
+# ^UnLicenseTextCB
+$(^NameDA) અનઇન્સ્ટોલ કરતા પહેલા કૃપા કરીને લાયસન્સ કરારની સમીક્ષા કરો. જો તમે કરારની તમામ શરતો સ્વીકારો છો, તો નીચેના ચેક બોક્સને ક્લિક કરો. $_CLICK
+# ^UnLicenseTextRB
+$(^NameDA) અનઇન્સ્ટોલ કરતા પહેલા કૃપા કરીને લાયસન્સ કરારની સમીક્ષા કરો. જો તમે કરારની તમામ શરતો સ્વીકારો છો, તો નીચેનો પ્રથમ વિકલ્પ પસંદ કરો. $_CLICK
+# ^Custom
+કસ્ટમ
+# ^ComponentsText
+તમે જે ઘટકોને ઇન્સ્ટોલ કરવા માંગો છો તે તપાસો અને તમે ઇન્સ્ટોલ કરવા માંગતા નથી તે ઘટકોને અનચેક કરો. $_CLICK
+# ^ComponentsSubText1
+ઇન્સ્ટોલેશનનો પ્રકાર પસંદ કરો:
+# ^ComponentsSubText2_NoInstTypes
+ઇન્સ્ટોલ કરવા માટે ઘટકો પસંદ કરો:
+# ^ComponentsSubText2
+અથવા, તમે ઇન્સ્ટોલ કરવા માંગો છો તે વૈકલ્પિક ઘટકો પસંદ કરો:
+# ^UnComponentsText
+તમે જે ઘટકોને અનઇન્સ્ટોલ કરવા માંગો છો તે તપાસો અને તમે જે ઘટકોને અનઇન્સ્ટોલ કરવા માંગતા નથી તેને અનચેક કરો. $_CLICK
+# ^UnComponentsSubText1
+અનઇન્સ્ટોલનો પ્રકાર પસંદ કરો:
+# ^UnComponentsSubText2_NoInstTypes
+અનઇન્સ્ટોલ કરવા માટે ઘટકો પસંદ કરો:
+# ^UnComponentsSubText2
+અથવા, તમે અનઇન્સ્ટોલ કરવા માંગો છો તે વૈકલ્પિક ઘટકો પસંદ કરો:
+# ^DirText
+સેટઅપ નીચેના ફોલ્ડરમાં $(^NameDA) ઇન્સ્ટોલ કરશે. એક અલગ ફોલ્ડરમાં ઇન્સ્ટોલ કરવા માટે, બ્રાઉઝ પર ક્લિક કરો અને બીજું ફોલ્ડર પસંદ કરો. $_CLICK
+# ^DirSubText
+ગંતવ્ય ફોલ્ડર
+# ^DirBrowseText
+$(^NameDA) ઇન્સ્ટોલ કરવા માટે ફોલ્ડર પસંદ કરો:
+# ^UnDirText
+સેટઅપ નીચેના ફોલ્ડરમાંથી $(^NameDA) અનઇન્સ્ટોલ કરશે. અલગ ફોલ્ડરમાંથી અનઇન્સ્ટોલ કરવા માટે, બ્રાઉઝ પર ક્લિક કરો અને બીજું ફોલ્ડર પસંદ કરો. $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+$(^NameDA) અનઇન્સ્ટોલ કરવા માટે ફોલ્ડર પસંદ કરો:
+# ^SpaceAvailable
+"જગ્યા ઉપલબ્ધ છે:"
+# ^SpaceRequired
+"જગ્યા જરૂરી છે:"
+# ^UninstallingText
+$(^NameDA) નીચેના ફોલ્ડરમાંથી અનઇન્સ્ટોલ કરવામાં આવશે. $_CLICK
+# ^UninstallingSubText
+આમાંથી અનઇન્સ્ટોલ કરી રહ્યું છે:
+# ^FileError
+લખવા માટે ફાઇલ ખોલવામાં ભૂલ: \r\n\r\nZXQCXZ\r\n\r\nઇન્સ્ટોલેશનને રોકવા માટે એબોર્ટ પર ક્લિક કરો, \r\nફરી પ્રયાસ કરવાનો પ્રયાસ કરો, અથવા આ ફાઇલને છોડવા માટે \r\nઇગ્નોર કરો.
+# ^FileError_NoIgnore
+લખવા માટે ફાઇલ ખોલવામાં ભૂલ: \r\n\r\n$0\r\n\r\nફરી પ્રયાસ કરવા માટે ફરીથી પ્રયાસ કરો ક્લિક કરો, અથવા ઇન્સ્ટોલેશન રોકવા માટે\r\nકાન્સલ કરો.
+# ^CantWrite
+"લખી શકતા નથી:"
+# ^CopyFailed
+નકલ નિષ્ફળ
+# ^CopyTo
+"આમાં નકલ કરો"
+# ^Registering
+"નોંધણી:"
+# ^Unregistering
+"નોંધણી રદ કરી રહ્યું છે:"
+# ^SymbolNotFound
+"પ્રતીક શોધી શક્યા નથી:"
+# ^CouldNotLoad
+"લોડ કરી શકાયું નથી:"
+# ^CreateFolder
+"ફોલ્ડર બનાવો:"
+# ^CreateShortcut
+"શોર્ટકટ બનાવો:"
+# ^CreatedUninstaller
+"અનઇન્સ્ટોલર બનાવ્યું:"
+# ^Delete
+"ફાઇલ કાઢી નાખો:"
+# ^DeleteOnReboot
+"રીબૂટ પર કાઢી નાખો:"
+# ^ErrorCreatingShortcut
+"શોર્ટકટ બનાવવામાં ભૂલ:"
+# ^ErrorCreating
+"બનાવવામાં ભૂલ:"
+# ^ErrorDecompressing
+ડેટાને ડિકમ્પ્રેસ કરવામાં ભૂલ! દૂષિત ઇન્સ્ટોલર?
+# ^ErrorRegistering
+DLL રજીસ્ટર કરવામાં ભૂલ
+# ^ExecShell
+"ExecShell:"
+# ^Exec
+"એક્ઝિક્યુટ:"
+# ^Extract
+"અર્ક:"
+# ^ErrorWriting
+"અર્ક: ફાઇલમાં લખવામાં ભૂલ"
+# ^InvalidOpcode
+ઇન્સ્ટોલર દૂષિત: અમાન્ય opcode
+# ^NoOLE
+"આ માટે કોઈ OLE નથી:"
+# ^OutputFolder
+"આઉટપુટ ફોલ્ડર:"
+# ^RemoveFolder
+"ફોલ્ડર દૂર કરો:"
+# ^RenameOnReboot
+"રીબૂટ પર નામ બદલો:"
+# ^Rename
+"નામ બદલો:"
+# ^Skipped
+"છોડી:"
+# ^CopyDetails
+ક્લિપબોર્ડ પર વિગતોની નકલ કરો
+# ^LogInstall
+લોગ ઇન્સ્ટોલ પ્રક્રિયા
+# ^Byte
+બી
+# ^Kilo
+ કે
+# ^Mega
+ એમ
+# ^Giga
+ જી

@@ -1,19 +1,8 @@
 export type ThemeMode = 'light' | 'dark';
 
-export type AppIconVariant =
-  | 'monochrome-dark'
-  | 'monochrome-light'
-  | 'monochrome-contrast';
+export const CUSTOM_THEME_ID = 'custom' as const;
 
-export const APP_ICON_VARIANTS: readonly AppIconVariant[] = [
-  'monochrome-dark',
-  'monochrome-light',
-  'monochrome-contrast',
-] as const;
-
-export const DEFAULT_APP_ICON_VARIANT: AppIconVariant = 'monochrome-dark';
-
-export type ThemeId =
+export type BuiltInThemeId =
   | 'obsidian'
   | 'slate'
   | 'navy'
@@ -28,6 +17,65 @@ export type ThemeId =
   | 'emerald'
   | 'grass'
   | 'lime';
+
+export type ThemeId = BuiltInThemeId | typeof CUSTOM_THEME_ID;
+
+export type AppIconVariant =
+  | 'theme-auto'
+  | 'monochrome-dark'
+  | 'monochrome-light'
+  | 'monochrome-contrast'
+  | 'theme-slate'
+  | 'theme-navy'
+  | 'theme-blue'
+  | 'theme-cyan'
+  | 'theme-indigo'
+  | 'theme-purple'
+  | 'theme-pink'
+  | 'theme-red'
+  | 'theme-orange'
+  | 'theme-yellow'
+  | 'theme-emerald'
+  | 'theme-grass'
+  | 'theme-lime'
+  | 'theme-custom';
+
+export const APP_ICON_VARIANTS: readonly AppIconVariant[] = [
+  'theme-auto',
+  'monochrome-dark',
+  'monochrome-light',
+  'monochrome-contrast',
+  'theme-slate',
+  'theme-navy',
+  'theme-blue',
+  'theme-cyan',
+  'theme-indigo',
+  'theme-purple',
+  'theme-pink',
+  'theme-red',
+  'theme-orange',
+  'theme-yellow',
+  'theme-emerald',
+  'theme-grass',
+  'theme-lime',
+  'theme-custom',
+] as const;
+
+export const DEFAULT_APP_ICON_VARIANT: AppIconVariant = 'monochrome-dark';
+export const DEFAULT_CUSTOM_ACCENT = '#3B82F6';
+export const UI_SCALE_PRESETS = [80, 90, 100, 110, 125, 150] as const;
+export const UI_SCALE_LIMITS = { min: 80, max: 150, step: 10, default: 100 } as const;
+
+export const CUSTOM_THEME_PRESETS: ReadonlyArray<{ hex: string; labelTr: string; labelEn: string }> = [
+  { hex: '#3B82F6', labelTr: 'Kobalt Mavi', labelEn: 'Cobalt Blue' },
+  { hex: '#06B6D4', labelTr: 'Siyan', labelEn: 'Cyan' },
+  { hex: '#10B981', labelTr: 'Zümrüt', labelEn: 'Emerald' },
+  { hex: '#8B5CF6', labelTr: 'Viyole', labelEn: 'Violet' },
+  { hex: '#EC4899', labelTr: 'Macenta', labelEn: 'Magenta' },
+  { hex: '#F43F5E', labelTr: 'Yakut', labelEn: 'Crimson' },
+  { hex: '#F59E0B', labelTr: 'Kehribar', labelEn: 'Amber' },
+  { hex: '#14B8A6', labelTr: 'Teal', labelEn: 'Teal' },
+];
 
 export interface ThemeTokens {
   canvas: string;
@@ -56,21 +104,208 @@ export interface ColorTheme {
   dark: ThemeTokens;
 }
 
+export interface AppIconPalette {
+  variant: AppIconVariant;
+  bg1: string;
+  bg2: string;
+  border: string;
+  fg1: string;
+  fg2: string;
+  ring: string;
+  ringOpacity: string;
+  laser: string;
+}
+
 export const DEFAULT_THEME_ID: ThemeId = 'obsidian';
 export const DEFAULT_THEME_MODE: ThemeMode = 'dark';
 
 export const STORAGE_KEYS = {
   themeMode: 'optik-theme-mode',
   themeId: 'optik-theme-id',
+  customAccent: 'optik-custom-accent',
   reduceMotion: 'optik-reduce-motion',
   appIconVariant: 'optik-app-icon',
+  uiScale: 'optik-ui-scale',
+  highContrast: 'optik-high-contrast',
+  largeFocusRing: 'optik-large-focus',
   legacyTheme: 'optik-theme',
 } as const;
 
-/**
- * 14 Color Themes × 2 Modes (Light / Dark) = 28 Combinations
- * Harmonized with Agendamea's flat, high-contrast minimal palette architecture.
- */
+export interface Rgb {
+  r: number;
+  g: number;
+  b: number;
+}
+
+export function normalizeHexColor(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const cleaned = raw.trim().replace(/^#/, '');
+  if (/^[0-9a-fA-F]{3}$/.test(cleaned)) {
+    const expanded = cleaned
+      .split('')
+      .map((ch) => ch + ch)
+      .join('')
+      .toUpperCase();
+    return `#${expanded}`;
+  }
+  if (/^[0-9a-fA-F]{6}$/.test(cleaned)) {
+    return `#${cleaned.toUpperCase()}`;
+  }
+  return null;
+}
+
+export function hexToRgb(hex: string): Rgb {
+  const normalized = normalizeHexColor(hex) ?? DEFAULT_CUSTOM_ACCENT;
+  return {
+    r: parseInt(normalized.slice(1, 3), 16),
+    g: parseInt(normalized.slice(3, 5), 16),
+    b: parseInt(normalized.slice(5, 7), 16),
+  };
+}
+
+export function rgbToHex({ r, g, b }: Rgb): string {
+  const clamp = (n: number) => Math.max(0, Math.min(255, Math.round(n)));
+  return (
+    '#' +
+    [clamp(r), clamp(g), clamp(b)]
+      .map((n) => n.toString(16).padStart(2, '0'))
+      .join('')
+      .toUpperCase()
+  );
+}
+
+function mixRgb(a: Rgb, b: Rgb, weightB: number): Rgb {
+  const t = Math.max(0, Math.min(1, weightB));
+  return {
+    r: a.r * (1 - t) + b.r * t,
+    g: a.g * (1 - t) + b.g * t,
+    b: a.b * (1 - t) + b.b * t,
+  };
+}
+
+function linearChannel(value: number): number {
+  const n = value / 255;
+  return n <= 0.03928 ? n / 12.92 : Math.pow((n + 0.055) / 1.055, 2.4);
+}
+
+export function relativeLuminance(rgb: Rgb): number {
+  return 0.2126 * linearChannel(rgb.r) + 0.7152 * linearChannel(rgb.g) + 0.0722 * linearChannel(rgb.b);
+}
+
+export function contrastRatioRgb(fg: Rgb, bg: Rgb): number {
+  const l1 = relativeLuminance(fg);
+  const l2 = relativeLuminance(bg);
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function ensureContrastAgainst(color: Rgb, surfaces: Rgb[], target: Rgb, minRatio: number): Rgb {
+  const passes = (candidate: Rgb) => surfaces.every((bg) => contrastRatioRgb(candidate, bg) >= minRatio);
+  if (passes(color)) return color;
+  let low = 0;
+  let high = 1;
+  let best = target;
+  for (let i = 0; i < 16; i += 1) {
+    const mid = (low + high) / 2;
+    const probe = mixRgb(color, target, mid);
+    if (passes(probe)) {
+      best = probe;
+      high = mid;
+    } else {
+      low = mid;
+    }
+  }
+  return best;
+}
+
+const WHITE: Rgb = { r: 255, g: 255, b: 255 };
+const BLACK: Rgb = { r: 0, g: 0, b: 0 };
+
+export function buildCustomColorTheme(
+  rawHex: string | null | undefined,
+): ColorTheme & { contrastLight: number; contrastDark: number } {
+  const hex = normalizeHexColor(rawHex) ?? DEFAULT_CUSTOM_ACCENT;
+  const rawRgb = hexToRgb(hex);
+
+  // Light Mode Tokens
+  const lightCanvas = mixRgb({ r: 248, g: 250, b: 252 }, rawRgb, 0.045);
+  const lightSurface: Rgb = { r: 255, g: 255, b: 255 };
+  const lightSubtle = mixRgb({ r: 241, g: 245, b: 249 }, rawRgb, 0.07);
+  const lightHover = mixRgb({ r: 226, g: 232, b: 240 }, rawRgb, 0.09);
+  const lightBorder = mixRgb({ r: 226, g: 232, b: 240 }, rawRgb, 0.14);
+  const lightBorderStrong = mixRgb({ r: 203, g: 213, b: 225 }, rawRgb, 0.22);
+  const lightAccent = ensureContrastAgainst(rawRgb, [lightSurface, lightCanvas], BLACK, 3.2);
+  const lightAccentHover = ensureContrastAgainst(mixRgb(lightAccent, BLACK, 0.14), [lightSurface], BLACK, 3.5);
+  const lightFg =
+    contrastRatioRgb(WHITE, lightAccent) >= contrastRatioRgb(BLACK, lightAccent) ? WHITE : BLACK;
+  const contrastLight = contrastRatioRgb(lightFg, lightAccent);
+
+  // Dark Mode Tokens
+  const darkCanvas = mixRgb({ r: 10, g: 11, b: 14 }, rawRgb, 0.055);
+  const darkSurface = mixRgb({ r: 17, g: 18, b: 23 }, rawRgb, 0.075);
+  const darkSubtle = mixRgb({ r: 24, g: 26, b: 33 }, rawRgb, 0.095);
+  const darkHover = mixRgb({ r: 32, g: 35, b: 44 }, rawRgb, 0.12);
+  const darkBorder = mixRgb({ r: 39, g: 42, b: 53 }, rawRgb, 0.16);
+  const darkBorderStrong = mixRgb({ r: 56, g: 60, b: 75 }, rawRgb, 0.24);
+  const darkAccent = ensureContrastAgainst(rawRgb, [darkSurface, darkCanvas], WHITE, 3.2);
+  const darkAccentHover = ensureContrastAgainst(mixRgb(darkAccent, WHITE, 0.16), [darkSurface], WHITE, 3.5);
+  const darkFg =
+    contrastRatioRgb(WHITE, darkAccent) >= contrastRatioRgb(BLACK, darkAccent) ? WHITE : BLACK;
+  const contrastDark = contrastRatioRgb(darkFg, darkAccent);
+
+  const lAccentHex = rgbToHex(lightAccent);
+  const dAccentHex = rgbToHex(darkAccent);
+
+  return {
+    id: CUSTOM_THEME_ID,
+    nameTr: `Özel Renk (${hex})`,
+    nameEn: `Custom Color (${hex})`,
+    swatch: lAccentHex,
+    swatchDark: dAccentHex,
+    contrastLight,
+    contrastDark,
+    light: {
+      canvas: rgbToHex(lightCanvas),
+      surface: rgbToHex(lightSurface),
+      surfaceSubtle: rgbToHex(lightSubtle),
+      surfaceHover: rgbToHex(lightHover),
+      border: rgbToHex(lightBorder),
+      borderStrong: rgbToHex(lightBorderStrong),
+      textPrimary: '#0F172A',
+      textSecondary: '#334155',
+      textMuted: '#526075',
+      accent: lAccentHex,
+      accentHover: rgbToHex(lightAccentHover),
+      accentSoft: `rgba(${Math.round(lightAccent.r)}, ${Math.round(lightAccent.g)}, ${Math.round(lightAccent.b)}, 0.11)`,
+      accentRing: `rgba(${Math.round(lightAccent.r)}, ${Math.round(lightAccent.g)}, ${Math.round(lightAccent.b)}, 0.26)`,
+      accentFg: rgbToHex(lightFg),
+    },
+    dark: {
+      canvas: rgbToHex(darkCanvas),
+      surface: rgbToHex(darkSurface),
+      surfaceSubtle: rgbToHex(darkSubtle),
+      surfaceHover: rgbToHex(darkHover),
+      border: rgbToHex(darkBorder),
+      borderStrong: rgbToHex(darkBorderStrong),
+      textPrimary: '#F4F4F5',
+      textSecondary: '#A8B0C0',
+      textMuted: '#7E8799',
+      accent: dAccentHex,
+      accentHover: rgbToHex(darkAccentHover),
+      accentSoft: `rgba(${Math.round(darkAccent.r)}, ${Math.round(darkAccent.g)}, ${Math.round(darkAccent.b)}, 0.15)`,
+      accentRing: `rgba(${Math.round(darkAccent.r)}, ${Math.round(darkAccent.g)}, ${Math.round(darkAccent.b)}, 0.30)`,
+      accentFg: rgbToHex(darkFg),
+    },
+  };
+}
+
+export function clampUiScale(raw: number | null | undefined): number {
+  const num = Number(raw);
+  if (!Number.isFinite(num)) return UI_SCALE_LIMITS.default;
+  return Math.max(UI_SCALE_LIMITS.min, Math.min(UI_SCALE_LIMITS.max, Math.round(num / 5) * 5));
+}
+
 export const COLOR_THEMES: readonly ColorTheme[] = [
   {
     id: 'obsidian',
@@ -621,28 +856,138 @@ export const COLOR_THEMES: readonly ColorTheme[] = [
 ];
 
 export function isValidThemeId(value: string | null | undefined): value is ThemeId {
-  return Boolean(value && COLOR_THEMES.some((t) => t.id === value));
+  return Boolean(
+    value && (value === CUSTOM_THEME_ID || COLOR_THEMES.some((t) => t.id === value)),
+  );
 }
 
 export function isValidAppIconVariant(value: string | null | undefined): value is AppIconVariant {
   return Boolean(value && (APP_ICON_VARIANTS as readonly string[]).includes(value));
 }
 
-export function getThemeById(id: string | null | undefined): ColorTheme {
+export function getThemeById(
+  id: string | null | undefined,
+  customAccent: string = DEFAULT_CUSTOM_ACCENT,
+): ColorTheme {
+  if (id === CUSTOM_THEME_ID) {
+    return buildCustomColorTheme(customAccent);
+  }
   return COLOR_THEMES.find((t) => t.id === id) ?? COLOR_THEMES.find((t) => t.id === DEFAULT_THEME_ID)!;
 }
 
-export function readInitialThemeState(): {
+export function buildTintedIconPalette(
+  variant: AppIconVariant,
+  accentHex: string,
+): AppIconPalette {
+  const rgb = hexToRgb(accentHex);
+  const bg1 = rgbToHex(mixRgb({ r: 10, g: 11, b: 14 }, rgb, 0.18));
+  const bg2 = rgbToHex(mixRgb({ r: 24, g: 26, b: 34 }, rgb, 0.42));
+  const fg1 = rgbToHex(ensureContrastAgainst(mixRgb(rgb, WHITE, 0.35), [hexToRgb(bg1), hexToRgb(bg2)], WHITE, 4.5));
+  const fg2 = rgbToHex(ensureContrastAgainst(rgb, [hexToRgb(bg1), hexToRgb(bg2)], WHITE, 3.4));
+  const ring = rgbToHex(mixRgb(hexToRgb(fg2), hexToRgb(bg2), 0.32));
+  return {
+    variant,
+    bg1,
+    bg2,
+    border: fg2,
+    fg1,
+    fg2,
+    ring,
+    ringOpacity: '0.88',
+    laser: fg1,
+  };
+}
+
+export function resolveAppIconPalette(
+  variant: AppIconVariant,
+  activeThemeId: ThemeId = DEFAULT_THEME_ID,
+  mode: ThemeMode = 'dark',
+  customAccent: string = DEFAULT_CUSTOM_ACCENT,
+): AppIconPalette {
+  if (variant === 'monochrome-light') {
+    return {
+      variant,
+      bg1: '#FFFFFF',
+      bg2: '#E4E4E7',
+      border: '#D4D4D8',
+      fg1: '#09090B',
+      fg2: '#27272A',
+      ring: '#71717A',
+      ringOpacity: '1',
+      laser: '#09090B',
+    };
+  }
+  if (variant === 'monochrome-contrast') {
+    return {
+      variant,
+      bg1: '#000000',
+      bg2: '#000000',
+      border: '#FFFFFF',
+      fg1: '#FFFFFF',
+      fg2: '#FFFFFF',
+      ring: '#FFFFFF',
+      ringOpacity: '0.62',
+      laser: '#FFFFFF',
+    };
+  }
+  if (variant === 'monochrome-dark') {
+    return {
+      variant,
+      bg1: '#09090B',
+      bg2: '#27272A',
+      border: '#52525B',
+      fg1: '#FFFFFF',
+      fg2: '#D4D4D8',
+      ring: '#A1A1AA',
+      ringOpacity: '1',
+      laser: '#FFFFFF',
+    };
+  }
+
+  if (variant === 'theme-custom') {
+    return buildTintedIconPalette(variant, customAccent);
+  }
+
+  if (variant === 'theme-auto') {
+    if (activeThemeId === 'obsidian') {
+      return resolveAppIconPalette(
+        mode === 'light' ? 'monochrome-light' : 'monochrome-dark',
+        activeThemeId,
+        mode,
+        customAccent,
+      );
+    }
+    const theme = getThemeById(activeThemeId, customAccent);
+    const swatch = mode === 'dark' ? theme.swatchDark : theme.swatch;
+    return buildTintedIconPalette(variant, swatch);
+  }
+
+  const themeKey = variant.replace(/^theme-/, '') as ThemeId;
+  const theme = getThemeById(themeKey, customAccent);
+  return buildTintedIconPalette(variant, theme.swatchDark);
+}
+
+export interface InitialThemeState {
   mode: ThemeMode;
   themeId: ThemeId;
+  customAccent: string;
   reduceMotion: boolean;
   appIconVariant: AppIconVariant;
-} {
+  uiScale: number;
+  highContrast: boolean;
+  largeFocusRing: boolean;
+}
+
+export function readInitialThemeState(): InitialThemeState {
   try {
     const savedMode = localStorage.getItem(STORAGE_KEYS.themeMode) ?? localStorage.getItem(STORAGE_KEYS.legacyTheme);
     const savedId = localStorage.getItem(STORAGE_KEYS.themeId);
+    const savedCustomAccent = normalizeHexColor(localStorage.getItem(STORAGE_KEYS.customAccent)) ?? DEFAULT_CUSTOM_ACCENT;
     const savedReduceMotion = localStorage.getItem(STORAGE_KEYS.reduceMotion) === 'true';
     const savedIconVariant = localStorage.getItem(STORAGE_KEYS.appIconVariant);
+    const savedUiScale = clampUiScale(Number(localStorage.getItem(STORAGE_KEYS.uiScale) || '100'));
+    const savedHighContrast = localStorage.getItem(STORAGE_KEYS.highContrast) === 'true';
+    const savedLargeFocus = localStorage.getItem(STORAGE_KEYS.largeFocusRing) === 'true';
 
     const mode: ThemeMode =
       savedMode === 'light' || savedMode === 'dark'
@@ -657,13 +1002,27 @@ export function readInitialThemeState(): {
     const appIconVariant: AppIconVariant = isValidAppIconVariant(savedIconVariant)
       ? savedIconVariant
       : DEFAULT_APP_ICON_VARIANT;
-    return { mode, themeId, reduceMotion: savedReduceMotion, appIconVariant };
+
+    return {
+      mode,
+      themeId,
+      customAccent: savedCustomAccent,
+      reduceMotion: savedReduceMotion,
+      appIconVariant,
+      uiScale: savedUiScale,
+      highContrast: savedHighContrast,
+      largeFocusRing: savedLargeFocus,
+    };
   } catch {
     return {
       mode: 'light',
       themeId: DEFAULT_THEME_ID,
+      customAccent: DEFAULT_CUSTOM_ACCENT,
       reduceMotion: false,
       appIconVariant: DEFAULT_APP_ICON_VARIANT,
+      uiScale: 100,
+      highContrast: false,
+      largeFocusRing: false,
     };
   }
 }
@@ -673,30 +1032,47 @@ export function applyThemeToDocument(
   mode: ThemeMode,
   reduceMotion = false,
   appIconVariant: AppIconVariant = DEFAULT_APP_ICON_VARIANT,
+  customAccent: string = DEFAULT_CUSTOM_ACCENT,
+  uiScale: number = 100,
+  highContrast = false,
+  largeFocusRing = false,
 ): void {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
-  const theme = getThemeById(themeId);
+  const normalizedCustom = normalizeHexColor(customAccent) ?? DEFAULT_CUSTOM_ACCENT;
+  const theme = getThemeById(themeId, normalizedCustom);
   const tokens = mode === 'dark' ? theme.dark : theme.light;
   const validIcon = isValidAppIconVariant(appIconVariant) ? appIconVariant : DEFAULT_APP_ICON_VARIANT;
+  const clampedScale = clampUiScale(uiScale);
+  const iconPal = resolveAppIconPalette(validIcon, theme.id, mode, normalizedCustom);
 
   root.dataset.theme = mode;
   root.dataset.colorTheme = theme.id;
   root.dataset.reduceMotion = reduceMotion ? 'true' : 'false';
   root.dataset.appIcon = validIcon;
+  root.dataset.highContrast = highContrast ? 'true' : 'false';
+  root.dataset.largeFocus = largeFocusRing ? 'true' : 'false';
+  root.dataset.uiScale = String(clampedScale);
   root.style.colorScheme = mode;
   root.classList.toggle('dark', mode === 'dark');
 
-  // Agendamea / Desktop minimal semantic tokens
+  // Apply Accessibility UI Zoom Scale
+  root.style.setProperty('--ui-scale', String(clampedScale / 100));
+  (root.style as unknown as { zoom?: string }).zoom = clampedScale === 100 ? '' : `${clampedScale}%`;
+
+  const effectiveBorder = highContrast ? tokens.borderStrong : tokens.border;
+  const effectiveBorderStrong = highContrast ? tokens.textSecondary : tokens.borderStrong;
+
+  // Semantic tokens
   root.style.setProperty('--canvas', tokens.canvas);
   root.style.setProperty('--surface', tokens.surface);
   root.style.setProperty('--surface-subtle', tokens.surfaceSubtle);
   root.style.setProperty('--surface-hover', tokens.surfaceHover);
-  root.style.setProperty('--border', tokens.border);
-  root.style.setProperty('--border-strong', tokens.borderStrong);
+  root.style.setProperty('--border', effectiveBorder);
+  root.style.setProperty('--border-strong', effectiveBorderStrong);
   root.style.setProperty('--text-primary', tokens.textPrimary);
-  root.style.setProperty('--text-secondary', tokens.textSecondary);
-  root.style.setProperty('--text-muted', tokens.textMuted);
+  root.style.setProperty('--text-secondary', highContrast ? tokens.textPrimary : tokens.textSecondary);
+  root.style.setProperty('--text-muted', highContrast ? tokens.textSecondary : tokens.textMuted);
   root.style.setProperty('--accent', tokens.accent);
   root.style.setProperty('--accent-hover', tokens.accentHover);
   root.style.setProperty('--accent-soft', tokens.accentSoft);
@@ -710,12 +1086,12 @@ export function applyThemeToDocument(
   root.style.setProperty('--bg-surface', tokens.surfaceSubtle);
   root.style.setProperty('--bg-card', tokens.surface);
   root.style.setProperty('--bg-hover', tokens.surfaceHover);
-  root.style.setProperty('--border-subtle', tokens.border);
+  root.style.setProperty('--border-subtle', effectiveBorder);
   root.style.setProperty('--accent-color', tokens.accent);
   root.style.setProperty('--text-main', tokens.textPrimary);
   root.style.setProperty('--text', tokens.textPrimary);
-  root.style.setProperty('--text-soft', tokens.textSecondary);
-  root.style.setProperty('--text-faint', tokens.textMuted);
+  root.style.setProperty('--text-soft', highContrast ? tokens.textPrimary : tokens.textSecondary);
+  root.style.setProperty('--text-faint', highContrast ? tokens.textSecondary : tokens.textMuted);
   root.style.setProperty('--accent-strong', tokens.accentHover);
   root.style.setProperty('--accent-bright', tokens.accent);
   root.style.setProperty('--cyan', tokens.accentHover);
@@ -726,13 +1102,27 @@ export function applyThemeToDocument(
       : `color-mix(in srgb, ${tokens.surface} 82%, transparent)`,
   );
 
+  // Dynamic Brand Icon CSS Variables
+  root.style.setProperty('--ofr-icon-bg-1', iconPal.bg1);
+  root.style.setProperty('--ofr-icon-bg-2', iconPal.bg2);
+  root.style.setProperty('--ofr-icon-border', iconPal.border);
+  root.style.setProperty('--ofr-icon-fg-1', iconPal.fg1);
+  root.style.setProperty('--ofr-icon-fg-2', iconPal.fg2);
+  root.style.setProperty('--ofr-icon-ring', iconPal.ring);
+  root.style.setProperty('--ofr-icon-ring-op', iconPal.ringOpacity);
+  root.style.setProperty('--ofr-icon-laser', iconPal.laser);
+
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', tokens.canvas);
 
   try {
     localStorage.setItem(STORAGE_KEYS.themeMode, mode);
     localStorage.setItem(STORAGE_KEYS.themeId, theme.id);
+    localStorage.setItem(STORAGE_KEYS.customAccent, normalizedCustom);
     localStorage.setItem(STORAGE_KEYS.reduceMotion, String(reduceMotion));
     localStorage.setItem(STORAGE_KEYS.appIconVariant, validIcon);
+    localStorage.setItem(STORAGE_KEYS.uiScale, String(clampedScale));
+    localStorage.setItem(STORAGE_KEYS.highContrast, String(highContrast));
+    localStorage.setItem(STORAGE_KEYS.largeFocusRing, String(largeFocusRing));
     localStorage.setItem(STORAGE_KEYS.legacyTheme, mode);
   } catch {
     // Ignore restricted storage contexts

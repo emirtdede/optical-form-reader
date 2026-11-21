@@ -848,7 +848,7 @@ export function HomePage() {
                 <Check size={17} aria-hidden="true" /> Bilgisayar kamerası veya cep telefonu ile her yerden anında tarama
               </li>
               <li className="pro">
-                <Check size={17} aria-hidden="true" /> 1–160 soru arası özel form sihirbazı ve e-Okul eşleştirmesi
+                <Check size={17} aria-hidden="true" /> 1-160 soru arası özel form sihirbazı ve e-Okul eşleştirmesi
               </li>
             </ul>
 

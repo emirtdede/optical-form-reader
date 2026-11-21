@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+1109
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+-
+# Project-supplied machine translation (Google Translate); pending native review
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+$(^Name) စနစ်ထည့်သွင်းခြင်း။
+# ^UninstallCaption
+$(^Name) ကို ဖြုတ်ပါ။ လုပ်ပါ။
+# ^LicenseSubCaption
+: လိုင်စင် သဘောတူညီချက်
+# ^ComponentsSubCaption
+: တပ်ဆင်မှု ရွေးချယ်စရာများ
+# ^DirSubCaption
+: ထည့်သွင်းခြင်း ဖိုလ်ဒါ
+# ^InstallingSubCaption
+: ထည့်သွင်းခြင်း။
+# ^CompletedSubCaption
+: ပြီးပါပြီ။
+# ^UnComponentsSubCaption
+: Uninstallation ရွေးစရာများ
+# ^UnDirSubCaption
+: Uninstallation Folder
+# ^ConfirmSubCaption
+: အတည်ပြုချက်
+# ^UninstallingSubCaption
+: ဖြုတ်ခြင်း။
+# ^UnCompletedSubCaption
+: ပြီးပါပြီ။
+# ^BackBtn
+< နောက်ပြန်
+# ^NextBtn
+နောက်တစ်ခု >
+# ^AgreeBtn
+ငါ သဘောတူတယ်။
+# ^AcceptBtn
+လိုင်စင်သဘောတူညီချက်၏ စည်းကမ်းချက်များကို ကျွန်ုပ်လက်ခံပါသည်။
+# ^DontAcceptBtn
+လိုင်စင်သဘောတူညီချက်၏ စည်းကမ်းချက်များကို ကျွန်ုပ် လက်မခံပါ။
+# ^InstallBtn
+တပ်ဆင်ပါ။
+# ^UninstallBtn
+ဖြုတ်ပါ။
+# ^CancelBtn
+လုပ်တော့
+# ^CloseBtn
+ပိတ်လိုက်
+# ^BrowseBtn
+လှန်ကြည့်...
+# ^ShowDetailsBtn
+အသေးစိတ်ကိုပြပါ။
+# ^ClickNext
+ရှေ့ဆက်ရန် နောက်တစ်ခု ကိုနှိပ်ပါ။
+# ^ClickInstall
+တပ်ဆင်မှုကိုစတင်ရန် တပ်ဆင်ပါ။ ကိုနှိပ်ပါ။
+# ^ClickUninstall
+ဖြုတ်ပါ။ ကိုစတင်ရန် ဖြုတ်ပါ။ ကိုနှိပ်ပါ။
+# ^Name
+နာမည်
+# ^Completed
+ပြီးသွားပြီ
+# ^LicenseText
+$(^NameDA) မထည့်သွင်းမီ လိုင်စင်သဘောတူညီချက်ကို ပြန်လည်သုံးသပ်ပါ။ သဘောတူညီချက်၏ စည်းကမ်းချက်များအားလုံးကို လက်ခံပါက ငါ သဘောတူတယ်။ ကိုနှိပ်ပါ။
+# ^LicenseTextCB
+$(^NameDA) မထည့်သွင်းမီ လိုင်စင်သဘောတူညီချက်ကို ပြန်လည်သုံးသပ်ပါ။ သဘောတူညီချက်၏ စည်းကမ်းချက်များအားလုံးကို လက်ခံပါက၊ အောက်ဖော်ပြပါ အမှန်ခြစ်ဘောက်စ်ကို နှိပ်ပါ။ $_CLICK
+# ^LicenseTextRB
+$(^NameDA) မထည့်သွင်းမီ လိုင်စင်သဘောတူညီချက်ကို ပြန်လည်သုံးသပ်ပါ။ သဘောတူညီချက်၏ စည်းကမ်းချက်များအားလုံးကို သင်လက်ခံပါက၊ အောက်ဖော်ပြပါ ပထမရွေးချယ်မှုကို ရွေးချယ်ပါ။ $_CLICK
+# ^UnLicenseText
+$(^NameDA) ကို မဖြုတ်မီ လိုင်စင်သဘောတူညီချက်ကို ပြန်လည်သုံးသပ်ပါ။ သဘောတူညီချက်၏ စည်းကမ်းချက်များအားလုံးကို လက်ခံပါက ငါ သဘောတူတယ်။ ကိုနှိပ်ပါ။
+# ^UnLicenseTextCB
+$(^NameDA) ကို မဖြုတ်မီ လိုင်စင်သဘောတူညီချက်ကို ပြန်လည်သုံးသပ်ပါ။ သဘောတူညီချက်၏ စည်းကမ်းချက်များအားလုံးကို သင်လက်ခံပါက၊ အောက်ဖော်ပြပါ အမှန်ခြစ်ဘောက်စ်ကို နှိပ်ပါ။ $_CLICK
+# ^UnLicenseTextRB
+$(^NameDA) ကို မဖြုတ်မီ လိုင်စင်သဘောတူညီချက်ကို ပြန်လည်သုံးသပ်ပါ။ သဘောတူညီချက်၏ စည်းကမ်းချက်များအားလုံးကို သင်လက်ခံပါက၊ အောက်ပါ ပထမရွေးချယ်မှုကို ရွေးချယ်ပါ။ $_CLICK
+# ^Custom
+စိတ်ကြိုက်
+# ^ComponentsText
+သင်ထည့်သွင်းလိုသော အစိတ်အပိုင်းများကို စစ်ဆေးပြီး သင်မတပ်ဆင်လိုသော အစိတ်အပိုင်းများကို အမှန်ခြစ်ဖြုတ်ပါ။ $_CLICK
+# ^ComponentsSubText1
+ထည့်သွင်းမှုအမျိုးအစားကို ရွေးပါ
+# ^ComponentsSubText2_NoInstTypes
+ထည့်သွင်းရန် အစိတ်အပိုင်းများကို ရွေးပါ-
+# ^ComponentsSubText2
+သို့မဟုတ် သင်ထည့်သွင်းလိုသော ရွေးချယ်နိုင်သော အစိတ်အပိုင်းများကို ရွေးပါ-
+# ^UnComponentsText
+သင်ဖြုတ်လိုသော အစိတ်အပိုင်းများကို စစ်ဆေးပြီး သင်မဖြုတ်ချင်သော အစိတ်အပိုင်းများကို အမှန်ခြစ်ဖြုတ်ပါ။ $_CLICK
+# ^UnComponentsSubText1
+uninstall အမျိုးအစားကို ရွေးပါ
+# ^UnComponentsSubText2_NoInstTypes
+ဖြုတ်ရန် အစိတ်အပိုင်းများကို ရွေးပါ-
+# ^UnComponentsSubText2
+သို့မဟုတ်၊ သင်ဖြုတ်လိုသော ရွေးချယ်နိုင်သော အစိတ်အပိုင်းများကို ရွေးပါ-
+# ^DirText
+Setup သည် အောက်ပါဖိုင်တွဲတွင် $(^NameDA) ကို ထည့်သွင်းပါမည်။ မတူညီသောဖိုင်တွဲတစ်ခုတွင် ထည့်သွင်းရန်၊ လှန်ကြည့် ကိုနှိပ်ပြီး အခြားဖိုင်တွဲတစ်ခုကို ရွေးချယ်ပါ။ $_CLICK
+# ^DirSubText
+သွားမည့်နေရာ ဖိုင်တွဲ
+# ^DirBrowseText
+$(^NameDA) ကို ထည့်သွင်းရန် ဖိုဒါကို ရွေးပါ-
+# ^UnDirText
+စနစ်ထည့်သွင်းမှုသည် အောက်ပါဖိုင်တွဲမှ $(^NameDA) ကို ဖြုတ်လိုက်ပါမည်။ မတူညီသော ဖိုဒါတစ်ခုမှ ဖြုတ်ရန်၊ လှန်ကြည့် ကိုနှိပ်ပြီး အခြားဖိုင်တွဲကို ရွေးချယ်ပါ။ $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+$(^NameDA) ကို ဖယ်ရှားရန် ဖိုင်တွဲကို ရွေးပါ-
+# ^SpaceAvailable
+"နေရာလွတ် ရှိနိုင်သည်"
+# ^SpaceRequired
+"နေရာလိုအပ်သည်"
+# ^UninstallingText
+$(^NameDA) ကို အောက်ပါဖိုင်တွဲမှ ဖြုတ်လိုက်ပါမည်။ $_CLICK
+# ^UninstallingSubText
+မှ ဖြုတ်နေသည်-
+# ^FileError
+ရေးသားခြင်းအတွက် ဖိုင်ကိုဖွင့်ရာတွင် အမှားအယွင်းရှိပါသည်- \r\n\r\n$0\r\n\r\n တပ်ဆင်မှုကိုရပ်တန့်ရန် Abort ကိုနှိပ်ပါ၊ \r\n ထပ်စမ်းကြည့်ပါ၊ သို့မဟုတ် ဤဖိုင်ကိုကျော်ရန် \r\nI လျစ်လျူရှုပါ။
+# ^FileError_NoIgnore
+စာရေးရန်အတွက် ဖိုင်ကိုဖွင့်ရာတွင် အမှားအယွင်းဖြစ်နေသည်- \r\n\r\n$0\r\n\r\n ထပ်မံကြိုးစားရန် နှိပ်ပါ၊ သို့မဟုတ် ထည့်သွင်းမှုကို ရပ်ရန်\r\nCancel။
+# ^CantWrite
+"မရေးနိုင်ဘူး"
+# ^CopyFailed
+ကော်ပီ မအောင်မြင်ပါ။
+# ^CopyTo
+"ကော်ပီ"
+# ^Registering
+"မှတ်ပုံတင်ခြင်း"
+# ^Unregistering
+"မှတ်ပုံမတင်ခြင်း-"
+# ^SymbolNotFound
+"သင်္ကေတ ရှာမတွေ့ပါ။"
+# ^CouldNotLoad
+"မတင်နိုင်ပါ-"
+# ^CreateFolder
+"ဖိုင်တွဲဖန်တီးပါ-"
+# ^CreateShortcut
+"ဖြတ်လမ်းကို ဖန်တီးပါ-"
+# ^CreatedUninstaller
+"ဖယ်ထုတ်သည့်ကိရိယာကို ဖန်တီးထားသည်"
+# ^Delete
+"ဖိုင်ကိုဖျက်ပါ"
+# ^DeleteOnReboot
+"ပြန်လည်စတင်ချိန်တွင် ဖျက်ပါ-"
+# ^ErrorCreatingShortcut
+"ဖြတ်လမ်းလင့်ခ်ကို ဖန်တီးရာတွင် အမှားအယွင်းရှိသည်။"
+# ^ErrorCreating
+"ဖန်တီးမှုအမှား-"
+# ^ErrorDecompressing
+ဒေတာကို ချုံ့ရာတွင် အမှားအယွင်းရှိသည်။ တပ်ဆင်သူ ပျက်စီးနေပါသလား။
+# ^ErrorRegistering
+DLL မှတ်ပုံတင်ရာတွင် အမှားအယွင်းရှိနေသည်။
+# ^ExecShell
+"ExecShell:"
+# ^Exec
+"လုပ်ဆောင်ပါ"
+# ^Extract
+"ဖြည်"
+# ^ErrorWriting
+"Extract- ဖိုင်သို့ စာရေးရာတွင် အမှားအယွင်းရှိနေသည်"
+# ^InvalidOpcode
+ထည့်သွင်းသူ ပျက်စီးနေသည်- မမှန်ကန်သော opcode
+# ^NoOLE
+"အတွက် OLE မရှိပါ။"
+# ^OutputFolder
+"Output ဖိုင်တွဲ-"
+# ^RemoveFolder
+"ဖိုင်တွဲကို ဖယ်ရှားပါ-"
+# ^RenameOnReboot
+"ပြန်လည်စတင်ချိန်တွင် အမည်ပြောင်းပါ-"
+# ^Rename
+"အမည်ပြောင်း-"
+# ^Skipped
+"ကျော်သွားသည်"
+# ^CopyDetails
+အသေးစိတ်အချက်အလက်များကို ကလစ်ဘုတ်သို့ ကူးယူပါ။
+# ^LogInstall
+မှတ်တမ်းထည့်သွင်းခြင်းလုပ်ငန်းစဉ်
+# ^Byte
+ခ
+# ^Kilo
+ K
+# ^Mega
+ အမ်
+# ^Giga
+ ဆ

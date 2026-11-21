@@ -1,6 +1,6 @@
 /**
  * Official Vellium Teknoloji Anonim Şirketi Brand, Signature & Legal Standard.
- * Never fabricate company street address, MERSIS, or VKN — always direct users
+ * Never fabricate company street address, MERSIS, or VKN - always direct users
  * to the authoritative live Company Information page on vellium.dev.
  */
 

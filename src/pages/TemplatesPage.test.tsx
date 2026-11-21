@@ -96,8 +96,8 @@ describe('TemplatesPage (Standalone Optik Şablon Galerisi & PDF Üretici)', () 
     const customTab = screen.getByRole('tab', { name: /Özel Form Tasarımcısı/i });
     fireEvent.click(customTab);
 
-    // 3 Şık (A–C) seçimi
-    const btn3Choice = screen.getByRole('radio', { name: /3 Şık \(A–C\)/i });
+    // 3 Şık (A-C) seçimi
+    const btn3Choice = screen.getByRole('radio', { name: /3 Şık \(A-C\)/i });
     fireEvent.click(btn3Choice);
     expect(btn3Choice).toHaveAttribute('aria-checked', 'true');
 
@@ -112,7 +112,7 @@ describe('TemplatesPage (Standalone Optik Şablon Galerisi & PDF Üretici)', () 
     expect(btn100).toHaveAttribute('aria-checked', 'true');
 
     // 5 Şık seçimi
-    const btn5Choice = screen.getByRole('radio', { name: /5 Şık \(A–E\)/i });
+    const btn5Choice = screen.getByRole('radio', { name: /5 Şık \(A-E\)/i });
     fireEvent.click(btn5Choice);
     expect(btn5Choice).toHaveAttribute('aria-checked', 'true');
 

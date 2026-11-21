@@ -16,7 +16,7 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 );
 
-// Only register the Web PWA service worker in production browsers — never inside Tauri desktop WebView2
+// Only register the Web PWA service worker in production browsers - never inside Tauri desktop WebView2
 if ('serviceWorker' in navigator && import.meta.env.PROD && !isTauriRuntime()) {
   window.addEventListener('load', () => {
     void navigator.serviceWorker.register('/service-worker.js');

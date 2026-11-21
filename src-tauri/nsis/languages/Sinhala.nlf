@@ -1,0 +1,191 @@
+﻿# Header, don't edit
+NLF v6
+# Start editing here
+# Language ID
+1115
+# Font and size - dash (-) means default
+-
+-
+# Codepage - dash (-) means ASCII code page
+1200
+# RTL - anything else than RTL means LTR
+-
+# Project-supplied machine translation (Google Translate); pending native review
+# ^Branding
+Nullsoft Install System %s
+# ^SetupCaption
+$(^Name) සැකසුම
+# ^UninstallCaption
+$(^Name) අස්ථාපනය කරන්න
+# ^LicenseSubCaption
+: බලපත්ර ගිවිසුම
+# ^ComponentsSubCaption
+: ස්ථාපන විකල්ප
+# ^DirSubCaption
+: ස්ථාපන ෆෝල්ඩරය
+# ^InstallingSubCaption
+: ස්ථාපනය කිරීම
+# ^CompletedSubCaption
+: සම්පූර්ණයි
+# ^UnComponentsSubCaption
+: අස්ථාපනය කිරීමේ විකල්ප
+# ^UnDirSubCaption
+: අස්ථාපනය කිරීමේ ෆෝල්ඩරය
+# ^ConfirmSubCaption
+: තහවුරු කිරීම
+# ^UninstallingSubCaption
+: අස්ථාපනය කිරීම
+# ^UnCompletedSubCaption
+: සම්පූර්ණයි
+# ^BackBtn
+<ආපසු
+# ^NextBtn
+ඊළඟ >
+# ^AgreeBtn
+මම එකඟයි
+# ^AcceptBtn
+බලපත්‍ර ගිවිසුමේ නියමයන් මම පිළිගනිමි
+# ^DontAcceptBtn
+බලපත්‍ර ගිවිසුමේ නියමයන් මම පිළිගන්නේ නැහැ
+# ^InstallBtn
+ස්ථාපනය කරන්න
+# ^UninstallBtn
+අස්ථාපනය කරන්න
+# ^CancelBtn
+අවලංගු කරන්න
+# ^CloseBtn
+වසන්න
+# ^BrowseBtn
+බ්‍රවුස් කරන්න...
+# ^ShowDetailsBtn
+විස්තර පෙන්වන්න
+# ^ClickNext
+ඉදිරියට යාමට ඊළඟ ක්ලික් කරන්න.
+# ^ClickInstall
+ස්ථාපනය ආරම්භ කිරීමට ස්ථාපනය ක්ලික් කරන්න.
+# ^ClickUninstall
+අස්ථාපනය ආරම්භ කිරීමට අස්ථාපනය කරන්න ක්ලික් කරන්න.
+# ^Name
+නම
+# ^Completed
+සම්පූර්ණ කළා
+# ^LicenseText
+කරුණාකර $(^NameDA) ස්ථාපනය කිරීමට පෙර බලපත්‍ර ගිවිසුම සමාලෝචනය කරන්න. ඔබ ගිවිසුමේ සියලුම කොන්දේසි පිළිගන්නේ නම්, මම එකඟයි ක්ලික් කරන්න.
+# ^LicenseTextCB
+කරුණාකර $(^NameDA) ස්ථාපනය කිරීමට පෙර බලපත්‍ර ගිවිසුම සමාලෝචනය කරන්න. ඔබ ගිවිසුමේ සියලුම කොන්දේසි පිළිගන්නේ නම්, පහත සලකුණු කොටුව ක්ලික් කරන්න. $_CLICK
+# ^LicenseTextRB
+කරුණාකර $(^NameDA) ස්ථාපනය කිරීමට පෙර බලපත්‍ර ගිවිසුම සමාලෝචනය කරන්න. ඔබ ගිවිසුමේ සියලුම කොන්දේසි පිළිගන්නේ නම්, පහත පළමු විකල්පය තෝරන්න. $_CLICK
+# ^UnLicenseText
+කරුණාකර $(^NameDA) අස්ථාපනය කිරීමට පෙර බලපත්‍ර ගිවිසුම සමාලෝචනය කරන්න. ඔබ ගිවිසුමේ සියලුම කොන්දේසි පිළිගන්නේ නම්, මම එකඟයි ක්ලික් කරන්න.
+# ^UnLicenseTextCB
+කරුණාකර $(^NameDA) අස්ථාපනය කිරීමට පෙර බලපත්‍ර ගිවිසුම සමාලෝචනය කරන්න. ඔබ ගිවිසුමේ සියලුම කොන්දේසි පිළිගන්නේ නම්, පහත සලකුණු කොටුව ක්ලික් කරන්න. $_CLICK
+# ^UnLicenseTextRB
+කරුණාකර $(^NameDA) අස්ථාපනය කිරීමට පෙර බලපත්‍ර ගිවිසුම සමාලෝචනය කරන්න. ඔබ ගිවිසුමේ සියලුම කොන්දේසි පිළිගන්නේ නම්, පහත පළමු විකල්පය තෝරන්න. $_CLICK
+# ^Custom
+අභිරුචි
+# ^ComponentsText
+ඔබට ස්ථාපනය කිරීමට අවශ්‍ය සංරචක පරීක්ෂා කර ඔබට ස්ථාපනය කිරීමට අවශ්‍ය නොවන සංරචක සලකුණු නොකරන්න. $_CLICK
+# ^ComponentsSubText1
+ස්ථාපන වර්ගය තෝරන්න:
+# ^ComponentsSubText2_NoInstTypes
+ස්ථාපනය කිරීමට සංරචක තෝරන්න:
+# ^ComponentsSubText2
+නැතහොත්, ඔබ ස්ථාපනය කිරීමට බලාපොරොත්තු වන විකල්ප සංරචක තෝරන්න:
+# ^UnComponentsText
+ඔබට අස්ථාපනය කිරීමට අවශ්‍ය සංරචක පරීක්ෂා කර ඔබට අස්ථාපනය කිරීමට අවශ්‍ය නොවන සංරචක සලකුණු නොකරන්න. $_CLICK
+# ^UnComponentsSubText1
+අස්ථාපනය කිරීමේ වර්ගය තෝරන්න:
+# ^UnComponentsSubText2_NoInstTypes
+අස්ථාපනය කිරීමට සංරචක තෝරන්න:
+# ^UnComponentsSubText2
+නැතහොත්, ඔබ අස්ථාපනය කිරීමට බලාපොරොත්තු වන විකල්ප සංරචක තෝරන්න:
+# ^DirText
+පිහිටුවීම පහත ෆෝල්ඩරය තුළ $(^NameDA) ස්ථාපනය කරනු ඇත. වෙනත් ෆෝල්ඩරයක ස්ථාපනය කිරීමට, බ්‍රවුස් ක්ලික් කර වෙනත් ෆෝල්ඩරයක් තෝරන්න. $_CLICK
+# ^DirSubText
+ගමනාන්ත ෆෝල්ඩරය
+# ^DirBrowseText
+$(^NameDA) ස්ථාපනය කිරීමට ෆෝල්ඩරය තෝරන්න:
+# ^UnDirText
+පිහිටුවීම පහත ෆෝල්ඩරයෙන් $(^NameDA) අස්ථාපනය කරනු ඇත. වෙනත් ෆෝල්ඩරයකින් අස්ථාපනය කිරීමට, බ්‍රවුස් ක්ලික් කර වෙනත් ෆෝල්ඩරයක් තෝරන්න. $_CLICK
+# ^UnDirSubText
+""
+# ^UnDirBrowseText
+$(^NameDA) අස්ථාපනය කිරීමට ෆෝල්ඩරය තෝරන්න:
+# ^SpaceAvailable
+"පවතින ඉඩ:"
+# ^SpaceRequired
+"අවශ්‍ය ඉඩ:"
+# ^UninstallingText
+$(^NameDA) පහත ෆෝල්ඩරයෙන් අස්ථාපනය කරනු ඇත. $_CLICK
+# ^UninstallingSubText
+අස්ථාපනය කරමින්:
+# ^FileError
+ලිවීම සඳහා ගොනුව විවෘත කිරීමේ දෝෂයකි: \r\n\r\n$0\r\n\r\n ස්ථාපනය නැවැත්වීමට Abort ක්ලික් කරන්න, \r\nනැවත උත්සාහ කිරීමට නැවත උත්සාහ කරන්න, හෝ\r\nමෙම ගොනුව මඟ හැරීමට නොසලකා හරින්න.
+# ^FileError_NoIgnore
+ලිවීම සඳහා ගොනුව විවෘත කිරීමේ දෝෂයකි: \r\n\r\n$0\r\n\r\n නැවත උත්සාහ කිරීමට නැවත උත්සාහ කරන්න ක්ලික් කරන්න, නැතහොත් ස්ථාපනය නැවැත්වීමට \r\n අවලංගු කරන්න.
+# ^CantWrite
+"ලියන්න බැහැ:"
+# ^CopyFailed
+පිටපත් කිරීම අසාර්ථක විය
+# ^CopyTo
+"පිටපත් කරන්න"
+# ^Registering
+"ලියාපදිංචිය:"
+# ^Unregistering
+"ලියාපදිංචිය ඉවත් කිරීම:"
+# ^SymbolNotFound
+"සංකේතය සොයාගත නොහැකි විය:"
+# ^CouldNotLoad
+"පූරණය කළ නොහැකි විය:"
+# ^CreateFolder
+"ෆෝල්ඩරය සාදන්න:"
+# ^CreateShortcut
+"කෙටිමං සාදන්න:"
+# ^CreatedUninstaller
+"සාදන ලද අස්ථාපනය කරන්නා:"
+# ^Delete
+"ගොනුව මකන්න:"
+# ^DeleteOnReboot
+"නැවත පණගැන්වීමේදී මකන්න:"
+# ^ErrorCreatingShortcut
+"කෙටිමං සෑදීමේ දෝෂයකි:"
+# ^ErrorCreating
+"නිර්මාණය කිරීමේ දෝෂය:"
+# ^ErrorDecompressing
+දත්ත විසංයෝජනය කිරීමේ දෝෂයකි! දූෂිත ස්ථාපකය?
+# ^ErrorRegistering
+DLL ලියාපදිංචි කිරීමේදී දෝෂයකි
+# ^ExecShell
+"ExecShell:"
+# ^Exec
+"ක්‍රියාත්මක කරන්න:"
+# ^Extract
+"උපුටා ගැනීම:"
+# ^ErrorWriting
+"උපුටා ගැනීම: ගොනුවට ලිවීමේ දෝෂයක්"
+# ^InvalidOpcode
+ස්ථාපකය දූෂිතයි: වලංගු නොවන opcode
+# ^NoOLE
+"මේ සඳහා OLE නැත:"
+# ^OutputFolder
+"ප්‍රතිදාන ෆෝල්ඩරය:"
+# ^RemoveFolder
+"ෆෝල්ඩරය ඉවත් කරන්න:"
+# ^RenameOnReboot
+"නැවත පණගැන්වීමේදී නැවත නම් කරන්න:"
+# ^Rename
+"නැවත නම් කරන්න:"
+# ^Skipped
+"මඟ හැරිය:"
+# ^CopyDetails
+විස්තර පසුරු පුවරුවට පිටපත් කරන්න
+# ^LogInstall
+ලොග් ස්ථාපන ක්රියාවලිය
+# ^Byte
+බී
+# ^Kilo
+ කේ
+# ^Mega
+ එම්
+# ^Giga
+ ජී

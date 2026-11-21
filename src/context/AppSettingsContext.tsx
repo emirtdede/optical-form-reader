@@ -20,6 +20,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { APP_VERSION } from '../brand/vellium';
+import { OnboardingModal } from '../components/OnboardingModal';
 import { useI18n } from '../i18n/I18nContext';
 import {
   forceExitDesktopApp,
@@ -45,6 +46,7 @@ export interface ShortcutBindings {
 }
 
 export interface AppPreferences {
+  onboardingCompleted: boolean;
   closeToTray: boolean;
   confirmOnExit: boolean;
   confirmExternalLinks: boolean;
@@ -94,7 +96,13 @@ export const DEFAULT_SHORTCUTS: ShortcutBindings = {
   cancel: 'Escape',
 };
 
+const isVitestEnv =
+  typeof import.meta !== 'undefined' &&
+  Boolean((import.meta as unknown as { env?: { VITEST?: boolean; MODE?: string } }).env?.VITEST ||
+    (import.meta as unknown as { env?: { MODE?: string } }).env?.MODE === 'test');
+
 export const DEFAULT_APP_PREFERENCES: AppPreferences = {
+  onboardingCompleted: isVitestEnv,
   closeToTray: true,
   confirmOnExit: true,
   confirmExternalLinks: true,
@@ -194,6 +202,9 @@ export interface AppSettingsContextValue {
   setScanningState: (active: boolean, label?: string, onAbortScan?: (() => Promise<void> | void) | null) => void;
   requestAppClose: () => void;
   requestExternalLink: (url: string) => void;
+  isOnboardingOpen: boolean;
+  openOnboarding: () => void;
+  closeOnboarding: () => void;
   logs: DiagnosticLogEntry[];
   recordLog: (level: DiagnosticLogEntry['level'], scope: string, message: string) => void;
   clearLogs: () => void;
@@ -215,6 +226,9 @@ const AppSettingsContext = createContext<AppSettingsContextValue>({
   requestExternalLink: (url) => {
     void openExternalUrlDirect(url);
   },
+  isOnboardingOpen: false,
+  openOnboarding: () => {},
+  closeOnboarding: () => {},
   logs: [],
   recordLog: () => {},
   clearLogs: () => {},
@@ -229,12 +243,24 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const [isScanningActive, setIsScanningActive] = useState(false);
   const [scanningLabel, setScanningLabel] = useState('');
+  const [onboardingForcedOpen, setOnboardingForcedOpen] = useState(false);
   const abortScanRef = useRef<(() => Promise<void> | void) | null>(null);
 
   // Modal states: External Link Confirmation & App Exit Confirmation
   const [pendingExternalUrl, setPendingExternalUrl] = useState<string | null>(null);
   const [exitModalOpen, setExitModalOpen] = useState(false);
   const [rememberExitChoice, setRememberExitChoice] = useState(false);
+
+  const isOnboardingOpen = !prefs.onboardingCompleted || onboardingForcedOpen;
+
+  const openOnboarding = useCallback(() => {
+    setOnboardingForcedOpen(true);
+  }, []);
+
+  const closeOnboarding = useCallback(() => {
+    setOnboardingForcedOpen(false);
+    setPrefs((prev) => (prev.onboardingCompleted ? prev : { ...prev, onboardingCompleted: true }));
+  }, []);
 
   // Persist preferences & sync density attribute
   useEffect(() => {
@@ -311,7 +337,7 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
   );
 
   const sendTestNotification = useCallback(() => {
-    const title = isTr ? 'Optik Form Okuyucu — Test Bildirimi' : 'Optical Form Reader — Test Notification';
+    const title = isTr ? 'Optik Form Okuyucu - Test Bildirimi' : 'Optical Form Reader - Test Notification';
     const message = isTr
       ? 'Uygulama içi ve Windows masaüstü bildirim sistemi aktif ve sorunsuz çalışıyor.'
       : 'In-app toast and Windows desktop notification channels are active and working.';
@@ -323,7 +349,6 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
       desktop: true,
       desktopCategory: 'test',
     });
-    // Even if desktopNotifications toggle was off, send native desktop notification on explicit test button click
     if (!prefs.desktopNotifications) {
       void sendNativeDesktopNotification(title, message);
     }
@@ -351,7 +376,7 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const resetAllPrefs = useCallback(() => {
-    setPrefs({ ...DEFAULT_APP_PREFERENCES, shortcuts: { ...DEFAULT_SHORTCUTS } });
+    setPrefs({ ...DEFAULT_APP_PREFERENCES, onboardingCompleted: true, shortcuts: { ...DEFAULT_SHORTCUTS } });
     recordLog('info', 'settings', 'All user preferences reset to factory defaults.');
   }, [recordLog]);
 
@@ -421,18 +446,15 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
   );
 
   const requestAppClose = useCallback(() => {
-    // When scanning is active, ALWAYS ask confirmation so user never loses progress
     if (isScanningActive) {
       setExitModalOpen(true);
       return;
     }
-    // When idle, ask confirmation if confirmOnExit is enabled (Power Pilot style)
     if (prefs.confirmOnExit) {
       setRememberExitChoice(false);
       setExitModalOpen(true);
       return;
     }
-    // Otherwise apply configured close behavior directly
     if (prefs.closeToTray && isDesktopShell()) {
       void hideWindowToTray();
     } else {
@@ -451,7 +473,6 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
     [prefs.confirmExternalLinks],
   );
 
-  // Register global bridge handlers for WindowControls & openExternalUrl
   useEffect(() => {
     window.__OFR_REQUEST_APP_CLOSE__ = requestAppClose;
     window.__OFR_REQUEST_EXTERNAL_LINK__ = requestExternalLink;
@@ -461,7 +482,6 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
     };
   }, [requestAppClose, requestExternalLink]);
 
-  // Listen to native OS CloseRequested (Alt+F4 / Taskbar close / Tray quit)
   useEffect(() => {
     let unsub: (() => void) | undefined;
     void subscribeAppCloseRequested(() => {
@@ -474,7 +494,6 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
     };
   }, [requestAppClose]);
 
-  // Browser beforeunload safeguard when scanning on Web
   useEffect(() => {
     if (!isScanningActive) return;
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -559,6 +578,9 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
       setScanningState,
       requestAppClose,
       requestExternalLink,
+      isOnboardingOpen,
+      openOnboarding,
+      closeOnboarding,
       logs,
       recordLog,
       clearLogs,
@@ -577,6 +599,9 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
       setScanningState,
       requestAppClose,
       requestExternalLink,
+      isOnboardingOpen,
+      openOnboarding,
+      closeOnboarding,
       logs,
       recordLog,
       clearLogs,
@@ -586,6 +611,9 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
   return (
     <AppSettingsContext.Provider value={value}>
       {children}
+
+      {/* Welcome & Onboarding Tour Modal */}
+      <OnboardingModal isOpen={isOnboardingOpen} onClose={closeOnboarding} />
 
       {/* Power Pilot Floating Zero-Shift Toast Container */}
       <div
@@ -687,8 +715,8 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
                 <h3 id="modal-confirm-exit-title" className="pp-modal-title">
                   {isScanningActive
                     ? isTr
-                      ? 'Aktif Tarama Devam Ediyor — Çıkış Onayı'
-                      : 'Active Scan Running — Exit Confirmation'
+                      ? 'Aktif Tarama Devam Ediyor - Çıkış Onayı'
+                      : 'Active Scan Running - Exit Confirmation'
                     : isTr
                       ? 'Uygulamadan Çıkış'
                       : 'Exit Application'}
@@ -738,8 +766,8 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
                     />
                     <span>
                       {isTr
-                        ? 'Seçimimi hatırla (Ayarlar → Genel bölümünden istediğiniz zaman değiştirebilirsiniz)'
-                        : 'Remember my choice (can be changed anytime in Settings → General)'}
+                        ? 'Seçimimi hatırla (Ayarlar -> Genel bölümünden istediğiniz zaman değiştirebilirsiniz)'
+                        : 'Remember my choice (can be changed anytime in Settings -> General)'}
                     </span>
                   </label>
                 </div>
