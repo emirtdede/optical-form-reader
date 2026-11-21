@@ -1,7 +1,17 @@
 {
-  "name": "optik-form-okuyucu",
-  "version": "2.1.0",
-  "description": "Görüntü ve PDF'leri cihazdan çıkarmadan 100 soruluk optik formları partlar halinde değerlendiren yerel-first web uygulaması.",
+  "name": "optical-form-reader",
+  "version": "1.0.0",
+  "description": "Optical Form Reader by Vellium — Local-first OMR & academic grading suite for Windows 11 and Web.",
+  "author": {
+    "name": "Vellium Teknoloji Anonim Şirketi",
+    "email": "support@vellium.dev",
+    "url": "https://vellium.dev"
+  },
+  "homepage": "https://optikformokuyucu.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/emirtdede/optical-form-reader.git"
+  },
   "private": true,
   "type": "module",
   "engines": {
@@ -11,12 +21,21 @@
     "dev": "vite --host 0.0.0.0 --port 8081",
     "build": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json && vite build",
     "preview": "vite preview --host 0.0.0.0 --port 8081",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "icons:generate": "node scripts/generate-icons.mjs",
+    "msix:build": "node scripts/build-msix.mjs",
+    "msix:verify": "node scripts/verify-msix.mjs",
+    "check:i18n": "node scripts/check-i18n.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "npm run build && npm test && npm run audit:prod",
+    "check": "npm run build && npm test && npm run check:i18n",
     "audit:prod": "npm audit --omit=dev"
   },
   "dependencies": {
+    "@tauri-apps/api": "^2.10.1",
+    "@tauri-apps/plugin-dialog": "^2.2.1",
     "@techstark/opencv-js": "5.0.0-release.1",
     "exceljs": "4.4.0",
     "idb": "8.0.3",
@@ -30,13 +49,16 @@
     "react-router-dom": "^7.18.3"
   },
   "devDependencies": {
+    "@tauri-apps/cli": "^2.10.1",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.0",
+    "@types/node": "^22.14.0",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.1.1",
     "fake-indexeddb": "6.2.4",
     "jsdom": "27.2.0",
+    "sharp": "^0.34.2",
     "typescript": "5.9.3",
     "vite": "7.3.6",
     "vitest": "4.1.10"

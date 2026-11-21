@@ -61,8 +61,15 @@ export function getDefaultSections(): ExamSection[] {
 export function calculateSectionScores(
   answers: QuestionResult[],
   sections: ExamSection[] = getDefaultSections(),
-  penaltyDivider = 4,
+  penaltyDividerOrFactor = 4,
 ): SectionScore[] {
+  const penaltyFactor =
+    penaltyDividerOrFactor <= 0
+      ? 0
+      : penaltyDividerOrFactor <= 1
+        ? penaltyDividerOrFactor
+        : 1 / penaltyDividerOrFactor;
+
   return sections.map((section) => {
     const start = Math.max(1, section.startQuestion);
     const end = Math.min(100, section.endQuestion);
@@ -77,7 +84,7 @@ export function calculateSectionScores(
       { correct: 0, wrong: 0, blank: 0, ambiguous: 0 } as Record<string, number>,
     );
 
-    const net = Number((totals.correct - totals.wrong / penaltyDivider).toFixed(2));
+    const net = Number((totals.correct - totals.wrong * penaltyFactor).toFixed(2));
     const score100 = Number(Math.max(0, Math.min(100, (net / count) * 100)).toFixed(2));
     const { gpa4, letterGrade } = scoreToGpaAndLetter(score100);
 

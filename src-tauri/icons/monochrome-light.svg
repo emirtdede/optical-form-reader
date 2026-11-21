@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  
+    <defs>
+      <linearGradient id="monochrome-light-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#ffffff" />
+        <stop offset="100%" stop-color="#e4e4e7" />
+      </linearGradient>
+      <linearGradient id="monochrome-light-fg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#09090b" />
+        <stop offset="100%" stop-color="#27272a" />
+      </linearGradient>
+      <linearGradient id="monochrome-light-laser" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#09090b" stop-opacity="0" />
+        <stop offset="18%" stop-color="#09090b" stop-opacity="0.88" />
+        <stop offset="50%" stop-color="#09090b" stop-opacity="1" />
+        <stop offset="82%" stop-color="#09090b" stop-opacity="0.88" />
+        <stop offset="100%" stop-color="#09090b" stop-opacity="0" />
+      </linearGradient>
+    </defs>
+    <rect x="4" y="4" width="248" height="248" rx="56" fill="url(#monochrome-light-bg)" stroke="#d4d4d8" stroke-width="6" />
+    <path d="M 48 80 L 48 48 L 80 48" fill="none" stroke="url(#monochrome-light-fg)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M 176 48 L 208 48 L 208 80" fill="none" stroke="url(#monochrome-light-fg)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M 48 176 L 48 208 L 80 208" fill="none" stroke="url(#monochrome-light-fg)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M 176 208 L 208 208 L 208 176" fill="none" stroke="url(#monochrome-light-fg)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="88" cy="88" r="13" fill="none" stroke="#71717a" opacity="1" stroke-width="6" />
+    <circle cx="128" cy="88" r="13" fill="url(#monochrome-light-fg)" />
+    <circle cx="168" cy="88" r="13" fill="none" stroke="#71717a" opacity="1" stroke-width="6" />
+    <circle cx="88" cy="128" r="13" fill="none" stroke="#71717a" opacity="1" stroke-width="6" />
+    <circle cx="128" cy="128" r="13" fill="none" stroke="#71717a" opacity="1" stroke-width="6" />
+    <circle cx="168" cy="128" r="13" fill="url(#monochrome-light-fg)" />
+    <circle cx="88" cy="168" r="13" fill="url(#monochrome-light-fg)" />
+    <circle cx="128" cy="168" r="13" fill="none" stroke="#71717a" opacity="1" stroke-width="6" />
+    <circle cx="168" cy="168" r="13" fill="none" stroke="#71717a" opacity="1" stroke-width="6" />
+    <rect x="30" y="125" width="196" height="6" rx="3" fill="url(#monochrome-light-laser)" opacity="0.96" />
+  
+</svg>

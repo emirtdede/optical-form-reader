@@ -1,39 +1,242 @@
-import type { SVGProps } from 'react';
+import { useId, type SVGProps } from 'react';
+import type { AppIconVariant } from '../theme/themes';
 
-export function ProductMark(props: SVGProps<SVGSVGElement>) {
+export interface ProductMarkProps extends SVGProps<SVGSVGElement> {
+  /** Optional explicit monochrome variant preview (used in Settings icon picker cards). */
+  variant?: AppIconVariant;
+}
+
+const VARIANT_PALETTES: Record<
+  AppIconVariant,
+  {
+    bg1: string;
+    bg2: string;
+    border: string;
+    fg1: string;
+    fg2: string;
+    ring: string;
+    ringOpacity: string;
+    laser: string;
+  }
+> = {
+  'monochrome-dark': {
+    bg1: '#09090b',
+    bg2: '#27272a',
+    border: 'rgba(255,255,255,0.14)',
+    fg1: '#ffffff',
+    fg2: '#d4d4d8',
+    ring: '#a1a1aa',
+    ringOpacity: '1',
+    laser: '#ffffff',
+  },
+  'monochrome-light': {
+    bg1: '#ffffff',
+    bg2: '#e4e4e7',
+    border: '#d4d4d8',
+    fg1: '#09090b',
+    fg2: '#27272a',
+    ring: '#71717a',
+    ringOpacity: '1',
+    laser: '#09090b',
+  },
+  'monochrome-contrast': {
+    bg1: '#000000',
+    bg2: '#000000',
+    border: 'rgba(255,255,255,0.22)',
+    fg1: '#ffffff',
+    fg2: '#ffffff',
+    ring: '#ffffff',
+    ringOpacity: '0.58',
+    laser: '#ffffff',
+  },
+};
+
+export function ProductMark({ variant, className, ...props }: ProductMarkProps) {
+  const uid = useId().replace(/:/g, '');
+  const bgId = `ofr-bg-${uid}`;
+  const fgId = `ofr-fg-${uid}`;
+  const laserId = `ofr-laser-${uid}`;
+  const pal = variant ? VARIANT_PALETTES[variant] : null;
+
   return (
-    <svg viewBox="0 0 256 256" role="img" aria-label="Optik Form Okuyucu logosu" {...props}>
+    <svg
+      viewBox="0 0 256 256"
+      role="img"
+      aria-label="Optik Form Okuyucu logosu"
+      className={`ofr-brand-svg ${className ?? ''}`.trim()}
+      {...props}
+    >
       <defs>
-        <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#2dd4bf" />
-          <stop offset="100%" stopColor="#0284c7" />
+        <linearGradient id={bgId} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop
+            offset="0%"
+            className={pal ? undefined : 'ofr-logo-bg-stop-1'}
+            stopColor={pal?.bg1}
+          />
+          <stop
+            offset="100%"
+            className={pal ? undefined : 'ofr-logo-bg-stop-2'}
+            stopColor={pal?.bg2}
+          />
         </linearGradient>
-        <linearGradient id="laserGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#2dd4bf" stopOpacity="0" />
-          <stop offset="15%" stopColor="#2dd4bf" stopOpacity="0.8" />
-          <stop offset="50%" stopColor="#2dd4bf" stopOpacity="1" />
-          <stop offset="85%" stopColor="#2dd4bf" stopOpacity="0.8" />
-          <stop offset="100%" stopColor="#2dd4bf" stopOpacity="0" />
+        <linearGradient id={fgId} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop
+            offset="0%"
+            className={pal ? undefined : 'ofr-logo-fg-stop-1'}
+            stopColor={pal?.fg1}
+          />
+          <stop
+            offset="100%"
+            className={pal ? undefined : 'ofr-logo-fg-stop-2'}
+            stopColor={pal?.fg2}
+          />
         </linearGradient>
-        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="4" result="blur" />
-          <feComposite in="SourceGraphic" in2="blur" operator="over" />
-        </filter>
+        <linearGradient id={laserId} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop
+            offset="0%"
+            className={pal ? undefined : 'ofr-logo-laser-stop'}
+            stopColor={pal?.laser}
+            stopOpacity="0"
+          />
+          <stop
+            offset="18%"
+            className={pal ? undefined : 'ofr-logo-laser-stop'}
+            stopColor={pal?.laser}
+            stopOpacity="0.88"
+          />
+          <stop
+            offset="50%"
+            className={pal ? undefined : 'ofr-logo-laser-stop'}
+            stopColor={pal?.laser}
+            stopOpacity="1"
+          />
+          <stop
+            offset="82%"
+            className={pal ? undefined : 'ofr-logo-laser-stop'}
+            stopColor={pal?.laser}
+            stopOpacity="0.88"
+          />
+          <stop
+            offset="100%"
+            className={pal ? undefined : 'ofr-logo-laser-stop'}
+            stopColor={pal?.laser}
+            stopOpacity="0"
+          />
+        </linearGradient>
       </defs>
-      <path d="M 40 72 L 40 40 L 72 40" fill="none" stroke="url(#brandGrad)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M 184 40 L 216 40 L 216 72" fill="none" stroke="url(#brandGrad)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M 40 184 L 40 216 L 72 216" fill="none" stroke="url(#brandGrad)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M 184 216 L 216 216 L 216 184" fill="none" stroke="url(#brandGrad)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="84" cy="84" r="14" fill="none" stroke="#475569" strokeWidth="6" />
-      <circle cx="128" cy="84" r="14" fill="url(#brandGrad)" />
-      <circle cx="172" cy="84" r="14" fill="none" stroke="#475569" strokeWidth="6" />
-      <circle cx="84" cy="128" r="14" fill="none" stroke="#475569" strokeWidth="6" />
-      <circle cx="128" cy="128" r="14" fill="none" stroke="#475569" strokeWidth="6" />
-      <circle cx="172" cy="128" r="14" fill="url(#brandGrad)" />
-      <circle cx="84" cy="172" r="14" fill="url(#brandGrad)" />
-      <circle cx="128" cy="172" r="14" fill="none" stroke="#475569" strokeWidth="6" />
-      <circle cx="172" cy="172" r="14" fill="none" stroke="#475569" strokeWidth="6" />
-      <rect x="20" y="126" width="216" height="4" fill="url(#laserGrad)" filter="url(#glow)" opacity="0.9" />
+
+      <rect
+        className={pal ? undefined : 'ofr-logo-bg'}
+        x="3"
+        y="3"
+        width="250"
+        height="250"
+        rx="56"
+        fill={`url(#${bgId})`}
+        stroke={pal?.border}
+        strokeWidth="6"
+      />
+
+      <path
+        d="M 48 80 L 48 48 L 80 48"
+        fill="none"
+        stroke={`url(#${fgId})`}
+        strokeWidth="12"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M 176 48 L 208 48 L 208 80"
+        fill="none"
+        stroke={`url(#${fgId})`}
+        strokeWidth="12"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M 48 176 L 48 208 L 80 208"
+        fill="none"
+        stroke={`url(#${fgId})`}
+        strokeWidth="12"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M 176 208 L 208 208 L 208 176"
+        fill="none"
+        stroke={`url(#${fgId})`}
+        strokeWidth="12"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      <circle
+        className={pal ? undefined : 'ofr-logo-ring'}
+        cx="88"
+        cy="88"
+        r="13"
+        fill="none"
+        stroke={pal?.ring}
+        opacity={pal?.ringOpacity}
+        strokeWidth="6"
+      />
+      <circle cx="128" cy="88" r="13" fill={`url(#${fgId})`} />
+      <circle
+        className={pal ? undefined : 'ofr-logo-ring'}
+        cx="168"
+        cy="88"
+        r="13"
+        fill="none"
+        stroke={pal?.ring}
+        opacity={pal?.ringOpacity}
+        strokeWidth="6"
+      />
+
+      <circle
+        className={pal ? undefined : 'ofr-logo-ring'}
+        cx="88"
+        cy="128"
+        r="13"
+        fill="none"
+        stroke={pal?.ring}
+        opacity={pal?.ringOpacity}
+        strokeWidth="6"
+      />
+      <circle
+        className={pal ? undefined : 'ofr-logo-ring'}
+        cx="128"
+        cy="128"
+        r="13"
+        fill="none"
+        stroke={pal?.ring}
+        opacity={pal?.ringOpacity}
+        strokeWidth="6"
+      />
+      <circle cx="168" cy="128" r="13" fill={`url(#${fgId})`} />
+
+      <circle cx="88" cy="168" r="13" fill={`url(#${fgId})`} />
+      <circle
+        className={pal ? undefined : 'ofr-logo-ring'}
+        cx="128"
+        cy="168"
+        r="13"
+        fill="none"
+        stroke={pal?.ring}
+        opacity={pal?.ringOpacity}
+        strokeWidth="6"
+      />
+      <circle
+        className={pal ? undefined : 'ofr-logo-ring'}
+        cx="168"
+        cy="168"
+        r="13"
+        fill="none"
+        stroke={pal?.ring}
+        opacity={pal?.ringOpacity}
+        strokeWidth="6"
+      />
+
+      <rect x="30" y="125" width="196" height="6" rx="3" fill={`url(#${laserId})`} opacity="0.96" />
     </svg>
   );
 }

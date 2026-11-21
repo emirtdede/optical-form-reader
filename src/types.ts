@@ -75,6 +75,8 @@ export interface Score {
 export interface StudentResult {
   id: string;
   studentNumber: string;
+  studentFullName?: string;
+  studentClass?: string;
   studentNumberSource: 'form' | 'filename' | 'manual' | 'generated';
   studentNumberNeedsReview: boolean;
   booklet: BookletType;
@@ -86,6 +88,14 @@ export interface StudentResult {
   score: Score;
   answers: QuestionResult[];
   diagnostics: FormDiagnostics;
+}
+
+export interface StudentRosterEntry {
+  studentNumber: string;
+  fullName: string;
+  className?: string;
+  branch?: string;
+  note?: string;
 }
 
 export type DuplicateMode = 'skip' | 'reprocess';
@@ -114,18 +124,29 @@ export interface SessionProgress {
   updatedAt: string;
 }
 
+export type PenaltyPreset = 'osym' | 'lgs' | 'none' | 'custom';
+
+export interface PenaltyRule {
+  preset: PenaltyPreset;
+  wrongCount: number;
+  deductCount: number;
+  label?: string;
+}
+
 export interface ExamSession {
   id: string;
   title: string;
   createdAt: string;
   updatedAt: string;
   algorithmVersion: string;
-  questionCount: 100;
+  questionCount: number;
+  templateId?: string;
   answerKey: AnswerChoice[];
   bookletKeys?: Partial<Record<BookletType, AnswerChoice[]>>;
   activeBooklets?: BookletType[];
   sections?: ExamSection[];
   questionWeights?: number[];
+  penaltyRule?: PenaltyRule;
   results: StudentResult[];
   progress?: SessionProgress;
   useRelativeGrading?: boolean;
@@ -143,6 +164,53 @@ export interface QuestionStatistics {
   blankRate: number;
   difficulty: number;
   optionCounts: Record<AnswerChoice, number>;
+}
+
+export interface ItemAnalysisMetrics {
+  question: number;
+  key: AnswerChoice;
+  totalAttempts: number;
+  correctCount: number;
+  difficultyIndex: number; // p-value: 0.0 - 1.0
+  difficultyLabel: 'Çok Kolay' | 'Kolay' | 'Orta' | 'Zor' | 'Çok Zor';
+  discriminationIndex: number; // d-value: upper 27% vs lower 27%
+  discriminationQuality: 'Mükemmel' | 'İyi' | 'Orta' | 'Zayıf / Düzeltilmeli';
+  distractorCounts: Record<AnswerChoice | 'BLANK' | 'AMBIGUOUS', number>;
+  distractorPercentages: Record<AnswerChoice | 'BLANK' | 'AMBIGUOUS', number>;
+  problematicDistractors: AnswerChoice[];
+  upperGroupCorrectRate: number;
+  lowerGroupCorrectRate: number;
+}
+
+export interface ExamReliabilityMetrics {
+  cronbachAlpha: number;
+  kr20: number;
+  meanScore: number;
+  standardDeviation: number;
+  variance: number;
+  standardErrorOfMeasurement: number;
+  sampleCount: number;
+  totalQuestions: number;
+}
+
+export type TemplateQuestionCount = number;
+export type TemplateChoiceCount = 3 | 4 | 5;
+
+export type TemplateCategory = 'osym' | 'meb' | 'quiz';
+
+export interface FormTemplateDefinition {
+  id: string;
+  name: string;
+  description: string;
+  questionCount: TemplateQuestionCount;
+  choiceCount: TemplateChoiceCount;
+  choices: AnswerChoice[];
+  sectionsCount: number;
+  questionsPerSection: number;
+  studentIdDigits: number;
+  supportedBooklets: BookletType[];
+  isCustom?: boolean;
+  category?: TemplateCategory;
 }
 
 export type QueueStatus = 'waiting' | 'hashing' | 'processing' | 'completed' | 'skipped' | 'error';
@@ -182,3 +250,4 @@ export interface ProcessingProgress {
   failed: number;
   active: string[];
 }
+

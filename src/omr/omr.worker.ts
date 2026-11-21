@@ -146,25 +146,21 @@ function validateAnswerSections(sections: ContourCandidate[]) {
   }
 }
 
+import { suppressSpecularHighlights } from './imageEnhancement';
+import { adaptiveWarpWithFallback } from './meshWarping';
+
 function warpContour(cv: Cv, gray: any, contour: any, width: number, height: number): any {
   const approximation = new cv.Mat();
-  let source: any;
-  let destination: any;
-  let matrix: any;
-  const warped = new cv.Mat();
   try {
     const perimeter = cv.arcLength(contour, true);
     cv.approxPolyDP(contour, approximation, 0.02 * perimeter, true);
     if (approximation.rows !== 4) {
       throw new OmrError('Form bölgesinin köşeleri belirlenemedi.', 'SECTION_CORNERS_NOT_FOUND');
     }
-    source = cv.matFromArray(4, 1, cv.CV_32FC2, reorderCorners(approximation));
-    destination = cv.matFromArray(4, 1, cv.CV_32FC2, [0, 0, width - 1, 0, 0, height - 1, width - 1, height - 1]);
-    matrix = cv.getPerspectiveTransform(source, destination);
-    cv.warpPerspective(gray, warped, matrix, new cv.Size(width, height), cv.INTER_LINEAR, cv.BORDER_CONSTANT, new cv.Scalar());
-    return warped;
+    const orderedCorners = reorderCorners(approximation);
+    return adaptiveWarpWithFallback(cv, gray, orderedCorners, width, height, { rows: 3, cols: 3 });
   } finally {
-    safeDelete(approximation, source, destination, matrix);
+    safeDelete(approximation);
   }
 }
 
@@ -335,6 +331,7 @@ async function readForm(file: File): Promise<FormReadResult> {
   let rectangles: ContourCandidate[] = [];
   try {
     cv.cvtColor(source, gray, cv.COLOR_RGBA2GRAY);
+    suppressSpecularHighlights(gray, 248);
     cv.adaptiveThreshold(gray, threshold, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 11, 2);
     cv.findContours(threshold, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
     rectangles = collectRectangles(cv, contours);

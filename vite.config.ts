@@ -3,8 +3,13 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  clearScreen: false,
+  envPrefix: ['VITE_', 'TAURI_ENV_'],
   server: {
+    port: 8081,
+    strictPort: true,
     watch: {
+      ignored: ['**/src-tauri/**', '**/release/**'],
       usePolling: true,
       interval: 500,
     },

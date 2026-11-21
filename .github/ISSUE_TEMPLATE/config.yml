@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Web Application & Documentation
+    url: https://optikformokuyucu.com/rehber
+    about: User guide, printing calibration standards, and OMR documentation.
+  - name: Security policy
+    url: https://github.com/emirtdede/optical-form-reader/security/policy
+    about: Report vulnerabilities privately to security@vellium.dev. Do not open a public issue.
+  - name: Vellium Support
+    url: https://vellium.dev/en/legal/support
+    about: Official Vellium Teknoloji Anonim Şirketi support and legal portal.

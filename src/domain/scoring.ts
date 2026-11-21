@@ -4,6 +4,8 @@ import type {
   BookletType,
   ExamSection,
   FormReadResult,
+  PenaltyPreset,
+  PenaltyRule,
   QuestionResult,
   Score,
 } from '../types';
@@ -12,6 +14,40 @@ import { calculateSectionScores, getDefaultSections, scoreToGpaAndLetter } from 
 export const QUESTION_COUNT = 100 as const;
 export const ALGORITHM_VERSION = 'web-omr-3.0.0';
 export const WRONG_PENALTY = 4;
+
+export const DEFAULT_PENALTY_RULE: PenaltyRule = {
+  preset: 'osym',
+  wrongCount: 4,
+  deductCount: 1,
+  label: 'ÖSYM Standardı (4 Yanlış 1 Doğru)',
+};
+
+export const PRESET_PENALTY_RULES: Record<'osym' | 'lgs' | 'none', PenaltyRule> = {
+  osym: {
+    preset: 'osym',
+    wrongCount: 4,
+    deductCount: 1,
+    label: 'ÖSYM Standardı (4 Yanlış = 1 Doğru)',
+  },
+  lgs: {
+    preset: 'lgs',
+    wrongCount: 3,
+    deductCount: 1,
+    label: 'MEB LGS Standardı (3 Yanlış = 1 Doğru)',
+  },
+  none: {
+    preset: 'none',
+    wrongCount: 0,
+    deductCount: 0,
+    label: 'Ceza Yok (Yanlış Doğruyu Götürmez)',
+  },
+};
+
+export function getPenaltyPerWrong(rule?: PenaltyRule): number {
+  if (!rule) return 1 / WRONG_PENALTY;
+  if (rule.preset === 'none' || rule.wrongCount <= 0 || rule.deductCount <= 0) return 0;
+  return rule.deductCount / rule.wrongCount;
+}
 
 export function isCompleteAnswerKey(read: FormReadResult): read is FormReadResult & { answers: AnswerChoice[] } {
   return read.answers.length === QUESTION_COUNT
@@ -25,6 +61,7 @@ export function compareWithAnswerKey(
   sections: ExamSection[] = getDefaultSections(),
   questionWeights?: number[],
   forcedBooklet?: BookletType,
+  penaltyRule?: PenaltyRule,
 ): { answers: QuestionResult[]; score: Score; booklet: BookletType; bookletNeedsReview: boolean } {
   const isMap = !Array.isArray(answerKey);
   const detectedBooklet: BookletType = forcedBooklet ?? read.booklet ?? 'A';
@@ -82,9 +119,10 @@ export function compareWithAnswerKey(
     };
   });
 
-  const net = Number((totals.correct - totals.wrong / WRONG_PENALTY).toFixed(2));
+  const penaltyPerWrong = getPenaltyPerWrong(penaltyRule);
+  const net = Number((totals.correct - totals.wrong * penaltyPerWrong).toFixed(2));
   const weightedNet = totalMaxWeight > 0
-    ? Math.max(0, weightedCorrect - (weightedWrong / WRONG_PENALTY))
+    ? Math.max(0, weightedCorrect - (weightedWrong * penaltyPerWrong))
     : net;
 
   const score100 = totalMaxWeight > 0
@@ -92,7 +130,7 @@ export function compareWithAnswerKey(
     : Number(Math.max(0, Math.min(100, (net / QUESTION_COUNT) * 100)).toFixed(2));
 
   const { gpa4, letterGrade } = scoreToGpaAndLetter(score100);
-  const sectionScores = calculateSectionScores(answers, sections, WRONG_PENALTY);
+  const sectionScores = calculateSectionScores(answers, sections, penaltyPerWrong);
 
   const score: Score = {
     ...totals,
@@ -111,6 +149,7 @@ export function recalculateStudentAnswers(
   answers: QuestionResult[],
   sections: ExamSection[] = getDefaultSections(),
   newKey?: AnswerChoice[],
+  penaltyRule?: PenaltyRule,
 ): { answers: QuestionResult[]; score: Score } {
   let totalMaxWeight = 0;
   let weightedCorrect = 0;
@@ -137,9 +176,10 @@ export function recalculateStudentAnswers(
     { correct: 0, wrong: 0, blank: 0, ambiguous: 0 },
   );
 
-  const net = Number((totals.correct - totals.wrong / WRONG_PENALTY).toFixed(2));
+  const penaltyPerWrong = getPenaltyPerWrong(penaltyRule);
+  const net = Number((totals.correct - totals.wrong * penaltyPerWrong).toFixed(2));
   const weightedNet = totalMaxWeight > 0
-    ? Math.max(0, weightedCorrect - (weightedWrong / WRONG_PENALTY))
+    ? Math.max(0, weightedCorrect - (weightedWrong * penaltyPerWrong))
     : net;
 
   const score100 = totalMaxWeight > 0
@@ -147,7 +187,7 @@ export function recalculateStudentAnswers(
     : Number(Math.max(0, Math.min(100, (net / QUESTION_COUNT) * 100)).toFixed(2));
 
   const { gpa4, letterGrade } = scoreToGpaAndLetter(score100);
-  const sectionScores = calculateSectionScores(normalized, sections, WRONG_PENALTY);
+  const sectionScores = calculateSectionScores(normalized, sections, penaltyPerWrong);
 
   return {
     answers: normalized,

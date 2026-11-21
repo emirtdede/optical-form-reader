@@ -141,9 +141,9 @@ export function SectionConfigPanel({
     <article className="setup-card section-config-card">
       <div className="setup-card-top">
         <div className="section-config-header">
-          <span className="setup-number">03</span>
+          <span className="setup-number">05</span>
           <div>
-            <h2>Bölüm &amp; Notlandırma Yapısı</h2>
+            <h2>Bölüm &amp; Ders Dağılımı</h2>
             <p>{sectionSubtext}</p>
           </div>
         </div>
@@ -236,13 +236,18 @@ export function SectionConfigPanel({
         {sections.map((section, idx) => (
           <div key={section.id || idx} className="section-item-row">
             <div className="section-name-input-group">
-              <label htmlFor={`sec-name-${idx}`}>Bölüm {idx + 1} Adı</label>
+              <label htmlFor={`sec-name-${idx}`}>Ders / Bölüm Adı</label>
               <input
                 id={`sec-name-${idx}`}
                 type="text"
                 value={section.name}
                 disabled={disabled}
-                placeholder={`Bölüm ${idx + 1}`}
+                placeholder={
+                  idx === 0 ? 'Örn: Türkçe' :
+                  idx === 1 ? 'Örn: Matematik' :
+                  idx === 2 ? 'Örn: Fen Bilimleri' :
+                  idx === 3 ? 'Örn: Sosyal Bilgiler' : `Bölüm ${idx + 1}`
+                }
                 maxLength={35}
                 onChange={(e) => handleUpdateSection(idx, { name: e.target.value })}
               />

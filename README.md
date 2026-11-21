@@ -1,488 +1,350 @@
 <div align="center">
+  <img src="assets/vellium-banner.svg" alt="Vellium Banner" width="100%" />
 
-# 📑 Optical Form Reader — İstemci Taraflı OMR & Akademik Notlandırma Sistemi
+  # <img src="assets/icons/spark.svg" width="28" height="28" alt="" valign="middle" /> Optical Form Reader — Local-First Windows 11 & Web Optical Mark Recognition (OMR) Suite
 
+  <p>
+    <a href="#english-version"><img src="https://img.shields.io/badge/Language-English-000000?style=for-the-badge&logoColor=white" alt="English" /></a>
+    <a href="#turkish-version"><img src="https://img.shields.io/badge/Dil-T%C3%BCrk%C3%A7e-000000?style=for-the-badge&logoColor=white" alt="Türkçe" /></a>
+  </p>
+
+  <p>
+    <a href="https://github.com/emirtdede/optical-form-reader/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/emirtdede/optical-form-reader/ci.yml?branch=main&style=flat-square&label=CI&color=000000&labelColor=000000" alt="CI Status" /></a>
+    <img src="https://img.shields.io/badge/Release-v1.0.0-000000?style=flat-square&labelColor=000000" alt="Release v1.0.0" />
+    <img src="https://img.shields.io/badge/Tauri-2.10-000000?style=flat-square&logo=tauri&logoColor=white&labelColor=000000" alt="Tauri 2.10" />
+    <img src="https://img.shields.io/badge/React-19.2-000000?style=flat-square&logo=react&logoColor=white&labelColor=000000" alt="React 19.2" />
+    <img src="https://img.shields.io/badge/TypeScript-5.9-000000?style=flat-square&logo=typescript&logoColor=white&labelColor=000000" alt="TypeScript 5.9" />
+    <img src="https://img.shields.io/badge/OpenCV.js-WASM_5.0-000000?style=flat-square&logo=opencv&logoColor=white&labelColor=000000" alt="OpenCV.js WASM" />
+    <img src="https://img.shields.io/badge/Storage-IndexedDB_Local-000000?style=flat-square&labelColor=000000" alt="IndexedDB Local" />
+    <img src="https://img.shields.io/badge/Languages-73_Supported-000000?style=flat-square&labelColor=000000" alt="73 Languages" />
+    <img src="https://img.shields.io/badge/Themes-28_Palettes-000000?style=flat-square&labelColor=000000" alt="28 Theme Palettes" />
+    <img src="https://img.shields.io/badge/Platform-Windows_10%2F11_x64_%26_Web-000000?style=flat-square&logo=windows11&logoColor=white&labelColor=000000" alt="Platform Windows 10/11 x64 & Web" />
+    <img src="https://img.shields.io/badge/Privacy-100%25_Local_First-000000?style=flat-square&labelColor=000000" alt="100% Local First" />
+  </p>
 </div>
 
 ---
 
-<div align="center">
+<div id="english-version"></div>
 
-[![](https://img.shields.io/badge/Language-English-blue?style=for-the-badge&logo=google-translate)](#english-version)
-&nbsp;&nbsp;&nbsp;&nbsp;
-[![](https://img.shields.io/badge/Dil-T%C3%BCrk%C3%A7e-red?style=for-the-badge&logo=google-translate)](#turkish-version)
+# <img src="public/product-logo.svg" width="26" height="26" alt="Optical Form Reader Logo" valign="middle" /> English Version
 
-</div>
+## <img src="assets/icons/overview.svg" width="22" height="22" alt="" valign="middle" /> Project Overview
 
----
+**Optical Form Reader** (`optikformokuyucu.com`) is a local-first, privacy-first Windows 11 desktop application and progressive web platform developed and published by **Vellium Teknoloji Anonim Şirketi** ([vellium.dev](https://vellium.dev)). It turns any Windows 10/11 PC or modern browser into an industrial-grade Optical Mark Recognition (OMR) and academic grading suite without requiring proprietary optical scanner hardware, internet connectivity, or cloud uploads.
 
-<div align="center">
+Designed for teachers, schools, universities, and examination centers, Optical Form Reader processes 1-to-160 question optical answer sheets directly on-device using a multi-threaded **OpenCV.js WebAssembly** computer-vision pipeline, automatic 4-corner fiducial detection, perspective mesh de-warping, CLAHE adaptive shadow compensation, multi-booklet grading (`A / B / C / D`), KR-20 psychometric item reliability analysis, YÖK T-Score relative bell-curve grading, fuzzy student roster matching (`e-Okul` Excel/CSV), and one-click vector PDF student scorecards.
 
-![React](https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-7.3-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![OpenCV.js](https://img.shields.io/badge/OpenCV.js-WebAssembly-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)
-![Web Workers](https://img.shields.io/badge/Concurrency-Web%20Workers-FF6D00?style=for-the-badge&logo=html5&logoColor=white)
-![IndexedDB](https://img.shields.io/badge/Storage-IndexedDB%20Local--First-00C853?style=for-the-badge&logo=databricks&logoColor=white)
-![YÖK Grading](https://img.shields.io/badge/Grading-Y%C3%96K%20BDS%20%26%20T--Score-0078D6?style=for-the-badge&logo=academia)
-![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
+### Why Optical Form Reader?
 
-</div>
+- **100% On-Device & Zero Telemetry:** Answer keys, student sheets, webcam frames, and gradebooks never leave your device. Raw images are released from memory immediately after evaluation while structured results are persisted locally in **IndexedDB**.
+- **Frameless 60 FPS Windows 11 Desktop Experience:** Built on **Tauri 2 (Rust)** with a minimal frameless shell, collapsible primary sidebar, split-view secondary sidebars for **Settings** and **Documentation**, system tray integration, in-app floating toasts, native Windows desktop notifications, and smart active-scan exit protection.
+- **1–160 Questions & Custom Vector PDF Form Generator:** Includes ready-to-print standard templates (10, 15, 20, 25, 30, 40, 50, 80, 90 LGS, 100, 120, 160 YKS) plus an interactive Custom Form Designer that generates print-calibrated A4 vector PDFs at 100% scale.
+- **28 Theme Combinations, 3 Monochrome Icons & 73 Languages:** Features 14 curated color themes across Light and Dark modes (`14 × 2 = 28` palettes), 3 selectable monochrome black-and-white brand icon variants synchronized across window, taskbar, and system tray, and a 73-language localization catalog (full Turkish and English translations with automatic English fallback for the remaining 71 locales).
 
 ---
 
-<a id="english-version"></a>
-# English Version
+## <img src="assets/icons/features.svg" width="22" height="22" alt="" valign="middle" /> Key Features
 
-<div align="center">
-  <img src="public/product-logo.svg" alt="Optical Form Reader Logo" width="130" height="130" />
-  <h3>Optical Form Reader — High-Performance Browser-Based OMR & Grading Engine</h3>
-  <p><em>100% Client-Side, Privacy-First, Zero-Server Optical Mark Recognition Suite with Turkish Higher Education (YÖK) 3-Tier Grading & Bell Curve (T-Score) Integration</em></p>
-  <p><strong>Developed & Published by <a href="https://vellium.dev">Vellium</a></strong> &bull; <strong>Live Application: <a href="https://optikformokuyucu.vercel.app">optikformokuyucu.vercel.app</a></strong></p>
-</div>
+### <img src="assets/icons/cpu.svg" width="18" height="18" alt="" valign="middle" /> 1. On-Device OpenCV WASM Vision Pipeline
+- **4-Corner Fiducial Homography & Mesh Warping:** Automatically locates corner alignment squares, corrects camera tilt and paper curvature, and normalizes illumination using CLAHE and adaptive thresholding.
+- **Hands-Free Live Camera Auto-Capture:** Real-time webcam viewfinder locks onto the 4 fiducial corners and captures sheets automatically in 1 second when held parallel (`90°`).
+- **Multi-Worker Batch Queue & Resilient Checkpoints:** Processes JPG, PNG, WebP, multi-page PDFs, and ZIP archives across 1–4 concurrent Web Workers. Every graded sheet is checkpointed to IndexedDB immediately so interrupted sessions resume without re-scanning completed forms.
 
-<br>
+### <img src="assets/icons/templates.svg" width="18" height="18" alt="" valign="middle" /> 2. Vector Optical Template Gallery & Custom Form Wizard
+- **12 Built-In Standard Templates:** Instant A4 vector PDF templates from 10-question quick quizzes to 90-question LGS and 160-question university/YKS exams.
+- **Custom A4 Optical Form Designer:** Configure question count (`1–160`), choice count (`3–5`, `A–E`), section count, student ID digits (`2–10`), exam title, and institution header, then export print-ready vector PDFs.
+- **Automatic Template Recognition:** Detects template geometry and question layout from uploaded answer keys.
 
-## 💻 Project Overview
+### <img src="assets/icons/chart.svg" width="18" height="18" alt="" valign="middle" /> 3. Psychometric Analytics, Bell Curve & Scorecards
+- **Multi-Booklet (`A / B / C / D`) & Penalty Rules:** Supports single or 4-booklet answer keys, custom section weights, and preset or custom wrong-answer penalty formulas (ÖSYM `4W = 1C`, MEB/LGS `3W = 1C`, or No Penalty).
+- **KR-20 Reliability & Distractor Matrix:** Computes Kuder-Richardson 20 internal consistency, item difficulty ($p$), point-biserial discrimination ($r_{jx}$), and per-choice distractor distributions.
+- **YÖK Relative Grading (T-Score Bell Curve):** One-click T-score transformation ($T = 50 + 10Z$) and automated `AA–FF` letter grade assignment.
+- **e-Okul Roster Matching & Rich Exports:** Matches scanned student IDs against Excel/CSV class rosters with fuzzy name matching; exports individual or bulk color **PDF Scorecards**, **XLSX** workbooks, **CSV** matrices, **JSON** backups, and **ZIP** archives.
 
-**Optical Form Reader** (Optik Form Okuyucu) is an enterprise-grade, privacy-first web application engineered with **React 19**, **TypeScript 5.7**, **Vite 7.3**, and **OpenCV.js (WebAssembly)**. It enables teachers, educational institutions, universities, and exam proctors to scan, evaluate, grade, and analyze standardized 100-question optical answer sheets entirely within the user's browser.
-
-Traditional optical grading systems require expensive dedicated hardware scanners, per-scan software licenses, or cloud uploads that expose sensitive student data. **Optical Form Reader** completely eliminates these drawbacks through a **Local-First, Zero-Server Architecture**:
-1. Optical sheets (PDF, PNG, JPG, ZIP bundles) are processed locally inside **Web Worker pools** using **OpenCV.js computer vision**.
-2. **Zero Student Data Leaves the Device**: All data, images, answer matrices, and diagnostic metrics remain isolated in the browser's **IndexedDB**, guaranteeing 100% compliance with strict privacy regulations (GDPR & KVKK).
-3. The platform features an academic-grade grading engine supporting **custom subject partitioning (e.g., 4 sections)**, **optional question weight matrices**, **3-tier scoring (100-Point Score, 4.00 GPA, YÖK Letter Grade)**, and **Relative Grading / Bell Curve (T-Score BDS)**.
-
----
-
-## 🚀 Key Features
-
-- **100% Client-Side Computer Vision Engine**:
-  - **Perspective Correction & Alignment**: Four corner anchor-point contour detection with homography transformation for skewed, tilted, or rotated photos.
-  - **Dynamic Fill-Thresholding & Confidence Analysis**: Adaptive Otsu thresholding, darkness density ratio calculation, ambiguous bubble detection, and dual-mark warnings.
-  - **Multi-Core Web Worker Pool**: Parallel non-blocking image processing across all CPU cores with batch progress tracking and interrupt-resilient session recovery.
-- **Custom Section & Multi-Subject Partitioning**:
-  - Automatically partitions 100-question forms into 4 customizable sections (e.g., *1–25, 26–50, 51–75, 76–100*).
-  - Users can customize subject names (*e.g., Math, Science, Language*), modify question ranges, add new sections, or reset to defaults with one click.
-- **Advanced Optional Question Weighting (Katsayı Matrisi)**:
-  - Collapsible, distraction-free configuration panel.
-  - Apply section-wide multipliers or fine-tune individual weights for each of the 100 questions.
-- **Turkish Higher Education (YÖK) 3-Tier Grading**:
-  - **100-Point Normalized Score**: Scaled net performance score based on penalty rules (e.g., 4 wrong answers cancel 1 correct).
-  - **4.00 GPA Scale**: Standard conversion table for university grade-point averages.
-  - **Absolute Letter Grades**: `AA` (4.00), `BA` (3.50), `BB` (3.00), `CB` (2.50), `CC` (2.00), `DC` (1.50), `DD` (1.00), `FD` (0.50), `FF` (0.00).
-- **Relative Grading System / Bell Curve (Çan Eğrisi BDS)**:
-  - Dynamic toggle calculating Class Arithmetic Mean ($\bar{X}$), Standard Deviation ($S$), $Z$-Scores, and $T$-Scores ($T = 10Z + 50$).
-  - Automatic assignment of relative letter grades based on class curve with raw-score threshold protections.
-- **Interactive Student Review Drawer**:
-  - Slide-out drawer displaying 3-tier grades, subject breakdown table, and 100-question interactive answer grid.
-  - Manual score overrides, student ID editing, and instant recalculation saved directly to IndexedDB.
-- **Comprehensive Reporting & Multi-Format Exporters**:
-  - **Excel (XLSX) & CSV**: Full class spreadsheets with dynamic per-section columns (`D`, `Y`, `B`, `Net`) + 3-way grades + T-scores.
-  - **PDF Student Report Cards**: Ready-to-print single-page student certificates with subject breakdown tables and 100-question visual answer matrices.
-  - **Class-Wide Summary PDF, JSON Manifests, and ZIP Archives**: Complete batch export options.
-- **Zero Telemetry & Offline-First**:
-  - Fully offline operational capability, zero external trackers, zero ads, zero telemetry, and 1-click local database purge in Settings.
+### <img src="assets/icons/palette.svg" width="18" height="18" alt="" valign="middle" /> 4. Minimal Windows 11 Desktop Architecture
+- **Frameless Split-Sidebar Shell:** Primary collapsible sidebar (`Form Tara`, `Şablonlar`, `Sonuçlar`, `Dokümantasyon`, `Ayarlar`, `Hakkında`) paired with a secondary sidebar in **Settings** (`General`, `Appearance & Language`, `Notifications & Sound`, `Keyboard Shortcuts`, `Data & Backup`, `Diagnostics & Support`) and **Documentation** (`7` searchable topics).
+- **In-App Toasts & Native Windows Desktop Notifications:** Configurable toast position (`bottom-right`, `top-right`, `bottom-left`), duration (`3s / 4s / 6s`), audio chime, and native Windows notifications for scan start, completion summary, and unreadable sheet alerts.
+- **Smart Exit & Active-Scan Guard:** Prompts before closing whether to minimize to the Windows system tray or quit; if an optical scan is actively running, warns the user and offers background tray continuation so progress is never lost.
 
 ---
 
-## 🛠️ Tech Stack
+## <img src="assets/icons/layers.svg" width="22" height="22" alt="" valign="middle" /> Tech Stack
 
-<div align="center">
-
-![React](https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript_5.7-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite_7.3-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![OpenCV](https://img.shields.io/badge/OpenCV.js_Wasm-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)
-![IndexedDB](https://img.shields.io/badge/IndexedDB-00C853?style=for-the-badge&logo=databricks&logoColor=white)
-![jsPDF](https://img.shields.io/badge/jsPDF_Autotable-E91E63?style=for-the-badge)
-![ExcelJS](https://img.shields.io/badge/ExcelJS-217346?style=for-the-badge&logo=microsoftexcel&logoColor=white)
-
-</div>
-
-### Core & Computer Vision
-- **OpenCV.js (WebAssembly)**: High-performance image processing, contour filtering, adaptive thresholding, and perspective warp.
-- **Dedicated Web Workers (`omr.worker.ts`)**: Background multithreading ensuring the user interface never freezes during large 500+ sheet processing runs.
-- **PDF.js (`pdfjs-dist`)**: Client-side multi-page PDF rasterization into high-resolution canvas frames.
-
-### Frontend & Reactive UI
-- **React 19 & TypeScript 5.7**: Modern functional components, hooks, lazy loading (`React.lazy`), and type-safe architecture.
-- **React Router 7**: SPA routing with deep linking, state preservation, and dynamic parameter resolution.
-- **Lucide React**: Clean, accessible SVG iconography.
-- **Vanilla CSS Design System**: Zero-framework design tokens, HSL palette, dark/light themes, glassmorphism, and responsive CSS grid.
-
-### Storage & Export Engines
-- **IndexedDB**: Persistent local browser database for sessions, batches, diagnostic metrics, and student results.
-- **ExcelJS & JSZip**: Styled multi-column spreadsheet generation and compressed bundle archiving.
-- **jsPDF & jsPDF-AutoTable**: Vector PDF generation for official exam summaries and individual student report cards.
+| Layer | Technology | Version / Details |
+| :--- | :--- | :--- |
+| **Desktop Runtime** | Tauri (Rust) | `2.10.x` (Windows 10/11 x64, System Tray, Single-Instance, Native Win32 Allowlist) |
+| **Frontend Framework** | React + TypeScript + Vite | React `19.2`, TypeScript `5.9`, Vite `7.3` |
+| **Computer Vision (OMR)** | OpenCV.js (WebAssembly) | `@techstark/opencv-js 5.0`, Web Workers (`OmrWorkerPool`) |
+| **Document & Archive I/O** | PDF.js, jsPDF, ExcelJS, JSZip | `pdfjs-dist 6.1`, `jspdf 4.2`, `exceljs 4.4`, `jszip 3.10` |
+| **Local Storage** | IndexedDB + localStorage | `idb 8.0` (Checkpoint sessions, processing jobs, ZIP Backup Vault) |
+| **Localization (i18n)** | Custom 73-Locale Engine | `73` registered languages (`tr`, `en` native + `71` English fallback, RTL support) |
+| **Design System** | CSS Custom Properties | `14` themes × `2` modes (`28` palettes), `3` monochrome icon variants |
+| **Quality & Testing** | Vitest + Testing Library + Cargo | `29` test suites (`190+` unit/integration tests) + Rust unit tests |
+| **Packaging** | NSIS, MSI & Microsoft Store MSIX | Custom monochrome NSIS installer/uninstaller + unified `resources.pri` MSIX |
 
 ---
 
-## 📁 Project Structure
+## <img src="assets/icons/folder.svg" width="22" height="22" alt="" valign="middle" /> Project Structure
 
-```tree
-Optical-Form-Reader/
-├── public/                         # Static assets, logos, and web manifest
-│   ├── Optik_Form.pdf              # Standard printable 100-question sample sheet
-│   ├── product-logo.svg            # Vector product mark
-│   ├── robots.txt                  # Search engine and AI crawler directives
-│   ├── sitemap.xml                 # Canonical XML sitemap
-│   └── manifest.webmanifest        # PWA manifest
-├── src/                            # Application source code (React 19 + TS)
-│   ├── components/                 # Reusable UI component library
-│   │   ├── AppShell.tsx            # Sticky header, navigation, and theme wrapper
-│   │   ├── Brand.tsx               # Brand marks and typography
-│   │   ├── Footer.tsx              # Footer ribbon, links, and copyright
-│   │   └── SectionConfigPanel.tsx  # Section manager, range editor, and weight matrix
-│   ├── context/                    # React Context providers
-│   │   └── AppDataContext.tsx      # Global state for active sessions, storage & theme
-│   ├── domain/                     # Pure business logic and academic domain
-│   │   ├── e2e-workflow.test.ts    # End-to-end integration lifecycle test suite
-│   │   ├── files.ts / .test.ts     # File validation, MIME detection, and ZIP extraction
-│   │   ├── grading.ts / .test.ts   # YÖK 3-tier scales, section scoring & T-Score bell curve
-│   │   ├── processing.ts / .test.ts# Batch queue management and worker pool dispatcher
-│   │   ├── scoring.ts / .test.ts   # Weighted answer comparison and recalculation engine
-│   │   └── statistics.ts / .test.ts# Class summary statistics & question difficulty analysis
-│   ├── export/                     # Multi-format report generators
-│   │   └── exporters.ts            # Excel (XLSX), CSV, JSON, ZIP, Print, and PDF cards
-│   ├── hooks/                      # Custom React hooks
-│   │   ├── useTheme.ts             # Dark/Light theme toggle & system preference sync
-│   │   └── useWorkerPool.ts        # Dynamic Web Worker lifecycle and task distributor
-│   ├── omr/                        # OMR Engine & Web Worker pipeline
-│   │   ├── omr.worker.ts           # OpenCV.js computer vision OMR processor
-│   │   └── workerClient.ts         # Worker pool communication bridge
-│   ├── pages/                      # Application route views (Code-split with React.lazy)
-│   │   ├── GuidePage.tsx           # Visual guide on sheet printing & camera scanning
-│   │   ├── HomePage.tsx            # Hero presentation & live scan simulation animation
-│   │   ├── LegalPage.tsx           # Privacy, KVKK, Terms, Storage & Cookie policies
-│   │   ├── NotFoundPage.tsx        # Accessible 404 error page
-│   │   ├── ResultsPage.tsx         # Results table, Bell curve toggle & student review drawer
-│   │   ├── ScannerPage.tsx         # Multi-file dropzone, answer key setter & section config
-│   │   └── SettingsPage.tsx        # Storage usage gauge, partition settings & data reset
-│   ├── storage/                    # Local storage engine
-│   │   ├── database.ts             # IndexedDB schema, migrations & CRUD operations
-│   │   └── database.test.ts        # Database integrity test suite
-│   ├── App.tsx                     # Top-level routing, error boundary & Suspense fallback
-│   ├── constants.ts                # App constants, defaults, and question thresholds
-│   ├── main.tsx                    # React application entry point
-│   ├── styles.css                  # Master CSS design system and theme variables
-│   └── types.ts                    # Global TypeScript interfaces and domain types
-├── package.json                    # Node dependencies and project scripts
-├── tsconfig.json                   # TypeScript compiler configuration
-├── vite.config.ts                  # Vite bundler, chunking & test configuration
-└── README.md                       # Master Documentation
+```text
+optical-form-reader/
+├── assets/                          # README banner (vellium-banner.svg) & monochrome section icons
+├── msix/                            # Microsoft Store MSIX visual assets (44x44, 150x150, 310x150, unplated)
+├── public/                          # Monochrome product logos, PWA icons, standard A4 optical form PDF
+├── scripts/
+│   ├── generate-icons.mjs           # Monochrome multi-DPI .ico, PNG, MSIX & NSIS BMP asset generator
+│   ├── build-msix.mjs               # Windows SDK makeappx.exe + makepri.exe Store MSIX packager
+│   ├── verify-msix.mjs              # Automated MSIX manifest, PRI & signature readiness verifier
+│   └── check-i18n.mjs               # 73-language catalog & TR/EN key parity validator
+├── src/
+│   ├── brand/vellium.ts             # Authoritative Vellium Teknoloji Anonim Şirketi metadata & legal URLs
+│   ├── components/
+│   │   ├── desktop/                 # Frameless Windows 11 shell (DesktopShell, DesktopSidebar, WindowControls)
+│   │   ├── AppShell.tsx             # Web topbar & responsive layout shell
+│   │   ├── Brand.tsx                # Theme-reactive monochrome ProductMark & official VelliumMark SVGs
+│   │   ├── CameraScannerModal.tsx   # Hands-free 4-corner live webcam auto-capture modal
+│   │   ├── CustomFormGenerator.tsx  # 1–160 question custom A4 vector PDF optical form designer
+│   │   └── ...                      # ItemAnalysisView, RosterUploadModal, StudentScorecardModal, BackupVaultModal
+│   ├── context/
+│   │   ├── AppDataContext.tsx       # IndexedDB exam session & student result state provider
+│   │   └── AppSettingsContext.tsx   # User preferences, toasts, Windows notifications, exit & link modals
+│   ├── domain/                      # Scoring, penalty rules, KR-20 item analysis, bell curve, fuzzy roster matching
+│   ├── export/                      # Vector PDF scorecards, Excel (XLSX), CSV matrix, JSON & ZIP exporters
+│   ├── i18n/                        # 73-language catalog, TR/EN dictionaries, legal documents & RTL handling
+│   ├── omr/                         # OpenCV.js WASM worker pool, corner detection, mesh warping, bubble reader
+│   ├── pages/
+│   │   ├── ScannerPage.tsx          # Optical form grading & batch queue workspace (/tara)
+│   │   ├── TemplatesPage.tsx        # Template gallery & custom form generator (/sablonlar)
+│   │   ├── ResultsPage.tsx          # Recent assessments, student table, KR-20 & bell curve (/sonuclar)
+│   │   ├── GuidePage.tsx            # 2nd-sidebar split-layout Documentation Center (/rehber)
+│   │   ├── SettingsPage.tsx         # 2nd-sidebar split-layout Settings Center (/ayarlar)
+│   │   ├── AboutPage.tsx            # Single-column Bento KPI About & Legal Center (/hakkinda)
+│   │   └── HomePage.tsx             # Web landing page (/)
+│   ├── platform/runtime.ts          # Tauri 2 native desktop bridge + Web fallback
+│   ├── storage/                     # IndexedDB schema, checkpoint persistence & ZIP backup vault
+│   └── theme/                       # 14×2 theme definitions & runtime monochrome icon synchronization
+└── src-tauri/
+    ├── icons/                       # Multi-DPI icon.ico, monochrome PNGs & custom NSIS BMP sidebars/headers
+    ├── nsis/hooks.nsh               # Custom NSIS install/uninstall hooks & WebView2 cache cleanup
+    ├── src/lib.rs                   # Tauri 2 Rust core: system tray, close interception, notifications, URL allowlist
+    ├── Cargo.toml                   # Rust crate manifest (v1.0.0)
+    └── tauri.conf.json              # Tauri 2 window, CSP & Windows bundler configuration (v1.0.0)
 ```
 
 ---
 
-## 📊 Architecture & OMR Processing Pipeline
+## <img src="assets/icons/lock.svg" width="22" height="22" alt="" valign="middle" /> Architecture & Security Boundaries
 
 ```mermaid
-flowchart TD
-    subgraph Client["Browser User Interface (React 19)"]
-        Upload["Upload Optical Sheets (PDF / Images / ZIP)"]
-        KeyConfig["Set Answer Key & Custom Subject Sections"]
-        UI_State["Live Queue & Progress Dashboard"]
+flowchart LR
+    subgraph UI["React 19 Frameless UI (14×2 Themes · 73 Languages)"]
+        Sidebar["1st Sidebar\nScan · Templates · Results\nDocs · Settings · About"]
+        SplitViews["2nd-Sidebar Views\nSettings (6 Subpages)\nDocumentation (7 Subpages)"]
+        Modals["Guard Modals\nActive Scan / Exit Confirm\nExternal URL Allowlist Confirm"]
     end
 
-    subgraph Concurrency["Web Worker Concurrency Pool"]
-        Worker1["Worker 1 (OpenCV.js Wasm)"]
-        Worker2["Worker 2 (OpenCV.js Wasm)"]
-        WorkerN["Worker N (OpenCV.js Wasm)"]
+    subgraph Vision["On-Device OMR Engine (Web Workers)"]
+        Pool["OmrWorkerPool (1–4 Workers)"]
+        OpenCV["OpenCV.js WASM 5.0\n4-Corner Homography · Mesh Warp\nCLAHE · Bubble Classifier"]
+        Scoring["Scoring & Psychometrics\nA/B/C/D Booklets · KR-20\nT-Score Bell Curve · Roster Match"]
     end
 
-    subgraph OMR["Computer Vision Pipeline (omr.worker.ts)"]
-        Pre["Grayscale & Adaptive Thresholding"]
-        Corners["Corner Anchor Contour Detection"]
-        Warp["Four-Point Homography Perspective Warp"]
-        Grid["100-Question 4-Column Grid Sampling"]
-        Density["Darkness Density Ratio & Ambiguity Check"]
+    subgraph Storage["100% Local Persistence"]
+        IDB[("IndexedDB\nSessions · Checkpoints · Jobs")]
+        Prefs[("localStorage\nPreferences · Diagnostic Logs")]
+        Exports["Local File Exports\nPDF Scorecards · XLSX · CSV · ZIP"]
     end
 
-    subgraph Domain["Grading & Statistical Engine"]
-        ScoreNet["Weighted Net Score Computation"]
-        YokGrade["YÖK 3-Way Grading (100 Puan, GPA 4.00, Harf Notu)"]
-        BellCurve["Relative Grading: Mean, StdDev & T-Score (10Z + 50)"]
+    subgraph TauriCore["Tauri 2 Rust Core (Windows 10/11 x64)"]
+        Tray["System Tray & Runtime Icon Sync"]
+        CloseGuard["WindowEvent::CloseRequested\nActive-Scan & Tray Protection"]
+        WinToast["Windows Toast Notification Bridge"]
+        Allowlist["HTTPS / @vellium.dev Allowlist\nShellExecuteW Guard"]
     end
 
-    subgraph Persistence["Local-First Storage & Exports"]
-        IDB[("IndexedDB Browser Database")]
-        Excel["Excel (XLSX) Multi-Section Spreadsheets"]
-        PDF["PDF Official Summary & Student Report Cards"]
-    end
-
-    Upload --> Concurrency
-    KeyConfig --> Domain
-    Concurrency --> Worker1 & Worker2 & WorkerN
-    Worker1 & Worker2 & WorkerN --> Pre
-    Pre --> Corners --> Warp --> Grid --> Density
-    Density -->|FormReadResult| ScoreNet
-    ScoreNet --> YokGrade --> BellCurve
-    BellCurve --> IDB
-    IDB --> UI_State
-    IDB --> Excel & PDF
+    Sidebar --> SplitViews
+    Sidebar --> Pool
+    Pool --> OpenCV --> Scoring --> IDB
+    Scoring --> Exports
+    UI <--> Prefs
+    UI <--> CloseGuard
+    UI --> WinToast
+    Modals --> Allowlist
+    UI --> Tray
 ```
-
-### Data Storage & Grading Specifications
-
-| Feature | Technical Implementation | Description |
-| :--- | :--- | :--- |
-| **OMR Vision Engine** | **OpenCV.js (WebAssembly)** | 4-point homography warp, contour detection & density ratio thresholding |
-| **Concurrency** | **Web Workers (1–4 Threads)** | Non-blocking multi-core background image processing |
-| **Local Database** | **IndexedDB (`omr_database_v2`)** | Persistent local session store, student results, and diagnostic logs |
-| **Absolute Grading** | **YÖK Standard Scale** | 100-point normalized score $\rightarrow$ GPA 4.00 $\rightarrow$ `AA` through `FF` |
-| **Relative Grading** | **T-Score Normal Distribution** | $Z = \frac{X - \bar{X}}{S}$, $T = 10Z + 50$ with threshold protection |
-| **Export Formats** | **ExcelJS, jsPDF, JSZip** | XLSX with dynamic section headers, vector PDF report cards & ZIP archives |
 
 ---
 
-## ⚙️ Installation & Usage
+## <img src="assets/icons/database.svg" width="22" height="22" alt="" valign="middle" /> Storage & Security Schema
+
+| Store / Boundary | Engine / Mechanism | Purpose & Security Guarantee |
+| :--- | :--- | :--- |
+| **Exam Sessions & Results** | IndexedDB (`sessions`, `jobs`) | Stores answer keys, student IDs, marked choices, and scores locally. Raw image/PDF buffers are purged immediately after worker evaluation. |
+| **Preferences & Diagnostics** | `localStorage` (`optik-app-settings-v1`) | Stores theme (`obsidian` default), monochrome icon variant, notification settings, custom shortcuts, and redacted local diagnostic logs. |
+| **Content Security Policy** | Tauri 2 Strict CSP | Blocks remote script execution, external frames, and unauthorized network connections. |
+| **External URL Allowlist** | Rust `is_allowed_external_url` + UI Confirm | Restricts external browser launches strictly to `https://vellium.dev`, `https://optikformokuyucu.com`, `https://github.com`, and `mailto:*@vellium.dev`. |
+
+---
+
+## <img src="assets/icons/terminal.svg" width="22" height="22" alt="" valign="middle" /> Installation & Usage
 
 ### Prerequisites
-- **Node.js**: Version 18.0.0 or higher
-- **npm**: Version 9.0.0 or higher
-- **Modern Browser**: Chrome, Edge, Firefox, Safari (HTML5 Canvas & WebAssembly support required)
 
-### Step-by-Step Developer Setup
+- **Windows 10** (19041+) or **Windows 11** (x64) for desktop builds
+- **Node.js** `>= 22.13.0` and **npm**
+- **Rust Stable Toolchain** (`cargo`, `rustc` via `rustup`) for Tauri 2 desktop compilation
 
-1. **Clone the Repository:**
-   ```bash
-   git clone https://github.com/emirtdede/Optical-Form-Reader.git
-   cd Optical-Form-Reader
-   ```
+### Install, Test & Run
 
-2. **Install Node Dependencies:**
-   ```bash
-   npm install
-   ```
+```powershell
+# 1. Clone the repository
+git clone https://github.com/emirtdede/optical-form-reader.git
+cd optical-form-reader
 
-3. **Run Automated Test Suites:**
-   ```bash
-   npm test
-   ```
+# 2. Install dependencies
+npm ci
 
-4. **Start Local Development Server:**
-   ```bash
-   npm run dev
-   ```
-   Open [http://localhost:8081](http://localhost:8081) in your browser.
+# 3. Start the Web development server (http://localhost:8081)
+npm run dev
 
-5. **Build Production Bundle:**
-   ```bash
-   npm run build
-   ```
-   The production-ready artifacts will be compiled into the `dist/` directory.
+# 4. Launch the Windows 11 Tauri desktop app in development mode
+npm run tauri:dev
 
----
-
-## ⚖️ License
-
-Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more information.
-
-**Official Website**: [Vellium.dev](https://vellium.dev) &bull; **Publisher**: Vellium
-
----
-
-<br>
-
----
-
-<a id="turkish-version"></a>
-# Türkçe Versiyon
-
-<div align="center">
-  <img src="public/product-logo.svg" alt="Optik Form Okuyucu Logo" width="130" height="130" />
-  <h3>Optik Form Okuyucu — Yüksek Performanslı Tarayıcı Tabanlı OMR ve Notlandırma Sistemi</h3>
-  <p><em>Öğrenci Verilerini Cihazdan Çıkarmayan, %100 İstemci Taraflı, YÖK 3'lü Not Baremi ve Çan Eğrisi (T-Skor) Destekli Optik Değerlendirme Çözümü</em></p>
-  <p><strong>Geliştirici ve Yayıncı: <a href="https://vellium.dev">Vellium</a></strong> &bull; <strong>Canlı Web Uygulaması: <a href="https://optikformokuyucu.vercel.app">optikformokuyucu.vercel.app</a></strong></p>
-</div>
-
-<br>
-
-## 💻 Project Overview (Proje Genel Bakışı)
-
-**Optik Form Okuyucu**, **React 19**, **TypeScript 5.7**, **Vite 7.3** ve **OpenCV.js (WebAssembly)** teknolojileri üzerine inşa edilmiş kurumsal düzeyde bir optik form okuma ve sınav değerlendirme web uygulamasıdır. Öğretmenlerin, okulların, üniversitelerin ve sınav uygulayıcılarının 100 soruluk optik cevap kağıtlarını doğrudan web tarayıcısı üzerinden, harici hiçbir sunucuya ihtiyaç duymadan saniyeler içinde okutmasını, notlandırmasını ve analiz etmesini sağlar.
-
-Geleneksel optik okuyucular pahalı donanım cihazları, form başına lisans ücretleri ve öğrenci verilerini buluta aktaran gizlilik riskleri barındırır. **Optik Form Okuyucu**, bu problemleri **%100 Yerel ve İstemci Taraflı (Local-First) Mimari** ile çözer:
-1. Yüklenen optik formlar (PDF, PNG, JPG veya ZIP arşivleri) doğrudan tarayıcının içindeki **Web Worker işlem havuzlarında**, **OpenCV.js görüntü işleme algoritmalarıyla** işlenir.
-2. **Sıfır Sunucu & Sıfır Veri Sızıntısı**: Öğrenci numaraları, cevaplar ve sınav sonuçları asla internete aktarılmaz; yalnızca kullanıcının cihazındaki **IndexedDB** veritabanında saklanır (KVKK ve GDPR tam uyumlu).
-3. **Esnek Bölümlendirme ve YÖK Akademik Notlandırma**: Formu 4 ayrı derse bölme, soru bazlı katsayı atama, 100'lük puan, 4.00 GPA, harf notu ve **T-Skor Bağıl Değerlendirme (Çan Eğrisi)** motoruyla tek çıktıda resmi sınav sonuçları üretir.
-
----
-
-## 🚀 Key Features (Önemli Özellikler)
-
-- **%100 İstemci Taraflı Görüntü İşleme (OMR Engine)**:
-  - **Açı Düzeltme & Perspektif Dönüşümü**: Form köşelerindeki kılavuz işaretlerini (anchor points) kontur analiziyle bularak yamuk, açılı veya dönmüş fotoğrafları 4 noktalı homografi ile milimetrik olarak düzleştirir.
-  - **Dinamik Doluluk Eşiği & Belirsizlik Tespiti**: Adaptif Otsu eşikleme, baloncuk doluluk oranı analizi, çift işaretleme ve belirsiz işaretleme uyarıları.
-  - **Çok Çekirdekli Web Worker Havuzu**: Çoklu çekirdek desteğiyle arayüzü dondurmadan yüzlerce kağıdı arka planda eşzamanlı işleme.
-- **Esnek Bölüm & Çoklu Ders Yapılandırması**:
-  - 100 soruluk form varsayılan olarak **4 eşit parçaya (1–25, 26–50, 51–75, 76–100)** bölünür.
-  - Kullanıcı bölümlere dilediği ders adını (*Türkçe, Matematik, Fen vb.*) yazabilir, soru aralıklarını esnekçe değiştirebilir, yeni bölüm ekleyebilir veya tek tıkla varsayılana sıfırlayabilir.
-- **Gelişmiş ve Gizlenebilir Soru Katsayı Matrisi**:
-  - Arayüzü yormamak için açılır/kapanır (collapsible) gelişmiş seçenekler paneli.
-  - İster bölüme toplu katsayı çarpanı (örn. 2.0x), ister 100 sorunun her birine tek tek özel puan ağırlığı girilebilir.
-- **Türkiye YÖK Uyumlu 3'lü Notlandırma Baremi**:
-  - **100 Üzerinden Puan (%0 – %100)**: Net ve katsayılara göre normalize edilmiş başarı notu.
-  - **4.00 GPA Notu**: Üniversite transkriptleri için 4'lük sistem dönüşümü.
-  - **Resmi YÖK Harf Notu**: `AA` (4.00), `BA` (3.50), `BB` (3.00), `CB` (2.50), `CC` (2.00), `DC` (1.50), `DD` (1.00), `FD` (0.50), `FF` (0.00).
-- **Çan Eğrisi (YÖK Bağıl Değerlendirme Sistemi & T-Skoru)**:
-  - Sonuç ekranında anlık açılıp kapatılabilen Çan Eğrisi butonu.
-  - Sınıfın Aritmetik Ortalaması ($\bar{X}$) ve Standart Sapması ($S$) hesaplanarak $Z = \frac{X - \bar{X}}{S}$ ve $T = 10Z + 50$ formülüyle her öğrenciye bağıl harf notu atanır.
-- **İnteraktif Öğrenci İnceleme Çekmecesi (Drawer)**:
-  - Sağdan açılan çekmecede 3'lü not kartları, ders bazlı net kırılım tablosu ve 100 soruluk cevap matrisi.
-  - Öğrenci numarası düzeltme, cevap şıkkını elle güncelleme ve anında yeniden hesaplama desteği.
-- **Zengin Raporlama & Çoklu Format Dışa Aktarımı**:
-  - **Excel (XLSX) & CSV**: Her bölüm için ayrı ayrı *D, Y, B, Net* sütunları, 3'lü notlar ve Çan Harfi (T-Skor).
-  - **PDF Öğrenci Karnesi**: Öğrencinin eline verilecek resmi karne çıktısında ders ders başarı tablosu ve 100 soru detay matrisi.
-  - **Toplu Sınav PDF Raporu, JSON Manifestosu ve ZIP Paketleri**.
-- **Sıfır Telemetri ve Tam Çevrimdışı Çalışma**:
-  - Sıfır dış ağ isteği, sıfır çerez, sıfır takip ve Ayarlar sayfasından tek tıkla yerel veritabanını temizleme imkanı.
-
----
-
-## 🛠️ Tech Stack (Teknoloji Yığını)
-
-<div align="center">
-
-![React](https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![TypeScript](https://img.shields.io/badge/TypeScript_5.7-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite_7.3-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![OpenCV](https://img.shields.io/badge/OpenCV.js_Wasm-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)
-![IndexedDB](https://img.shields.io/badge/IndexedDB-00C853?style=for-the-badge&logo=databricks&logoColor=white)
-![jsPDF](https://img.shields.io/badge/jsPDF_Autotable-E91E63?style=for-the-badge)
-![ExcelJS](https://img.shields.io/badge/ExcelJS-217346?style=for-the-badge&logo=microsoftexcel&logoColor=white)
-
-</div>
-
-### Çekirdek ve Görüntü İşleme (Computer Vision)
-- **OpenCV.js (WebAssembly)**: İstemci taraflı kontur tespiti, adaptif eşikleme ve 4 noktalı perspektif dönüşümü.
-- **Web Worker İşlem Havuzu (`omr.worker.ts`)**: Çoklu iş parçacığı (multithreading) ile arka planda kesintisiz form işleme.
-- **PDF.js (`pdfjs-dist`)**: Çok sayfalı PDF sınav kağıtlarını doğrudan tarayıcıda yüksek çözünürlüklü görsellere dönüştürme.
-
-### Ön Yüz ve Kullanıcı Arayüzü (React & TypeScript)
-- **React 19 & TypeScript 5.7**: Bileşen mimarisi, React.lazy ile sayfa bazlı kod bölme (code-splitting) ve tip güvenliği.
-- **React Router 7**: SPA yönlendirme, derin linkleme ve durum koruması.
-- **Lucide React**: Modern, tutarlı ve erişilebilir SVG ikon kütüphanesi.
-- **Özel CSS Tasarım Sistemi**: CSS Değişkenleri, HSL renk paleti, karanlık/aydınlık tema ve tam duyarlı mobil grid.
-
-### Yerel Depolama ve Raporlama Motoru
-- **IndexedDB**: Sınav oturumları, taranan cevaplar ve performans teşhis logları için kalıcı yerel tarayıcı veritabanı.
-- **ExcelJS & JSZip**: Çok sütunlu biçimlendirilmiş Excel çalışma kitapları ve toplu ZIP arşivleri üretimi.
-- **jsPDF & jsPDF-AutoTable**: Resmi sınav listeleri ve tek sayfalık öğrenci karneleri için vektörel PDF çıktısı.
-
----
-
-## 📁 Project Structure (Proje Klasör Yapısı)
-
-```tree
-Optical-Form-Reader/
-├── public/                         # Statik dosyalar, logolar ve manifest
-│   ├── Optik_Form.pdf              # Standart basılabilir 100 soruluk örnek form
-│   ├── product-logo.svg            # Vektörel ürün logosu
-│   ├── robots.txt                  # Arama motoru ve yapay zeka bot direktifleri
-│   ├── sitemap.xml                 # Kanonik XML site haritası
-│   └── manifest.webmanifest        # PWA web manifestosu
-├── src/                            # Uygulama kaynak kodları (React 19 + TS)
-│   ├── components/                 # Yeniden kullanılabilir UI bileşenleri
-│   │   ├── AppShell.tsx            # Üst navigasyon barı, tema seçici ve layout
-│   │   ├── Brand.tsx               # Vektörel marka ve logo bileşenleri
-│   │   ├── Footer.tsx              # Alt bilgi, yasal linkler ve telif şeridi
-│   │   └── SectionConfigPanel.tsx  # Bölüm yapılandırma, aralık seçici ve katsayı matrisi
-│   ├── context/                    # React Context durum sağlayıcıları
-│   │   └── AppDataContext.tsx      # Aktif oturumlar, depolama ve tema global state'i
-│   ├── domain/                     # Saf iş kuralları ve akademik değerlendirme motoru
-│   │   ├── e2e-workflow.test.ts    # Uçtan uca kullanıcı akışı entegrasyon testleri
-│   │   ├── files.ts / .test.ts     # Dosya doğrulama, MIME kontrolü ve ZIP açma
-│   │   ├── grading.ts / .test.ts   # YÖK baremleri, bölüm notlandırma ve Çan Eğrisi T-Skoru
-│   │   ├── processing.ts / .test.ts# Kuyruk yönetimi ve Web Worker iş dağıtıcısı
-│   │   ├── scoring.ts / .test.ts   # Ağırlıklı net hesaplama ve cevap karşılaştırma
-│   │   └── statistics.ts / .test.ts# Sınıf istatistikleri ve soru güçlük analizi
-│   ├── export/                     # Çoklu format dışa aktarma modülleri
-│   │   └── exporters.ts            # Excel (XLSX), CSV, JSON, ZIP, Yazdırma ve PDF Karne
-│   ├── hooks/                      # Özel React hook'ları
-│   │   ├── useTheme.ts             # Açık/Koyu tema yönetimi ve sistem tercihi
-│   │   └── useWorkerPool.ts        # Web Worker yaşam döngüsü ve görev yöneticisi
-│   ├── omr/                        # OMR Görüntü İşleme & Web Worker Çekirdeği
-│   │   ├── omr.worker.ts           # OpenCV.js OMR algoritması
-│   │   └── workerClient.ts         # Worker iletişim köprüsü
-│   ├── pages/                      # Sayfa görünümleri (React.lazy ile kod bölümlü)
-│   │   ├── GuidePage.tsx           # Form baskı ve optik tarama rehberi
-│   │   ├── HomePage.tsx            # Karşılama sayfası ve canlı tarama animasyonu
-│   │   ├── LegalPage.tsx           # Gizlilik, KVKK, Kullanım Koşulları ve Çerez sayfaları
-│   │   ├── NotFoundPage.tsx        # 404 Sayfa bulunamadı ekranı
-│   │   ├── ResultsPage.tsx         # Sonuç tablosu, Çan Eğrisi ve öğrenci inceleme çekmecesi
-│   │   ├── ScannerPage.tsx         # Dosya yükleme alanı, cevap anahtarı ve bölüm paneli
-│   │   └── SettingsPage.tsx        # Depolama göstergesi, işlem ayarları ve veri sıfırlama
-│   ├── storage/                    # Yerel veritabanı motoru
-│   │   ├── database.ts             # IndexedDB şeması, CRUD işlemleri ve sürüm yönetimi
-│   │   └── database.test.ts        # Veritabanı doğrulama testleri
-│   ├── App.tsx                     # Kök yönlendirme, hata yakalama (Error Boundary) ve Suspense
-│   ├── constants.ts                # Uygulama sabitleri ve eşik değerleri
-│   ├── main.tsx                    # React DOM başlatma noktası
-│   ├── styles.css                  # Ana CSS tasarım sistemi ve tema değişkenleri
-│   └── types.ts                    # Global TypeScript tip ve arayüz tanımları
-├── package.json                    # Bağımlılıklar ve npm scriptleri
-├── tsconfig.json                   # TypeScript derleyici yapılandırması
-├── vite.config.ts                  # Vite derleyici ve test yapılandırması
-└── README.md                       # Ana Dokümantasyon
+# 5. Run the full verification suite (TypeScript + Vite build + Vitest + 73-locale check + Rust tests)
+npm run check
+cargo test --manifest-path src-tauri/Cargo.toml
 ```
 
 ---
 
-## 💾 Storage & Grading Schema (Kasa Şeması ve Puanlama Yapısı)
+## <img src="assets/icons/package.svg" width="22" height="22" alt="" valign="middle" /> Distribution Packages
 
-| Özellik / Katman | Standart / Mimari | Açıklama |
-| :--- | :--- | :--- |
-| **OMR Algoritması** | **OpenCV.js (WebAssembly)** | 4 noktalı köşe tespiti, perspektif düzeltme ve baloncuk yoğunluk oranı |
-| **İşlem Paralelliği** | **Web Workers (1–4 İş Parçacığı)** | Arayüzü dondurmayan çok çekirdekli arka plan tarama motoru |
-| **Yerel Veritabanı** | **IndexedDB (`omr_database_v2`)** | Oturumlar, öğrenci cevapları ve okuma kalitesi teşhis logları |
-| **Mutlak Notlandırma** | **YÖK 3'lü Barem** | 100 üzerinden not $\rightarrow$ 4.00 GPA $\rightarrow$ `AA` ile `FF` arası Harf Notu |
-| **Bağıl Değerlendirme** | **T-Skor Çan Eğrisi** | $Z = \frac{X - \bar{X}}{S}$, $T = 10Z + 50$ (Sınıf ortalaması ve standart sapma) |
-| **Rapor Çıktıları** | **ExcelJS, jsPDF, JSZip** | Ders bazlı sütunlu Excel (XLSX), PDF karneler ve ZIP arşivleri |
+```powershell
+# Regenerate monochrome multi-DPI icons, MSIX tiles & custom NSIS installer BMPs
+npm run icons:generate
 
----
+# Build Windows 11 NSIS Setup installer & standalone portable executable
+npm run tauri:build
 
-## ⚙️ Installation & Usage (Kurulum ve Kullanım)
-
-### Gereksinimler
-- **Node.js**: Sürüm 18.0.0 veya üzeri
-- **npm**: Sürüm 9.0.0 veya üzeri
-- **Modern Web Tarayıcısı**: Chrome, Edge, Firefox veya Safari (HTML5 Canvas & WebAssembly desteği)
-
-### Adım Adım Geliştirici Kurulumu
-
-1. **Depoyu Klonlayın:**
-   ```bash
-   git clone https://github.com/emirtdede/Optical-Form-Reader.git
-   cd Optical-Form-Reader
-   ```
-
-2. **Node Bağımlılıklarını Yükleyin:**
-   ```bash
-   npm install
-   ```
-
-3. **Otomatik Testleri Çalıştırın:**
-   ```bash
-   npm test
-   ```
-
-4. **Yerel Geliştirme Sunucusunu Başlatın:**
-   ```bash
-   npm run dev
-   ```
-   Tarayıcınızda [http://localhost:8081](http://localhost:8081) adresini açın.
-
-5. **Production Paketini Derleyin:**
-   ```bash
-   npm run build
-   ```
-   Canlı yayına hazır optimize dosyalar `dist/` klasörüne derlenecektir.
+# Package & verify the Microsoft Store MSIX bundle (release/OpticalFormReader-1.0.0-x64.msix)
+npm run msix:build
+npm run msix:verify
+```
 
 ---
 
-## ⚖️ License (Lisans)
+## <img src="assets/icons/scale.svg" width="22" height="22" alt="" valign="middle" /> License & Publisher
 
-Bu proje **MIT Lisansı** ile lisanslanmıştır. Detaylar için [`LICENSE`](LICENSE) dosyasına başvurabilirsiniz.
+- **Product:** Optical Form Reader (`v1.0.0`)
+- **Publisher:** **Vellium Teknoloji Anonim Şirketi**
+- **Microsoft Store Identity:** `Vellium.OpticalFormReader`
+- **Official Websites:** [https://vellium.dev](https://vellium.dev) · [https://optikformokuyucu.com](https://optikformokuyucu.com)
+- **Company Information:** [https://vellium.dev/en/legal/company-information](https://vellium.dev/en/legal/company-information)
+- **Privacy Policy:** [https://vellium.dev/en/legal/privacy](https://vellium.dev/en/legal/privacy)
+- **Terms of Service (EULA):** [https://vellium.dev/en/legal/terms](https://vellium.dev/en/legal/terms)
+- **Security Policy & Disclosure:** [SECURITY.md](.github/SECURITY.md) · [https://vellium.dev/en/legal/security-disclosure](https://vellium.dev/en/legal/security-disclosure)
+- **Official Contact Channels:**
+  - General Inquiries: `contact@vellium.dev`
+  - Technical & Store Support: `support@vellium.dev`
+  - Privacy, KVKK & GDPR: `privacy@vellium.dev`
+  - Legal & Licensing: `legal@vellium.dev`
+  - Security Reports: `security@vellium.dev`
+  - Enterprise Billing: `billing@vellium.dev`
 
-**Resmi Web Sitesi**: [Vellium.dev](https://vellium.dev) &bull; **Yayıncı**: Vellium
+Copyright © 2026 **Vellium Teknoloji Anonim Şirketi**. All rights reserved.
+
+---
+---
+
+<div id="turkish-version"></div>
+
+# <img src="public/product-logo.svg" width="26" height="26" alt="Optik Form Okuyucu Logosu" valign="middle" /> Türkçe Versiyon
+
+## <img src="assets/icons/overview.svg" width="22" height="22" alt="" valign="middle" /> Proje Özeti
+
+**Optik Form Okuyucu** (`optikformokuyucu.com`), **Vellium Teknoloji Anonim Şirketi** ([vellium.dev](https://vellium.dev)) tarafından geliştirilen ve yayınlanan, %100 yerel-first (cihaz içi) ve gizlilik odaklı bir Windows 11 masaüstü uygulaması ve web platformudur. Özel bir optik okuyucu cihazına, internet bağlantısına veya bulut sunucusuna ihtiyaç duymadan bilgisayarınızı profesyonel bir optik okuma ve akademik ölçme-değerlendirme merkezine dönüştürür.
+
+Öğretmenler, okullar, kurslar ve üniversiteler için tasarlanan Optik Form Okuyucu; **1 ile 160 soru** arasındaki standart ve özel optik formları çok iş parçacıklı **OpenCV.js WebAssembly** görüntü işleme motoruyla doğrudan cihazınızda okur. Otomatik 4 köşe hizalama, eğiklik ve perspektif düzeltme, gölge dengeleme (CLAHE), çoklu kitapçık (`A / B / C / D`), ceza kuralları (`4Y=1D`, `3Y=1D`, `Cezasız`), **KR-20** madde analizi, **YÖK T-Skor çan eğrisi**, **e-Okul** sınıf listesi eşleştirme ve tek tıkla renkli **PDF öğrenci karnesi** üretimini tek bir çevrimdışı pakette birleştirir.
+
+### Neden Optik Form Okuyucu?
+
+- **%100 Cihaz İçi ve Sıfır Telemetri:** Cevap anahtarları, öğrenci kağıtları, kamera görüntüleri ve not listeleri bilgisayarınızdan asla dışarı çıkmaz. Ham görüntüler okuma biter bitmez bellekten temizlenir; sonuçlar yalnızca yerel **IndexedDB** veritabanında saklanır.
+- **Çerçevesiz 60 FPS Windows 11 Masaüstü Deneyimi:** **Tauri 2 (Rust)** mimarisiyle üst çubuksuz minimal kabuk, daraltılabilir 1. kenar menüsü (`Form Tara`, `Şablonlar`, `Sonuçlar`, `Dokümantasyon`, `Ayarlar`, `Hakkında`), **Ayarlar** ve **Dokümantasyon** için 2. kenar menülü bölünmüş görünüm (`.pp-split-layout`), sistem tepsisi (system tray), uygulama içi bildirimler, yerel Windows masaüstü bildirimleri ve aktif tarama çıkış koruması sunar.
+- **1–160 Soru ve Özel Vektörel A4 PDF Form Üretici:** 12 hazır sınav şablonunun yanı sıra dilediğiniz soru, şık (`3–5`), bölüm ve kurum başlığıyla %100 baskı ölçeğinde vektörel A4 PDF optik form üreten Özel Form Sihirbazı içerir.
+- **28 Tema Kombinasyonu, 3 Monokrom İkon ve 73 Dil:** Açık ve koyu modda 14 renk teması (`14 × 2 = 28` palet), pencere/görev çubuğu/sistem tepsisiyle anında senkronize olan 3 siyah-beyaz monokrom ikon seçeneği ve 73 dil kataloğu (Türkçe ve İngilizce tam çeviri, diğer 71 dil için otomatik İngilizce fallback) sunar.
+
+---
+
+## <img src="assets/icons/features.svg" width="22" height="22" alt="" valign="middle" /> Temel Özellikler
+
+### <img src="assets/icons/cpu.svg" width="18" height="18" alt="" valign="middle" /> 1. Yerel OpenCV WASM Görüntü İşleme Motoru
+- **4 Köşe Hizalama ve Perspektif Düzeltme:** Kağıdın 4 köşesindeki referans karelerini otomatik bulur, kamera açısını ve kağıt eğriliğini düzeltir, CLAHE ile gölgeleri dengeler.
+- **Canlı Kamera ile 1 Saniyede Eller Serbest Çekim:** Web kamerası vizörü 4 köşeyi kilitlediğinde deklanşöre basmaya gerek kalmadan formu otomatik yakalar.
+- **Çoklu İş Parçacığı ve Kesintiye Dayanıklı Checkpoint:** JPG, PNG, WebP, çok sayfalı PDF ve ZIP arşivlerini 1–4 eşzamanlı Web Worker ile işler. Her öğrenci sonucu anında IndexedDB'ye yazılır; işlem yarıda kesilse bile kaldığı yerden devam eder.
+
+### <img src="assets/icons/templates.svg" width="18" height="18" alt="" valign="middle" /> 2. Şablon Galerisi ve Özel Form Sihirbazı
+- **12 Hazır Standart Şablon:** 10 soruluk hızlı quizden 90 soruluk LGS ve 160 soruluk YKS/üniversite sınavlarına kadar baskıya hazır A4 şablonlar.
+- **Özel Form Tasarımcısı (`1–160` Soru):** Soru sayısı, şık sayısı (`A–C`, `A–D`, `A–E`), öğrenci numarası basamağı ve kurum adını belirleyerek milimetrik kalibre edilmiş vektörel PDF indirin.
+
+### <img src="assets/icons/chart.svg" width="18" height="18" alt="" valign="middle" /> 3. Akademik Analitik, Çan Eğrisi ve PDF Karneler
+- **Çoklu Kitapçık (`A / B / C / D`) ve Ceza Kuralları:** Her kitapçık için ayrı cevap anahtarı, bölüm katsayıları ve ÖSYM (`4Y=1D`), MEB/LGS (`3Y=1D`) veya cezasız puanlama.
+- **KR-20 Güvenirlik ve Madde/Çeldirici Analizi:** Sınavın KR-20 iç tutarlılık katsayısını, soru güçlük ($p$) ve ayırt edicilik ($r_{jx}$) indekslerini ve şık dağılım matrisini hesaplar.
+- **YÖK T-Skor Çan Eğrisi ve e-Okul Eşleştirme:** Tek tıkla bağıl harf notu (`AA–FF`) hesaplar; e-Okul Excel/CSV listesiyle öğrenci numaralarını ve isimleri otomatik eşleştirir; renkli **PDF Karneler**, **XLSX**, **CSV**, **JSON** ve **ZIP** çıktıları üretir.
+
+### <img src="assets/icons/sliders.svg" width="18" height="18" alt="" valign="middle" /> 4. Bölünmüş Kenar Menülü Ayarlar, Bildirimler ve Çıkış Koruması
+- **2. Kenar Menülü Ayarlar Sayfası (`/ayarlar`):** Pop-up karmaşası yerine *Genel ve Davranış*, *Görünüm ve Dil*, *Bildirimler ve Ses*, *Klavye Kısayolları*, *Veri ve Yedekleme* ve *Tanılama ve Destek* alt sayfalarından oluşan odaklı sayfa mimarisi.
+- **2. Kenar Menülü Dokümantasyon (`/rehber`) ve Hakkında (`/hakkinda`):** Anlık aramalı 7 bölümlü uygulama içi dokümantasyon merkezi ve 9 yasal belge okuyuculu Hakkında sayfası.
+- **Uygulama İçi ve Windows Masaüstü Bildirimleri:** Tarama başlangıcı, tamamlanma özeti ve hatalı/atlanan form uyarıları için hem uygulama içi toast hem de Windows Bildirim Merkezi desteği.
+- **Aktif Tarama ve Çıkış Onayı:** Uygulamadan çıkarken sistem tepsisine küçültme veya tamamen kapatma seçeneği sunar; tarama devam ediyorsa veri kaybını önlemek için özel uyarı penceresi açar.
+
+---
+
+## <img src="assets/icons/terminal.svg" width="22" height="22" alt="" valign="middle" /> Kurulum ve Geliştirme
+
+```powershell
+# 1. Depoyu klonlayın
+git clone https://github.com/emirtdede/optical-form-reader.git
+cd optical-form-reader
+
+# 2. Bağımlılıkları yükleyin
+npm ci
+
+# 3. Web geliştirme sunucusunu başlatın (http://localhost:8081)
+npm run dev
+
+# 4. Windows 11 Tauri masaüstü uygulamasını geliştirme modunda açın
+npm run tauri:dev
+
+# 5. Tüm doğrulama ve testleri çalıştırın (TypeScript + Vite + Vitest + 73 Dil + Rust)
+npm run check
+cargo test --manifest-path src-tauri/Cargo.toml
+
+# 6. Windows 11 NSIS Kurulum Sihirbazı ve Microsoft Store MSIX paketini üretin
+npm run tauri:build
+npm run msix:build
+npm run msix:verify
+```
+
+---
+
+## <img src="assets/icons/scale.svg" width="22" height="22" alt="" valign="middle" /> Yayıncı ve Yasal Bilgiler
+
+- **Ürün:** Optik Form Okuyucu (`v1.0.0`)
+- **Yayıncı:** **Vellium Teknoloji Anonim Şirketi**
+- **Microsoft Store Kimliği:** `Vellium.OpticalFormReader`
+- **Resmî Web Siteleri:** [https://vellium.dev](https://vellium.dev) · [https://optikformokuyucu.com](https://optikformokuyucu.com)
+- **Resmî Şirket Bilgileri:** [https://vellium.dev/tr/yasal/sirket-bilgileri](https://vellium.dev/tr/yasal/sirket-bilgileri)
+- **Gizlilik Politikası:** [https://vellium.dev/tr/yasal/gizlilik-politikasi](https://vellium.dev/tr/yasal/gizlilik-politikasi)
+- **KVKK Aydınlatma Metni:** [https://vellium.dev/tr/yasal/kvkk-aydinlatma-metni](https://vellium.dev/tr/yasal/kvkk-aydinlatma-metni)
+- **Kullanım Koşulları (EULA):** [https://vellium.dev/tr/yasal/hizmet-kosullari](https://vellium.dev/tr/yasal/hizmet-kosullari)
+- **Güvenlik Bildirimi:** [SECURITY.md](.github/SECURITY.md) · [https://vellium.dev/tr/yasal/guvenlik-acigi-bildirimi](https://vellium.dev/tr/yasal/guvenlik-acigi-bildirimi)
+- **Resmî Kurumsal E-posta Kanalları:**
+  - Genel İletişim: `contact@vellium.dev`
+  - Teknik Destek & Microsoft Store: `support@vellium.dev`
+  - Gizlilik, KVKK & GDPR: `privacy@vellium.dev`
+  - Hukuk & Lisanslama: `legal@vellium.dev`
+  - Güvenlik Açığı Bildirimi: `security@vellium.dev`
+  - Kurumsal Faturalama: `billing@vellium.dev`
+
+Copyright © 2026 **Vellium Teknoloji Anonim Şirketi**. Tüm hakları saklıdır.

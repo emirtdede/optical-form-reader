@@ -1,13 +1,15 @@
 {
-  "name": "Optik Form Okuyucu",
+  "name": "Optik Form Okuyucu — Optical Form Reader",
   "short_name": "Optik Okuyucu",
-  "description": "100 soruluk optik formları cihazınızdan çıkarmadan toplu değerlendirin.",
+  "description": "Local-first optical mark recognition & academic grading suite by Vellium Teknoloji Anonim Şirketi.",
   "lang": "tr",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0b1220",
-  "theme_color": "#0b1220",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
   "icons": [
-    { "src": "/product-logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "/product-logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/pwa-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/pwa-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }

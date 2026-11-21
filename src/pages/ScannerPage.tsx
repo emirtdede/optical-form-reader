@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   AlertCircle, Camera, Check, ChevronRight, CircleStop, Download, FileArchive, FileCheck2, FileImage,
-  FileText, Files, FolderOpen, Gauge, Layers3, LoaderCircle, LockKeyhole, Play, RotateCcw,
+  FileText, Files, FolderOpen, Gauge, Layers3, LayoutTemplate, LoaderCircle, LockKeyhole, Play, RotateCcw,
   Sparkles, Trash2, X,
 } from 'lucide-react';
 import { FORM_TEMPLATE_URL } from '../constants';
 import { useAppData } from '../context/AppDataContext';
+import { useAppSettings } from '../context/AppSettingsContext';
+import { useI18n } from '../i18n/I18nContext';
 import { makeGeneratedStudentNumber, sanitizeRecordTitle, studentNumberFromFilename } from '../domain/files';
 import {
   normalizeProcessingSettings, recommendProcessingSettings, settingsRecommendationReason,
@@ -14,7 +16,7 @@ import {
 import {
   expandStudentSources, materializeAnswerKey, sortAndPartitionSources, SourceMaterializer,
 } from '../domain/sources';
-import { ALGORITHM_VERSION, compareWithAnswerKey, isCompleteAnswerKey } from '../domain/scoring';
+import { ALGORITHM_VERSION, compareWithAnswerKey, DEFAULT_PENALTY_RULE, PRESET_PENALTY_RULES, isCompleteAnswerKey } from '../domain/scoring';
 import { exportZip } from '../export/exporters';
 import { OmrWorkerPool } from '../omr/workerClient';
 import {
@@ -23,9 +25,14 @@ import {
 } from '../storage/database';
 import { getDefaultSections } from '../domain/grading';
 import { SectionConfigPanel } from '../components/SectionConfigPanel';
+import { PenaltyRuleSelector } from '../components/PenaltyRuleSelector';
 import { CameraScannerModal } from '../components/CameraScannerModal';
+import { TemplateWizardModal } from '../components/TemplateWizardModal';
+import { OpticalFormThumbnail } from '../components/OpticalFormThumbnail';
+import { BUILT_IN_TEMPLATES, getTemplateById } from '../domain/templates/templateRegistry';
+import { detectTemplateFromFile } from '../omr/templateDetector';
 import type {
-  AnswerChoice, BookletType, ExamSection, ExamSession, ProcessingJob, ProcessingSettings, QueueItem, SessionProgress, StudentResult,
+  AnswerChoice, BookletType, ExamSection, ExamSession, FormTemplateDefinition, PenaltyRule, ProcessingJob, ProcessingSettings, QueueItem, SessionProgress, StudentResult,
 } from '../types';
 
 type Phase = 'idle' | 'engine' | 'answer-key' | 'students' | 'complete';
@@ -34,9 +41,9 @@ type RecommendationDecision = 'pending' | 'accepted' | 'custom';
 function queueLabel(phase: Phase): string {
   if (phase === 'engine') return 'Yerel görüntü motoru hazırlanıyor';
   if (phase === 'answer-key') return 'Cevap anahtarı okunuyor';
-  if (phase === 'students') return 'Öğrenci formları işleniyor';
-  if (phase === 'complete') return 'Değerlendirme tamamlandı';
-  return 'İşlem bekliyor';
+  if (phase === 'students') return 'Öğrenci formları değerlendiriliyor';
+  if (phase === 'complete') return 'Tamamlandı';
+  return 'Bekleniyor';
 }
 
 function statusLabel(status: QueueItem['status']) {
@@ -70,16 +77,73 @@ function progressFrom(
   };
 }
 
+function resolveInitialTemplate(): FormTemplateDefinition {
+  try {
+    const templateParam = new URLSearchParams(window.location.search).get('template');
+    if (templateParam === 'custom') {
+      const stored = sessionStorage.getItem('vellium_custom_template');
+      if (stored) {
+        return JSON.parse(stored) as FormTemplateDefinition;
+      }
+    }
+    if (templateParam) {
+      const found = BUILT_IN_TEMPLATES.find((t) => t.id === templateParam);
+      if (found) return found;
+    }
+  } catch {
+    // fallback
+  }
+  return getTemplateById('vellium-100');
+}
+
+function getInitialSectionsForTemplate(tmpl: FormTemplateDefinition): ExamSection[] {
+  if (tmpl.id === 'vellium-100') {
+    return getDefaultSections();
+  }
+  const secCount = tmpl.sectionsCount || 1;
+  const qPerSec = tmpl.questionsPerSection || Math.ceil(tmpl.questionCount / secCount);
+  return Array.from({ length: secCount }, (_, i) => {
+    const start = i * qPerSec + 1;
+    const count = Math.min(qPerSec, tmpl.questionCount - i * qPerSec);
+    const end = start + count - 1;
+    return {
+      id: `sec-${i + 1}`,
+      name: secCount === 1 ? 'Genel Değerlendirme' : `${i + 1}. Bölüm (${start}-${end})`,
+      startQuestion: start,
+      endQuestion: end,
+      weight: 1,
+    };
+  });
+}
+
 export function ScannerPage() {
+  const { t } = useI18n();
   const { sessions, refresh } = useAppData();
+  const { notify, setScanningState, recordLog } = useAppSettings();
+  const [searchParams] = useSearchParams();
+  const [activeTemplate, setActiveTemplate] = useState<FormTemplateDefinition>(resolveInitialTemplate);
+  const [autoDetectionNotice, setAutoDetectionNotice] = useState<string | null>(() => {
+    const param = new URLSearchParams(window.location.search).get('template');
+    if (param) {
+      const tmpl = resolveInitialTemplate();
+      return `Seçili şablon aktif edildi: ${tmpl.name} (${tmpl.questionCount} Soru)`;
+    }
+    return null;
+  });
   const [title, setTitle] = useState(`Optik Değerlendirme ${new Date().toLocaleDateString('tr-TR')}`);
   const [answerKeyFile, setAnswerKeyFile] = useState<File | null>(null);
   const [bookletFiles, setBookletFiles] = useState<Record<BookletType, File | null>>({ A: null, B: null, C: null, D: null });
   const [isMultiBookletMode, setIsMultiBookletMode] = useState(false);
   const [activeBookletTab, setActiveBookletTab] = useState<BookletType>('A');
   const [queue, setQueue] = useState<QueueItem[]>([]);
-  const [sections, setSections] = useState<ExamSection[]>(getDefaultSections);
-  const [questionWeights, setQuestionWeights] = useState<number[]>(() => Array(100).fill(1));
+  const [sections, setSections] = useState<ExamSection[]>(() => getInitialSectionsForTemplate(resolveInitialTemplate()));
+  const [questionWeights, setQuestionWeights] = useState<number[]>(() => Array(resolveInitialTemplate().questionCount).fill(1));
+  const [penaltyRule, setPenaltyRule] = useState<PenaltyRule>(() => {
+    const tmpl = resolveInitialTemplate();
+    if (tmpl.id === 'vellium-90' || tmpl.id === 'vellium-40') return PRESET_PENALTY_RULES.lgs;
+    if (tmpl.id === 'vellium-15' || tmpl.id === 'vellium-10') return PRESET_PENALTY_RULES.none;
+    return DEFAULT_PENALTY_RULE;
+  });
   const [settings, setSettings] = useState<ProcessingSettings>(() => recommendProcessingSettings(25));
   const [recommendation, setRecommendation] = useState<ProcessingSettings | null>(null);
   const [recommendationDecision, setRecommendationDecision] = useState<RecommendationDecision>('custom');
@@ -91,10 +155,86 @@ export function ScannerPage() {
   const [savedSessionId, setSavedSessionId] = useState<string | null>(null);
   const [visibleQueueCount, setVisibleQueueCount] = useState(200);
   const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
+  const [isTemplateWizardOpen, setIsTemplateWizardOpen] = useState(false);
+  const hasAnswerKey = Boolean(answerKeyFile || bookletFiles.A || savedSessionId);
+  const isReadyToStart = hasAnswerKey && queue.length > 0;
   const poolRef = useRef<OmrWorkerPool | null>(null);
   const cancelledRef = useRef(false);
   const sessionRef = useRef<ExamSession | null>(null);
   const progressRef = useRef<SessionProgress | null>(null);
+
+  useEffect(() => {
+    const templateParam = searchParams.get('template');
+    if (!templateParam) return;
+
+    if (templateParam === 'custom') {
+      try {
+        const stored = sessionStorage.getItem('vellium_custom_template');
+        if (stored) {
+          const parsed = JSON.parse(stored) as FormTemplateDefinition;
+          handleSelectTemplate(parsed);
+          setAutoDetectionNotice(`Özel tasarlanan şablon yüklendi: ${parsed.name} (${parsed.questionCount} Soru)`);
+          return;
+        }
+      } catch {
+        // fallback
+      }
+    }
+
+    const found = BUILT_IN_TEMPLATES.find((t) => t.id === templateParam);
+    if (found && found.id !== activeTemplate.id) {
+      handleSelectTemplate(found);
+      setAutoDetectionNotice(`Seçili şablon aktif edildi: ${found.name} (${found.questionCount} Soru)`);
+    }
+  }, [searchParams]);
+
+  function handleSelectTemplate(tmpl: FormTemplateDefinition) {
+    setActiveTemplate(tmpl);
+    setQuestionWeights(Array(tmpl.questionCount).fill(1));
+    const secCount = tmpl.sectionsCount || 1;
+    const qPerSec = tmpl.questionsPerSection || Math.ceil(tmpl.questionCount / secCount);
+
+    if (tmpl.id === 'vellium-100') {
+      setSections(getDefaultSections());
+    } else {
+      const generatedSections: ExamSection[] = Array.from({ length: secCount }, (_, i) => {
+        const start = i * qPerSec + 1;
+        const count = Math.min(qPerSec, tmpl.questionCount - i * qPerSec);
+        const end = start + count - 1;
+        return {
+          id: `sec-${i + 1}`,
+          name: secCount === 1 ? 'Genel Değerlendirme' : `${i + 1}. Bölüm (${start}-${end})`,
+          startQuestion: start,
+          endQuestion: end,
+          weight: 1,
+        };
+      });
+      setSections(generatedSections);
+    }
+
+    if (tmpl.id === 'vellium-90' || tmpl.id === 'vellium-40') {
+      setPenaltyRule(PRESET_PENALTY_RULES.lgs);
+    } else if (tmpl.id === 'vellium-15' || tmpl.id === 'vellium-10') {
+      setPenaltyRule(PRESET_PENALTY_RULES.none);
+    } else if (tmpl.id === 'vellium-120' || tmpl.id === 'vellium-160' || tmpl.id === 'vellium-100' || tmpl.id === 'vellium-80' || tmpl.id === 'vellium-50' || tmpl.id === 'vellium-30' || tmpl.id === 'vellium-25') {
+      setPenaltyRule(PRESET_PENALTY_RULES.osym);
+    }
+  }
+
+  async function handleAnswerKeyAutoDetect(file: File | null) {
+    if (!file) return;
+    try {
+      const detected = await detectTemplateFromFile(file);
+      if (detected && detected.template) {
+        handleSelectTemplate(detected.template);
+        setAutoDetectionNotice(
+          `Yüklenen formdan otomatik algılandı: ${detected.template.name} (${detected.template.questionCount} Soru)`,
+        );
+      }
+    } catch {
+      // Sessiz fallback
+    }
+  }
 
   useEffect(() => () => {
     cancelledRef.current = true;
@@ -176,6 +316,23 @@ export function ScannerPage() {
     void addFiles(Array.from(event.dataTransfer.files));
   }
 
+  function handleAnswerKeyDrop(event: DragEvent<HTMLDivElement>, booklet: BookletType = 'A') {
+    event.preventDefault();
+    const file = event.dataTransfer.files?.[0] ?? null;
+    if (!file) return;
+    if (isMultiBookletMode) {
+      setBookletFiles((curr) => ({ ...curr, [booklet]: file }));
+      if (booklet === 'A') {
+        setAnswerKeyFile(file);
+        void handleAnswerKeyAutoDetect(file);
+      }
+    } else {
+      setAnswerKeyFile(file);
+      setBookletFiles((c) => ({ ...c, A: file }));
+      void handleAnswerKeyAutoDetect(file);
+    }
+  }
+
   function acceptRecommendation() {
     if (!recommendation) return;
     applySettings(recommendation);
@@ -198,6 +355,9 @@ export function ScannerPage() {
     setJobs([]);
     void listProcessingJobs(session.id).then(setJobs).catch(() => setJobs([]));
     setSavedSessionId(session.id);
+    if (session.penaltyRule) {
+      setPenaltyRule(session.penaltyRule);
+    }
     setSettings(session.progress.settings);
     setRecommendation(null);
     setRecommendationDecision('custom');
@@ -254,8 +414,12 @@ export function ScannerPage() {
       await refresh();
     }
     setProcessing(false);
+    setScanningState(false);
     setPhase('idle');
-    setMessage({ type: 'warning', text: 'İşlem durduruldu. Tamamlanan sonuçlar tarayıcıya kaydedildi ve hemen indirilebilir.' });
+    const stopMsg = 'İşlem durduruldu. Tamamlanan sonuçlar tarayıcıya kaydedildi ve hemen indirilebilir.';
+    setMessage({ type: 'warning', text: stopMsg });
+    recordLog('warn', 'scanner', stopMsg);
+    notify({ message: stopMsg, type: 'warning', desktop: true, desktopCategory: 'warn' });
     setQueue((current) => current.map((item) => ['processing', 'hashing'].includes(item.status) ? { ...item, status: 'waiting' } : item));
   }
 
@@ -309,6 +473,14 @@ export function ScannerPage() {
     setQueue(processingQueue);
     cancelledRef.current = false;
     setProcessing(true);
+    setScanningState(true, `${cleanTitle} (${processingQueue.length} form)`, cancelProcessing);
+    recordLog('info', 'scanner', `Started optical grading: ${cleanTitle} (${processingQueue.length} sheets).`);
+    notify({
+      message: `“${cleanTitle}” için ${processingQueue.length} optik formun değerlendirilmesi başlatıldı.`,
+      type: 'info',
+      desktop: true,
+      desktopCategory: 'start',
+    });
     setSavedSessionId(resume?.id ?? null);
     setMessage(null);
     setPhase('engine');
@@ -366,6 +538,7 @@ export function ScannerPage() {
         activeBooklets: Object.keys(bookletKeys) as BookletType[],
         sections,
         questionWeights,
+        penaltyRule,
         results: [...(resume?.results ?? [])],
         progress: undefined,
       };
@@ -435,7 +608,7 @@ export function ScannerPage() {
               updateQueueItem(item.id, { status: 'processing', sourceFingerprint: materialized.fingerprint });
               const read = await pool.process(materialized.file);
               if (cancelledRef.current) return;
-              const compared = compareWithAnswerKey(session!.bookletKeys ?? answerKey, read, sections, questionWeights);
+              const compared = compareWithAnswerKey(session!.bookletKeys ?? answerKey, read, sections, questionWeights, undefined, penaltyRule);
               const filenameNumber = studentNumberFromFilename(item.displayName);
               const formNumber = read.studentNumber;
               const studentNumber = formNumber || filenameNumber || makeGeneratedStudentNumber(item.originalIndex);
@@ -528,9 +701,17 @@ export function ScannerPage() {
       await updateSessionProgress(session.id, completedProgress, session.updatedAt);
       await refresh();
       setPhase('complete');
+      const completeText = `${session.results.length} sonuç kaydedildi; ${skippedCount} yinelenen form atlandı${failedCount ? `, ${failedCount} form okunamadı` : ''}. Part paketlerini veya tüm sonuçları tek ZIP olarak indirebilirsiniz.`;
       setMessage({
         type: failedCount ? 'warning' : 'success',
-        text: `${session.results.length} sonuç kaydedildi; ${skippedCount} yinelenen form atlandı${failedCount ? `, ${failedCount} form okunamadı` : ''}. Part paketlerini veya tüm sonuçları tek ZIP olarak indirebilirsiniz.`,
+        text: completeText,
+      });
+      recordLog(failedCount ? 'warn' : 'info', 'scanner', completeText);
+      notify({
+        message: completeText,
+        type: failedCount ? 'warning' : 'success',
+        desktop: true,
+        desktopCategory: failedCount ? 'warn' : 'complete',
       });
     } catch (error) {
       if (!cancelledRef.current) {
@@ -541,12 +722,16 @@ export function ScannerPage() {
           await refresh();
         }
         setPhase('idle');
-        setMessage({ type: 'error', text: error instanceof Error ? error.message : 'Değerlendirme tamamlanamadı.' });
+        const errText = error instanceof Error ? error.message : 'Değerlendirme tamamlanamadı.';
+        setMessage({ type: 'error', text: errText });
+        recordLog('error', 'scanner', errText);
+        notify({ message: errText, type: 'error', desktop: true, desktopCategory: 'warn' });
       }
     } finally {
       pool.dispose();
       await materializer.dispose();
       if (poolRef.current === pool) poolRef.current = null;
+      setScanningState(false);
       if (!cancelledRef.current) setProcessing(false);
     }
   }
@@ -554,8 +739,19 @@ export function ScannerPage() {
   return (
     <div className="page-section section-wrap scanner-page">
       <header className="page-header split-header scanner-header">
-        <div><span className="eyebrow"><LockKeyhole size={15} /> Yerel toplu tarama</span><h1>Sabit adet sınırı olmadan, kontrollü parçalarla değerlendirin.</h1><p>Formlar cihazınızda işlenir. İnternet yalnızca uygulama ve işlem motorunun ilk yüklenmesini etkiler; kaynak dosyalar sunucuya gönderilmez.</p></div>
-        <a href={FORM_TEMPLATE_URL} download className="button button-ghost"><Download size={18} /> Standart formu indir</a>
+        <div>
+          <span className="eyebrow"><LockKeyhole size={15} /> {t.scanner.eyebrow}</span>
+          <h1>{t.scanner.title}</h1>
+          <p>{t.scanner.subtitle}</p>
+        </div>
+        <div className="scanner-hero-actions">
+          <Link to="/sablonlar" className="button button-primary">
+            <LayoutTemplate size={17} /> Şablon Galerisi &amp; PDF Üretici
+          </Link>
+          <a href={FORM_TEMPLATE_URL} download className="button button-ghost">
+            <Download size={17} /> Standart Formu İndir
+          </a>
+        </div>
       </header>
 
       {resumableSessions.length > 0 && !savedSessionId && !processing && (
@@ -567,10 +763,83 @@ export function ScannerPage() {
 
       {message && <div className={`notice notice-${message.type}`} role={message.type === 'error' ? 'alert' : 'status'}><AlertCircle size={19} /><span>{message.text}</span><button type="button" onClick={() => setMessage(null)} aria-label="Bildirimi kapat"><X size={17} /></button></div>}
 
+      {/* 00. Sınav Şablonu Seçim Kartı */}
+      <section className="setup-card template-selection-card" style={{ marginBottom: 20 }}>
+        <div className="scanner-template-card-inner">
+          {/* Canlı Vektörel A4 Minyatür Görsel Önizleme */}
+          <div className="scanner-template-thumb-box" title="Seçili Sınav Şablonu A4 Canlı Önizlemesi">
+            <OpticalFormThumbnail template={activeTemplate} width={60} height={85} />
+          </div>
+
+          <div style={{ flex: 1, minWidth: 220 }}>
+            <div className="setup-card-top" style={{ flexWrap: 'wrap', gap: 12, padding: 0, border: 'none', marginBottom: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <span className="setup-number" style={{ width: 28, height: 28, fontSize: 13 }}>01</span>
+                <h2>Sınav Şablonu:</h2>
+                <span className="badge badge-primary" style={{ fontSize: '13px', fontWeight: 700, padding: '4px 10px' }}>
+                  {activeTemplate.name}
+                </span>
+                {autoDetectionNotice && (
+                  <span className="auto-detected-badge" title="Form görselinden OpenCV ile otomatik tespit edildi">
+                    <Sparkles size={13} /> {autoDetectionNotice}
+                  </span>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  disabled={processing}
+                  onClick={() => setIsTemplateWizardOpen(true)}
+                  title="Farklı bir şablon seçin veya özel form tasarlayın"
+                >
+                  <LayoutTemplate size={16} /> Şablon Değiştir / Özel Form
+                </button>
+              </div>
+            </div>
+
+            <p style={{ margin: '4px 0 0', color: 'var(--text-soft)', fontSize: '13.5px' }}>
+              {activeTemplate.questionCount} Soru · {activeTemplate.sectionsCount} Bölüm · {activeTemplate.choiceCount} Şık ({activeTemplate.choices.join('–')}) · {activeTemplate.studentIdDigits || 8} Haneli Numara · {activeTemplate.supportedBooklets.join('/')} Kitapçık
+            </p>
+
+            {/* Hızlı Şablon Seçim Hapları (Pill Grid) */}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border-subtle)' }}>
+              {activeTemplate.isCustom && (
+                <button
+                  type="button"
+                  disabled={processing}
+                  className="tab-chip is-active"
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, borderColor: 'var(--accent)' }}
+                >
+                  <strong>Özel: {activeTemplate.questionCount} Soru</strong>
+                  <small style={{ opacity: 0.8 }}>({activeTemplate.choiceCount} Şık)</small>
+                </button>
+              )}
+              {BUILT_IN_TEMPLATES.map((tmpl) => (
+                <button
+                  key={tmpl.id}
+                  type="button"
+                  disabled={processing}
+                  className={`tab-chip ${activeTemplate.id === tmpl.id ? 'is-active' : ''}`}
+                  onClick={() => {
+                    setAutoDetectionNotice(null);
+                    handleSelectTemplate(tmpl);
+                  }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                >
+                  <strong>{tmpl.questionCount} Soru</strong>
+                  <small style={{ opacity: 0.8 }}>({tmpl.sectionsCount} Bölüm · {tmpl.choiceCount} Şık)</small>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="scan-setup-grid" aria-label="Tarama dosyaları">
         <article className="setup-card">
           <div className="setup-card-top">
-            <span className="setup-number">01</span>
+            <span className="setup-number">02</span>
             <div>
               <h2>Cevap anahtarı</h2>
               <p>{isMultiBookletMode ? 'Çoklu Kitapçık (A/B/C/D) Modu' : 'Tam doldurulmuş tek form (A Kitapçığı)'}</p>
@@ -598,7 +867,7 @@ export function ScannerPage() {
                       className={`tab-chip ${activeBookletTab === bk ? 'is-active' : ''}`}
                       onClick={() => setActiveBookletTab(bk)}
                     >
-                      {bk} Kitapçığı {hasFile ? '✓' : bk === 'A' ? '(Zorunlu)' : ''}
+                      {bk} Kitapçığı {hasFile ? '(Yüklendi)' : bk === 'A' ? '(Zorunlu)' : ''}
                     </button>
                   );
                 })}
@@ -626,23 +895,36 @@ export function ScannerPage() {
                   </button>
                 </div>
               ) : (
-                <label className="file-picker">
+                <div
+                  className="drop-zone"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => handleAnswerKeyDrop(e, activeBookletTab)}
+                >
                   <FileImage />
                   <span>
-                    <strong>{activeBookletTab} Kitapçığı cevap anahtarını seçin</strong>
+                    <strong>{activeBookletTab} Kitapçığı cevap anahtarını seçin veya bırakın</strong>
                     <small>JPG, PNG, WebP veya tek sayfalık PDF {activeBookletTab === 'A' ? '(Zorunlu)' : '(Opsiyonel)'}</small>
                   </span>
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,.pdf,application/pdf"
-                    disabled={processing}
-                    onChange={(event) => {
-                      const file = event.target.files?.[0] ?? null;
-                      setBookletFiles((curr) => ({ ...curr, [activeBookletTab]: file }));
-                      if (activeBookletTab === 'A') setAnswerKeyFile(file);
-                    }}
-                  />
-                </label>
+                  <div className="drop-zone-actions" style={{ maxWidth: 160 }}>
+                    <label className="button button-secondary" style={{ width: '100%', cursor: 'pointer' }}>
+                      <FileImage size={17} /> Dosya Seç
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,.pdf,application/pdf"
+                        disabled={processing}
+                        style={{ display: 'none' }}
+                        onChange={(event) => {
+                          const file = event.target.files?.[0] ?? null;
+                          setBookletFiles((curr) => ({ ...curr, [activeBookletTab]: file }));
+                          if (activeBookletTab === 'A') {
+                            setAnswerKeyFile(file);
+                            void handleAnswerKeyAutoDetect(file);
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
               )}
             </div>
           ) : (
@@ -651,13 +933,40 @@ export function ScannerPage() {
             ) : answerKeyFile ? (
               <div className="selected-file"><FileCheck2 /><div><strong>{answerKeyFile.name}</strong><span>{(answerKeyFile.size / 1024 / 1024).toFixed(2)} MB</span></div><button type="button" disabled={processing} onClick={() => { setAnswerKeyFile(null); setBookletFiles((c) => ({ ...c, A: null })); }} aria-label="Cevap anahtarını kaldır"><Trash2 size={18} /></button></div>
             ) : (
-              <label className="file-picker"><FileImage /><span><strong>Cevap anahtarını seçin</strong><small>JPG, PNG, WebP veya tek sayfalık PDF</small></span><input type="file" accept="image/jpeg,image/png,image/webp,.pdf,application/pdf" disabled={processing} onChange={(event) => { const file = event.target.files?.[0] ?? null; setAnswerKeyFile(file); setBookletFiles((c) => ({ ...c, A: file })); }} /></label>
+              <div
+                className="drop-zone"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleAnswerKeyDrop}
+              >
+                <FileImage />
+                <span>
+                  <strong>Cevap anahtarını seçin veya buraya bırakın</strong>
+                  <small>JPG, PNG, WebP veya tek sayfalık PDF</small>
+                </span>
+                <div className="drop-zone-actions" style={{ maxWidth: 160 }}>
+                  <label className="button button-secondary" style={{ width: '100%', cursor: 'pointer' }}>
+                    <FileImage size={17} /> Dosya Seç
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,.pdf,application/pdf"
+                      disabled={processing}
+                      style={{ display: 'none' }}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0] ?? null;
+                        setAnswerKeyFile(file);
+                        setBookletFiles((c) => ({ ...c, A: file }));
+                        void handleAnswerKeyAutoDetect(file);
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
             )
           )}
         </article>
 
         <article className="setup-card">
-          <div className="setup-card-top"><span className="setup-number">02</span><div><h2>Öğrenci formları</h2><p>Sabit adet sınırı yok · PDF sayfaları ayrı formdur</p></div><span className="file-count-badge">{queue.length} form</span></div>
+          <div className="setup-card-top"><span className="setup-number">03</span><div><h2>Öğrenci formları</h2><p>Sabit adet sınırı yok · PDF sayfaları ayrı formdur</p></div><span className="file-count-badge">{queue.length} form</span></div>
           <div className="drop-zone" onDragOver={(event) => event.preventDefault()} onDrop={handleDrop}>
             <FolderOpen /><span><strong>Kamera ile canlı tarayın veya dosyaları buraya bırakın</strong><small>JPG, PNG, WebP, PDF ve görüntü içeren ZIP</small></span>
             <div className="drop-zone-actions">
@@ -679,6 +988,12 @@ export function ScannerPage() {
         </article>
       </section>
 
+      <PenaltyRuleSelector
+        value={penaltyRule}
+        onChange={setPenaltyRule}
+        disabled={processing}
+      />
+
       <SectionConfigPanel
         sections={sections}
         onChangeSections={setSections}
@@ -697,7 +1012,7 @@ export function ScannerPage() {
 
       <section className="processing-panel">
         <div className="processing-config processing-config-extended">
-          <div><label htmlFor="session-title">Değerlendirme adı</label><input id="session-title" value={title} maxLength={80} disabled={processing} onChange={(event) => setTitle(event.target.value)} /></div>
+          <div><label htmlFor="session-title">Değerlendirme adı</label><input id="session-title" value={title} maxLength={80} disabled={processing} placeholder="Örn: 8-A LGS Deneme Sınavı" onChange={(event) => setTitle(event.target.value)} /></div>
           <div><label htmlFor="partition-mode">Parçalama yöntemi</label><select id="partition-mode" value={settings.partitionMode} disabled={processing} onChange={(event) => applySettings({ ...settings, partitionMode: event.target.value as ProcessingSettings['partitionMode'] })}><option value="size">Part başına form</option><option value="count">Toplam part sayısı</option></select></div>
           <div><label htmlFor="partition-value">{settings.partitionMode === 'size' ? 'Part boyutu' : 'Part sayısı'}</label><input id="partition-value" type="number" min="1" max={Math.max(1, queue.length)} value={settings.partitionMode === 'size' ? settings.partSize : settings.partCount} disabled={processing} onChange={(event) => applySettings({ ...settings, [settings.partitionMode === 'size' ? 'partSize' : 'partCount']: Number(event.target.value) })} /></div>
           <div><label htmlFor="concurrency">Eşzamanlı iş</label><select id="concurrency" value={settings.concurrency} disabled={processing} onChange={(event) => applySettings({ ...settings, concurrency: Number(event.target.value) as ProcessingSettings['concurrency'] })}><option value={1}>1 — En düşük bellek</option><option value={2}>2 — Dengeli</option><option value={3}>3 — Hızlı</option><option value={4}>4 — Güçlü cihaz</option></select></div>
@@ -705,9 +1020,46 @@ export function ScannerPage() {
         </div>
         <div className="config-summary"><Layers3 size={16} /><span>{queue.length || 0} form · {settings.partCount} part · part başına en fazla {settings.partSize} form · dosya adına göre doğal alfabetik sıra</span></div>
         <div className="processing-actions processing-actions-row">
-          {processing ? <button className="button button-danger" type="button" onClick={() => void cancelProcessing()}><CircleStop size={18} /> İşlemi durdur</button> : <button className="button button-primary" type="button" onClick={() => void startProcessing()}><Play size={18} /> Değerlendirmeyi başlat</button>}
-          {!processing && (queue.length > 0 || answerKeyFile || savedSessionId) && <button className="button button-ghost" type="button" onClick={reset}><Trash2 size={17} /> Temizle</button>}
-          {results.length > 0 && <button className="button button-secondary" type="button" onClick={() => void downloadResults()}><FileArchive size={17} /> Hazır sonuçları ZIP indir</button>}
+          {processing ? (
+            <button className="button button-danger" type="button" onClick={() => void cancelProcessing()}>
+              <CircleStop size={18} /> İşlemi durdur
+            </button>
+          ) : (
+            <button
+              className="button button-primary"
+              type="button"
+              onClick={() => void startProcessing()}
+              disabled={!isReadyToStart}
+              title={!isReadyToStart ? 'Lütfen önce cevap anahtarı ve öğrenci formlarını ekleyin' : 'Değerlendirmeyi başlat'}
+            >
+              <Play size={18} /> Değerlendirmeyi başlat
+            </button>
+          )}
+          {!processing && (queue.length > 0 || answerKeyFile || savedSessionId) && (
+            <button className="button button-ghost" type="button" onClick={reset}>
+              <Trash2 size={17} /> Temizle
+            </button>
+          )}
+          {results.length > 0 && (
+            <button className="button button-secondary" type="button" onClick={() => void downloadResults()}>
+              <FileArchive size={17} /> Hazır sonuçları ZIP indir
+            </button>
+          )}
+          {!processing && (
+            <span className={`processing-hint-text ${isReadyToStart ? 'text-ready' : ''}`}>
+              {isReadyToStart ? (
+                <>
+                  <Check size={14} /> Sınav değerlendirmeye hazır ({queue.length} öğrenci formu)
+                </>
+              ) : !hasAnswerKey && queue.length === 0 ? (
+                'Başlatmak için yukarıdaki 02 Cevap Anahtarı ve 03 Öğrenci Formlarını ekleyin.'
+              ) : !hasAnswerKey ? (
+                'Lütfen 02 Cevap Anahtarını yükleyin.'
+              ) : (
+                'Lütfen 03 Öğrenci Formlarını ekleyin.'
+              )}
+            </span>
+          )}
         </div>
 
         {(processing || phase === 'complete' || processedCount > 0) && (
@@ -754,6 +1106,16 @@ export function ScannerPage() {
         isOpen={isCameraModalOpen}
         onClose={() => setIsCameraModalOpen(false)}
         onAddFiles={(files) => void addFiles(files)}
+      />
+
+      <TemplateWizardModal
+        isOpen={isTemplateWizardOpen}
+        onClose={() => setIsTemplateWizardOpen(false)}
+        onSelectTemplate={(tmpl) => {
+          handleSelectTemplate(tmpl);
+          setIsTemplateWizardOpen(false);
+        }}
+        activeTemplateId={activeTemplate.id}
       />
     </div>
   );
