@@ -869,7 +869,7 @@ html[data-app-icon="monochrome-contrast"] {
 }
 
 .v-theme-chip.is-active {
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border-strong));
   background: var(--accent-soft);
   color: var(--text-primary, var(--text));
   font-weight: 650;
@@ -936,7 +936,7 @@ html[data-app-icon="monochrome-contrast"] {
 }
 
 .v-icon-card.is-active {
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border-strong));
   background: var(--accent-soft);
   color: var(--text-primary, var(--text));
   font-weight: 650;
@@ -1016,7 +1016,7 @@ html[data-app-icon="monochrome-contrast"] {
 }
 
 .v-pill-toggle.is-active {
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border-strong));
   background: var(--accent-soft);
   color: var(--text-primary, var(--text));
 }
@@ -1096,7 +1096,7 @@ html[data-app-icon="monochrome-contrast"] {
 }
 
 .v-search-box input:focus {
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border-strong));
   outline: none;
 }
 
@@ -1130,7 +1130,7 @@ html[data-app-icon="monochrome-contrast"] {
 }
 
 .v-lang-item.is-active {
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border-strong));
   background: var(--accent-soft);
   color: var(--text-primary, var(--text));
 }
@@ -1223,7 +1223,7 @@ html[data-app-icon="monochrome-contrast"] {
 }
 
 .v-btn-primary {
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border-strong));
   background: var(--accent);
   color: var(--accent-fg, #ffffff);
 }
@@ -2009,7 +2009,7 @@ html.dark .pp-autosave-pill {
 }
 
 .pp-preset-card:hover {
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border-strong));
   background-color: var(--surface-hover, var(--bg-subtle));
   transform: translateY(-1px);
 }
@@ -2078,7 +2078,7 @@ html.dark .pp-autosave-pill {
 }
 
 .pp-shortcut-input.is-recording {
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border-strong));
   box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
@@ -2764,3 +2764,21 @@ body.pp-density-compact .v-list-row {
 .template-print-btn { width: 40px; min-width: 40px; padding: 0; }
 .button svg, .button-small svg, .button-large svg { width: 16px; height: 16px; flex-shrink: 0; }
 .drop-zone-actions .button, .drop-zone-actions .camera-scan-btn { min-height: 40px; }
+
+/* ===== Soft button palette: no harsh white borders / gradients ===== */
+.button { border: 1px solid transparent; box-shadow: none; }
+.button-primary { background: var(--accent); color: var(--accent-fg); box-shadow: 0 1px 2px rgba(0,0,0,.18); }
+.button-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 88%, var(--surface-subtle, var(--bg-subtle))); box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+.button-secondary, .button-ghost {
+  color: var(--text-primary, var(--text));
+  background: var(--surface-subtle, var(--bg-subtle));
+  border-color: var(--border);
+}
+.button-secondary:hover:not(:disabled), .button-ghost:hover:not(:disabled) {
+  background: var(--surface-hover, var(--bg-elevated));
+  border-color: var(--border-strong);
+}
+.button-danger { background: color-mix(in srgb, var(--danger) 88%, #000); box-shadow: none; }
+.button:focus-visible, button:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 2px; }
+:focus-visible { outline: 2px solid var(--border-strong); outline-offset: 2px; }
+.camera-scan-btn, .camera-scan-btn:hover { box-shadow: none; }
