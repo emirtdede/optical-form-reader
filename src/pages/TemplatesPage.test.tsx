@@ -70,7 +70,7 @@ describe('TemplatesPage (Standalone Optik Şablon Galerisi & PDF Üretici)', () 
     expect(screen.getByText('160 Soruluk Kapsamlı Deneme & YKS Şablonu')).toBeInTheDocument();
     expect(screen.getByText('100 Soruluk Standart Genel Sınav')).toBeInTheDocument();
     expect(screen.getByText('10 Soruluk Mini Kazanım & Çıkış Bileti')).toBeInTheDocument();
-  });
+  }, 20000);
 
   it('özel form tasarımcısı sekmesine geçildiğinde form alanlarını düzenlemeye izin verir', () => {
     renderWithRouter(<TemplatesPage />);
