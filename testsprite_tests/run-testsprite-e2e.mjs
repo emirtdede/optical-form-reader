@@ -59,30 +59,47 @@ function record(id, name, passed, details = '') {
   }
 }
 
-// 1. Category A: Onboarding 4-Step Tour & Zero Test Data (TS-001..TS-008)
+// 1. Category A: Sequential 6-Step Onboarding (Language -> Theme -> Icon -> Welcome -> Workflow -> Ready)
 await page.goto('http://127.0.0.1:4191/tara?desktop=1', { waitUntil: 'networkidle' });
 await page.waitForSelector('[data-testid="onboarding-modal"]');
+await page.waitForSelector('[data-testid="onboarding-step-1"]');
 await page.screenshot({ path: path.join(OUT_DIR, 'proof-onboarding-step1.png') });
-record('TS-001..TS-002', 'Onboarding Step 1 & Clean Initial DB', true);
+record('TS-001', 'Onboarding Step 1 - Dedicated 73-Language Selector', true);
 
-await page.click('button:has-text("İleri")');
+await page.click('[data-testid="onboarding-modal"] button:has-text("İleri")');
 await page.waitForSelector('[data-testid="onboarding-step-2"]');
-await page.screenshot({ path: path.join(OUT_DIR, 'proof-onboarding-step2.png') });
-record('TS-003', 'Onboarding Step 2 3-Stage Workflow', true);
-
-await page.click('button:has-text("İleri")');
-await page.waitForSelector('[data-testid="onboarding-step-3"]');
 await page.click('[data-testid="onboarding-custom-theme-btn"]');
 await page.waitForTimeout(150);
-await page.screenshot({ path: path.join(OUT_DIR, 'proof-onboarding-step3.png') });
-record('TS-004..TS-006', 'Onboarding Step 3 Uncluttered 4-Row Layout & Live Custom HEX', true);
+await page.screenshot({ path: path.join(OUT_DIR, 'proof-onboarding-step2.png') });
+record('TS-002..TS-003', 'Onboarding Step 2 - Dedicated Theme, Custom HEX & Accessibility', true);
 
-await page.click('button:has-text("İleri")');
+await page.click('[data-testid="onboarding-modal"] button:has-text("İleri")');
+await page.waitForSelector('[data-testid="onboarding-step-3"]');
+await page.click('[data-testid="onboarding-icon-theme-auto"]');
+await page.waitForTimeout(150);
+await page.screenshot({ path: path.join(OUT_DIR, 'proof-onboarding-step3.png') });
+record('TS-004', 'Onboarding Step 3 - Dedicated 18-Icon Live Picker', true);
+
+await page.click('[data-testid="onboarding-modal"] button:has-text("İleri")');
 await page.waitForSelector('[data-testid="onboarding-step-4"]');
+await page.waitForTimeout(150);
+await page.screenshot({ path: path.join(OUT_DIR, 'proof-onboarding-step4.png') });
+record('TS-005', 'Onboarding Step 4 - Welcome & 3 Architecture Cards', true);
+
+await page.click('[data-testid="onboarding-modal"] button:has-text("İleri")');
+await page.waitForSelector('[data-testid="onboarding-step-5"]');
+await page.waitForTimeout(150);
+await page.screenshot({ path: path.join(OUT_DIR, 'proof-onboarding-step5.png') });
+record('TS-006', 'Onboarding Step 5 - 3-Step Optical Grading Workflow', true);
+
+await page.click('[data-testid="onboarding-modal"] button:has-text("İleri")');
+await page.waitForSelector('[data-testid="onboarding-step-6"]');
+await page.waitForTimeout(150);
+await page.screenshot({ path: path.join(OUT_DIR, 'proof-onboarding-step6.png') });
 await page.click('[data-testid="onboarding-modal"] button:has-text("Başla")');
 await page.waitForTimeout(150);
 const modalGone = (await page.locator('[data-testid="onboarding-modal"]').count()) === 0;
-record('TS-007..TS-008', 'Onboarding Step 4 Completion & Persistence', modalGone);
+record('TS-007..TS-008', 'Onboarding Step 6 - Ready to Launch & Persistence', modalGone);
 
 // 2. Category B..E: Desktop Shell, ScannerPage & Camera Modal (TS-009..TS-045)
 const topbarCount = await page.locator('.topbar').count();

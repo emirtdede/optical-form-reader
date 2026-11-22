@@ -86,7 +86,7 @@ describe('TestSprite Master Suite - 110 Ruthless End-User Scenarios (TS-001 .. T
     cleanup();
   });
 
-  it('Category A (TS-001..TS-008): Welcome Onboarding 4-Step Tour, Live Personalization & Test Data Purge', () => {
+  it('Category A (TS-001..TS-008): Sequential 6-Step Onboarding (Language -> Theme -> Icon -> Welcome -> Workflow -> Ready) & Test Data Purge', () => {
     const mockSess = { id: 'sess-b1', title: 'Mock Session' } as ExamSession;
     const realSess = { id: '2026-yks-deneme-1', title: '12. Sınıf YKS Genel Deneme' } as ExamSession;
     expect(isTestOrSeedSession(mockSess)).toBe(true);
@@ -97,24 +97,40 @@ describe('TestSprite Master Suite - 110 Ruthless End-User Scenarios (TS-001 .. T
     renderInApp(<OnboardingModal isOpen={true} onClose={() => { closed = true; }} />);
 
     expect(screen.getByTestId('onboarding-modal')).toBeInTheDocument();
-    expect(screen.getByTestId('onboarding-step-1')).toBeInTheDocument();
 
+    // Step 1: Language Selection
+    expect(screen.getByTestId('onboarding-step-1')).toBeInTheDocument();
+    fireEvent.change(screen.getByTestId('onboarding-lang-search'), { target: { value: 'Türkçe' } });
+    fireEvent.click(screen.getByTestId('onboarding-lang-tr'));
+
+    // Step 2: Theme, Custom HEX, Zoom & High Contrast
     fireEvent.click(screen.getByRole('button', { name: /İleri/i }));
     expect(screen.getByTestId('onboarding-step-2')).toBeInTheDocument();
-
     fireEvent.click(screen.getByRole('button', { name: /Geri/i }));
     expect(screen.getByTestId('onboarding-step-1')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /İleri/i }));
-    fireEvent.click(screen.getByRole('button', { name: /İleri/i }));
-    expect(screen.getByTestId('onboarding-step-3')).toBeInTheDocument();
-
     fireEvent.click(screen.getByTestId('onboarding-custom-theme-btn'));
     expect(document.documentElement.dataset.colorTheme).toBe(CUSTOM_THEME_ID);
     fireEvent.click(screen.getByRole('button', { name: '%125' }));
     expect(document.documentElement.dataset.uiScale).toBe('125');
 
+    // Step 3: App Icon Picker
+    fireEvent.click(screen.getByRole('button', { name: /İleri/i }));
+    expect(screen.getByTestId('onboarding-step-3')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('onboarding-icon-theme-custom'));
+    expect(document.documentElement.dataset.appIcon).toBe('theme-custom');
+
+    // Step 4: Welcome & 3 Feature Cards
     fireEvent.click(screen.getByRole('button', { name: /İleri/i }));
     expect(screen.getByTestId('onboarding-step-4')).toBeInTheDocument();
+
+    // Step 5: 3-Step Optical Workflow
+    fireEvent.click(screen.getByRole('button', { name: /İleri/i }));
+    expect(screen.getByTestId('onboarding-step-5')).toBeInTheDocument();
+
+    // Step 6: Ready & Quick Start
+    fireEvent.click(screen.getByRole('button', { name: /İleri/i }));
+    expect(screen.getByTestId('onboarding-step-6')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Form Taramaya Başla/i }));
     expect(closed).toBe(true);
   });

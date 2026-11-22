@@ -776,7 +776,7 @@ export function SettingsPage() {
                       <p className="v-row-desc">
                         {isTr
                           ? 'Optik Form Okuyucu iş akışını, özel tema/ikon seçicisini ve erişilebilirlik ayarlarını adım adım tanıtan karşılama penceresini açar.'
-                          : 'Opens the 4-step welcome guide introducing the optical grading workflow, custom theme studio, icon picker, and accessibility tools.'}
+                          : 'Opens the 6-step welcome guide: language, theme, app icon, product overview, optical workflow, and quick start.'}
                       </p>
                     </div>
                     <button

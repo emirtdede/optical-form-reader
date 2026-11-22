@@ -61,7 +61,7 @@ describe('OnboardingModal, Custom HEX Theme, 18 App Icons, Accessibility Zoom & 
     Object.defineProperty(globalThis, 'localStorage', { value: mem, configurable: true, writable: true });
   });
 
-  it('renders all 4 steps of the Welcome & Onboarding Tour modal', () => {
+  it('renders all 6 sequential steps (Language -> Theme -> App Icon -> Welcome -> Workflow -> Ready)', () => {
     let closed = false;
     renderWithProviders(
       <OnboardingModal
@@ -73,26 +73,39 @@ describe('OnboardingModal, Custom HEX Theme, 18 App Icons, Accessibility Zoom & 
     );
 
     expect(screen.getByTestId('onboarding-modal')).toBeInTheDocument();
-    expect(screen.getByTestId('onboarding-step-1')).toBeInTheDocument();
 
-    // Advance to Step 2
+    // Step 1: Dedicated Language Selection
+    expect(screen.getByTestId('onboarding-step-1')).toBeInTheDocument();
+    expect(screen.getByTestId('onboarding-lang-search')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('onboarding-lang-tr'));
+
+    // Step 2: Dedicated Theme, Mode, Custom HEX & Accessibility
     fireEvent.click(screen.getByRole('button', { name: /İleri|Next/i }));
     expect(screen.getByTestId('onboarding-step-2')).toBeInTheDocument();
-
-    // Advance to Step 3 (Personalization, Custom HEX, Icons, Zoom)
-    fireEvent.click(screen.getByRole('button', { name: /İleri|Next/i }));
-    expect(screen.getByTestId('onboarding-step-3')).toBeInTheDocument();
-
-    // Activate Custom Theme inside Onboarding Step 3
     fireEvent.click(screen.getByTestId('onboarding-custom-theme-btn'));
     expect(document.documentElement.dataset.colorTheme).toBe(CUSTOM_THEME_ID);
+    expect(screen.getByTestId('onboarding-custom-hex-studio')).toBeInTheDocument();
 
-    // Advance to Step 4
+    // Step 3: Dedicated Application Icon Selection
+    fireEvent.click(screen.getByRole('button', { name: /İleri|Next/i }));
+    expect(screen.getByTestId('onboarding-step-3')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('onboarding-icon-theme-auto'));
+    expect(document.documentElement.dataset.appIcon).toBe('theme-auto');
+
+    // Step 4: Welcome & Core Architecture Cards (Preserved Step 1)
     fireEvent.click(screen.getByRole('button', { name: /İleri|Next/i }));
     expect(screen.getByTestId('onboarding-step-4')).toBeInTheDocument();
 
+    // Step 5: 3-Step Optical Grading Workflow (Preserved Step 2)
+    fireEvent.click(screen.getByRole('button', { name: /İleri|Next/i }));
+    expect(screen.getByTestId('onboarding-step-5')).toBeInTheDocument();
+
+    // Step 6: Ready to Launch & Quick Start
+    fireEvent.click(screen.getByRole('button', { name: /İleri|Next/i }));
+    expect(screen.getByTestId('onboarding-step-6')).toBeInTheDocument();
+
     // Finish tour
-    fireEvent.click(screen.getByRole('button', { name: /Başla|Get Started/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^Başla$|^Get Started$/i }));
     expect(closed).toBe(true);
   });
 
