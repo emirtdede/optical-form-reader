@@ -77,9 +77,23 @@ function progressFrom(
   };
 }
 
+function getTemplateQueryParam(): string | null {
+  try {
+    const direct = new URLSearchParams(window.location.search).get('template');
+    if (direct) return direct;
+    const hashQueryIdx = window.location.hash.indexOf('?');
+    if (hashQueryIdx >= 0) {
+      return new URLSearchParams(window.location.hash.slice(hashQueryIdx)).get('template');
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
 function resolveInitialTemplate(): FormTemplateDefinition {
   try {
-    const templateParam = new URLSearchParams(window.location.search).get('template');
+    const templateParam = getTemplateQueryParam();
     if (templateParam === 'custom') {
       const stored = sessionStorage.getItem('vellium_custom_template');
       if (stored) {
@@ -123,7 +137,7 @@ export function ScannerPage() {
   const [searchParams] = useSearchParams();
   const [activeTemplate, setActiveTemplate] = useState<FormTemplateDefinition>(resolveInitialTemplate);
   const [autoDetectionNotice, setAutoDetectionNotice] = useState<string | null>(() => {
-    const param = new URLSearchParams(window.location.search).get('template');
+    const param = getTemplateQueryParam();
     if (param) {
       const tmpl = resolveInitialTemplate();
       return `Seçili şablon aktif edildi: ${tmpl.name} (${tmpl.questionCount} Soru)`;
@@ -191,26 +205,7 @@ export function ScannerPage() {
   function handleSelectTemplate(tmpl: FormTemplateDefinition) {
     setActiveTemplate(tmpl);
     setQuestionWeights(Array(tmpl.questionCount).fill(1));
-    const secCount = tmpl.sectionsCount || 1;
-    const qPerSec = tmpl.questionsPerSection || Math.ceil(tmpl.questionCount / secCount);
-
-    if (tmpl.id === 'vellium-100') {
-      setSections(getDefaultSections());
-    } else {
-      const generatedSections: ExamSection[] = Array.from({ length: secCount }, (_, i) => {
-        const start = i * qPerSec + 1;
-        const count = Math.min(qPerSec, tmpl.questionCount - i * qPerSec);
-        const end = start + count - 1;
-        return {
-          id: `sec-${i + 1}`,
-          name: secCount === 1 ? 'Genel Değerlendirme' : `${i + 1}. Bölüm (${start}-${end})`,
-          startQuestion: start,
-          endQuestion: end,
-          weight: 1,
-        };
-      });
-      setSections(generatedSections);
-    }
+    setSections(getInitialSectionsForTemplate(tmpl));
 
     if (tmpl.id === 'vellium-90' || tmpl.id === 'vellium-40') {
       setPenaltyRule(PRESET_PENALTY_RULES.lgs);
@@ -251,13 +246,21 @@ export function ScannerPage() {
     () => sessions.filter((session) => session.progress && session.progress.status !== 'completed'),
     [sessions],
   );
-  const counts = useMemo(() => ({
-    completed: queue.filter((item) => item.status === 'completed').length,
-    failed: queue.filter((item) => item.status === 'error').length,
-    skipped: queue.filter((item) => item.status === 'skipped').length,
-    waiting: queue.filter((item) => item.status === 'waiting').length,
-    active: queue.filter((item) => item.status === 'processing' || item.status === 'hashing'),
-  }), [queue]);
+  const counts = useMemo(() => {
+    let completed = 0;
+    let failed = 0;
+    let skipped = 0;
+    let waiting = 0;
+    const active: QueueItem[] = [];
+    for (const item of queue) {
+      if (item.status === 'completed') completed += 1;
+      else if (item.status === 'error') failed += 1;
+      else if (item.status === 'skipped') skipped += 1;
+      else if (item.status === 'waiting') waiting += 1;
+      else if (item.status === 'processing' || item.status === 'hashing') active.push(item);
+    }
+    return { completed, failed, skipped, waiting, active };
+  }, [queue]);
   const processedCount = counts.completed + counts.failed + counts.skipped;
   const progressPercentage = queue.length ? Math.round((processedCount / queue.length) * 100) : 0;
   const completedParts = useMemo(() => {
@@ -346,12 +349,13 @@ export function ScannerPage() {
 
   function resumeSession(session: ExamSession) {
     if (processing || !session.progress) return;
+    const qCount = session.questionCount || activeTemplate.questionCount;
     setTitle(session.title);
     setAnswerKeyFile(null);
     setQueue([]);
     setResults(session.results);
-    setSections(session.sections && session.sections.length > 0 ? session.sections : getDefaultSections());
-    setQuestionWeights(session.questionWeights && session.questionWeights.length === 100 ? session.questionWeights : Array(100).fill(1));
+    setSections(session.sections && session.sections.length > 0 ? session.sections : getInitialSectionsForTemplate(activeTemplate));
+    setQuestionWeights(session.questionWeights && session.questionWeights.length === qCount ? session.questionWeights : Array(qCount).fill(1));
     setJobs([]);
     void listProcessingJobs(session.id).then(setJobs).catch(() => setJobs([]));
     setSavedSessionId(session.id);
@@ -374,8 +378,8 @@ export function ScannerPage() {
     setIsMultiBookletMode(false);
     setActiveBookletTab('A');
     setQueue([]);
-    setSections(getDefaultSections());
-    setQuestionWeights(Array(100).fill(1));
+    setSections(getInitialSectionsForTemplate(activeTemplate));
+    setQuestionWeights(Array(activeTemplate.questionCount).fill(1));
     setResults([]);
     setJobs([]);
     setPhase('idle');
@@ -532,7 +536,7 @@ export function ScannerPage() {
         createdAt: resume?.createdAt ?? now,
         updatedAt: now,
         algorithmVersion: ALGORITHM_VERSION,
-        questionCount: 100,
+        questionCount: resume?.questionCount ?? activeTemplate.questionCount,
         answerKey,
         bookletKeys,
         activeBooklets: Object.keys(bookletKeys) as BookletType[],
@@ -763,75 +767,71 @@ export function ScannerPage() {
 
       {message && <div className={`notice notice-${message.type}`} role={message.type === 'error' ? 'alert' : 'status'}><AlertCircle size={19} /><span>{message.text}</span><button type="button" onClick={() => setMessage(null)} aria-label="Bildirimi kapat"><X size={17} /></button></div>}
 
-      {/* 00. Sınav Şablonu Seçim Kartı */}
-      <section className="setup-card template-selection-card" style={{ marginBottom: 20 }}>
-        <div className="scanner-template-card-inner">
-          {/* Canlı Vektörel A4 Minyatür Görsel Önizleme */}
-          <div className="scanner-template-thumb-box" title="Seçili Sınav Şablonu A4 Canlı Önizlemesi">
-            <OpticalFormThumbnail template={activeTemplate} width={60} height={85} />
-          </div>
-
-          <div style={{ flex: 1, minWidth: 220 }}>
-            <div className="setup-card-top" style={{ flexWrap: 'wrap', gap: 12, padding: 0, border: 'none', marginBottom: 6 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <span className="setup-number" style={{ width: 28, height: 28, fontSize: 13 }}>01</span>
-                <h2>Sınav Şablonu:</h2>
-                <span className="badge badge-primary" style={{ fontSize: '13px', fontWeight: 700, padding: '4px 10px' }}>
-                  {activeTemplate.name}
-                </span>
+      {/* 01. Sınav Şablonu Seçim Kartı */}
+      <section className="setup-card template-selection-card" style={{ marginBottom: 20, padding: '18px 24px' }}>
+        <div
+          className="scanner-template-card-inner"
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0, flex: '1 1 340px' }}>
+            <span className="setup-number">01</span>
+            <div className="scanner-template-thumb-box" title="Seçili Sınav Şablonu A4 Canlı Önizlemesi" style={{ padding: 6 }}>
+              <OpticalFormThumbnail template={activeTemplate} width={44} height={62} />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <h2 style={{ margin: 0, fontSize: '18px' }}>
+                  Sınav Şablonu:{' '}
+                  <span style={{ color: 'var(--accent-strong)', fontWeight: 700 }}>{activeTemplate.name}</span>
+                </h2>
                 {autoDetectionNotice && (
                   <span className="auto-detected-badge" title="Form görselinden OpenCV ile otomatik tespit edildi">
                     <Sparkles size={13} /> {autoDetectionNotice}
                   </span>
                 )}
               </div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  className="button button-secondary"
-                  disabled={processing}
-                  onClick={() => setIsTemplateWizardOpen(true)}
-                  title="Farklı bir şablon seçin veya özel form tasarlayın"
-                >
-                  <LayoutTemplate size={16} /> Şablon Değiştir / Özel Form
-                </button>
-              </div>
+              <p style={{ margin: '4px 0 0', color: 'var(--text-soft)', fontSize: '13px' }}>
+                {activeTemplate.questionCount} Soru · {activeTemplate.sectionsCount} Bölüm · {activeTemplate.choiceCount} Şık ({activeTemplate.choices.join('-')}) · {activeTemplate.studentIdDigits || 8} Haneli Numara · {activeTemplate.supportedBooklets.join('/')} Kitapçık
+              </p>
             </div>
+          </div>
 
-            <p style={{ margin: '4px 0 0', color: 'var(--text-soft)', fontSize: '13.5px' }}>
-              {activeTemplate.questionCount} Soru · {activeTemplate.sectionsCount} Bölüm · {activeTemplate.choiceCount} Şık ({activeTemplate.choices.join('-')}) · {activeTemplate.studentIdDigits || 8} Haneli Numara · {activeTemplate.supportedBooklets.join('/')} Kitapçık
-            </p>
-
-            {/* Hızlı Şablon Seçim Hapları (Pill Grid) */}
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border-subtle)' }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginLeft: 'auto', flexShrink: 0 }}>
+            <select
+              aria-label="Hızlı şablon seçimi"
+              className="form-input-styled"
+              disabled={processing}
+              value={activeTemplate.id}
+              onChange={(e) => {
+                const selected = BUILT_IN_TEMPLATES.find((t) => t.id === e.target.value);
+                if (selected) {
+                  setAutoDetectionNotice(null);
+                  handleSelectTemplate(selected);
+                }
+              }}
+              style={{ width: 'auto', minWidth: 230, minHeight: 40, height: 40, padding: '0 32px 0 12px', fontSize: '13px' }}
+            >
               {activeTemplate.isCustom && (
-                <button
-                  type="button"
-                  disabled={processing}
-                  className="tab-chip is-active"
-                  style={{ display: 'flex', alignItems: 'center', gap: 6, borderColor: 'var(--accent)' }}
-                >
-                  <strong>Özel: {activeTemplate.questionCount} Soru</strong>
-                  <small style={{ opacity: 0.8 }}>({activeTemplate.choiceCount} Şık)</small>
-                </button>
+                <option value={activeTemplate.id}>
+                  Özel Form: {activeTemplate.questionCount} Soru ({activeTemplate.choiceCount} Şık)
+                </option>
               )}
               {BUILT_IN_TEMPLATES.map((tmpl) => (
-                <button
-                  key={tmpl.id}
-                  type="button"
-                  disabled={processing}
-                  className={`tab-chip ${activeTemplate.id === tmpl.id ? 'is-active' : ''}`}
-                  onClick={() => {
-                    setAutoDetectionNotice(null);
-                    handleSelectTemplate(tmpl);
-                  }}
-                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                >
-                  <strong>{tmpl.questionCount} Soru</strong>
-                  <small style={{ opacity: 0.8 }}>({tmpl.sectionsCount} Bölüm · {tmpl.choiceCount} Şık)</small>
-                </button>
+                <option key={tmpl.id} value={tmpl.id}>
+                  {tmpl.questionCount} Soru · {tmpl.sectionsCount} Bölüm · {tmpl.choiceCount} Şık ({tmpl.name})
+                </option>
               ))}
-            </div>
+            </select>
+
+            <button
+              type="button"
+              className="button button-secondary"
+              disabled={processing}
+              onClick={() => setIsTemplateWizardOpen(true)}
+              title="Farklı bir şablon seçin veya özel form tasarlayın"
+            >
+              <LayoutTemplate size={16} /> Şablon Değiştir / Özel Form
+            </button>
           </div>
         </div>
       </section>

@@ -62,7 +62,8 @@ const packageSpecs = [
     required: true,
   },
   {
-    src: nsisSrc,
+    // Modern 640x420 Frameless Monochrome Single-Card Setup executable (auto-detects *-Setup.exe mode)
+    src: fs.existsSync(portableSrc) ? portableSrc : nsisSrc,
     destName: `Optical-Form-Reader-${version}-x64-Setup.exe`,
     channel: 'installer',
     required: true,

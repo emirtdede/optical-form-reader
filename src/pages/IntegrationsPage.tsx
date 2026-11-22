@@ -727,8 +727,8 @@ export function IntegrationsPage() {
                   <div className="pp-docs-code-header">
                     <span>
                       {isTr
-                        ? 'Sunulan 8 Optik Form Okuyucu MCP Aracı (Tools)'
-                        : '8 Exposed Optical Form Reader MCP Tools'}
+                        ? `Sunulan ${MCP_TOOLS_CATALOG.length} Optik Form Okuyucu MCP Aracı (Tools)`
+                        : `${MCP_TOOLS_CATALOG.length} Exposed Optical Form Reader MCP Tools`}
                     </span>
                     <ShieldCheck size={15} />
                   </div>

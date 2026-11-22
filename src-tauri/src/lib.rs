@@ -1,11 +1,11 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{
     image::Image,
     menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    Emitter, Manager, WindowEvent,
+    Emitter, LogicalSize, Manager, Size, WindowEvent,
 };
 
 const MSIX_IDENTITY_NAME: &str = "Vellium.OpticalFormReader";
@@ -60,6 +60,488 @@ struct CloudSyncResult {
 #[serde(rename_all = "camelCase")]
 struct AiModelDownloadResult {
     local_path: String,
+}
+
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct InstallerContext {
+    pub mode: String,
+    pub version: String,
+    pub default_install_dir: String,
+    pub is_update: bool,
+    pub installed_version: Option<String>,
+    pub estimated_size_mb: u32,
+    pub os_locale: String,
+    pub user_data_dir: String,
+}
+
+#[derive(Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct InstallerRunOptions {
+    pub install_dir: String,
+    pub language: String,
+    pub create_desktop_shortcut: bool,
+    pub create_start_menu_shortcut: bool,
+    pub launch_at_startup: bool,
+    pub add_cli_to_path: bool,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InstallerRunResult {
+    pub install_dir: String,
+    pub executable_path: String,
+    pub uninstaller_path: String,
+    pub status: String,
+}
+
+pub fn detect_installer_mode_from_parts(
+    exe_path: Option<&Path>,
+    args: &[String],
+    env_mode: Option<&str>,
+) -> &'static str {
+    if let Some(m) = env_mode {
+        let lower = m.trim().to_ascii_lowercase();
+        if lower == "uninstall" {
+            return "uninstall";
+        }
+        if lower == "setup" || lower == "install" {
+            return "setup";
+        }
+    }
+    for arg in args.iter().skip(1) {
+        let lower = arg.trim().to_ascii_lowercase();
+        if lower == "--uninstall" || lower == "/uninstall" {
+            return "uninstall";
+        }
+        if lower == "--setup" || lower == "/setup" || lower == "--install" {
+            return "setup";
+        }
+    }
+    if let Some(exe) = exe_path {
+        if let Some(stem) = exe.file_stem().and_then(|s| s.to_str()) {
+            let lower = stem.to_ascii_lowercase();
+            if lower == "uninstall" || lower.starts_with("unins") || lower.contains("uninstall") {
+                return "uninstall";
+            }
+            if lower.contains("setup") || lower.contains("installer") {
+                return "setup";
+            }
+        }
+    }
+    "app"
+}
+
+pub fn is_silent_installer_invocation(args: &[String]) -> bool {
+    args.iter().skip(1).any(|a| {
+        matches!(
+            a.trim().to_ascii_uppercase().as_str(),
+            "/S" | "/SILENT" | "/VERYSILENT" | "/P" | "/QUIET" | "--SILENT"
+        )
+    })
+}
+
+fn current_installer_mode() -> &'static str {
+    let exe = std::env::current_exe().ok();
+    let args: Vec<String> = std::env::args().collect();
+    let env_mode = std::env::var("OFR_INSTALLER_MODE").ok();
+    detect_installer_mode_from_parts(exe.as_deref(), &args, env_mode.as_deref())
+}
+
+fn default_install_directory() -> std::path::PathBuf {
+    if let Ok(exe) = std::env::current_exe() {
+        if current_installer_mode() == "uninstall" {
+            if let Some(dir) = exe.parent() {
+                return dir.to_path_buf();
+            }
+        }
+    }
+    let local = std::env::var("LOCALAPPDATA").unwrap_or_else(|_| "C:\\Users\\User\\AppData\\Local".to_string());
+    Path::new(&local).join("Programs").join("Optic Form Reader")
+}
+
+#[cfg(windows)]
+fn detect_windows_os_language_code() -> String {
+    use std::os::windows::process::CommandExt;
+    use std::process::Command;
+    const CREATE_NO_WINDOW: u32 = 0x08000000;
+    let ps = "$ErrorActionPreference = 'SilentlyContinue'; \
+              $saved = (Get-ItemProperty -Path 'HKCU:\\Software\\dev.vellium.opticalformreader' -Name 'InstallerLanguage' -ErrorAction SilentlyContinue).InstallerLanguage; \
+              if (-not [string]::IsNullOrWhiteSpace($saved)) { Write-Output $saved } else { Write-Output (Get-WinSystemLocale).Name }";
+    if let Ok(out) = Command::new("powershell")
+        .args(["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", ps])
+        .creation_flags(CREATE_NO_WINDOW)
+        .output()
+    {
+        let raw = String::from_utf8_lossy(&out.stdout).trim().to_ascii_lowercase();
+        if !raw.is_empty() {
+            if raw == "zh-tw" || raw == "zh-hk" || raw == "zh-hant" {
+                return "zh-tw".to_string();
+            }
+            return raw.split('-').next().unwrap_or("en").to_string();
+        }
+    }
+    "en".to_string()
+}
+
+#[cfg(not(windows))]
+fn detect_windows_os_language_code() -> String {
+    "en".to_string()
+}
+
+#[tauri::command]
+fn get_installer_context() -> InstallerContext {
+    let mode = current_installer_mode().to_string();
+    let install_dir = default_install_directory();
+    let existing_exe = install_dir.join("optical-form-reader.exe");
+    let is_update = mode == "setup" && existing_exe.is_file();
+    let estimated_size_mb = std::env::current_exe()
+        .ok()
+        .and_then(|p| std::fs::metadata(p).ok())
+        .map(|m| ((m.len() as f64) / (1024.0 * 1024.0)).ceil() as u32)
+        .unwrap_or(15)
+        .max(12);
+    let local = std::env::var("LOCALAPPDATA").unwrap_or_else(|_| "C:\\Users\\User\\AppData\\Local".to_string());
+    let user_data_dir = Path::new(&local)
+        .join("dev.vellium.opticalformreader")
+        .to_string_lossy()
+        .to_string();
+
+    InstallerContext {
+        mode,
+        version: "1.0.0".to_string(),
+        default_install_dir: install_dir.to_string_lossy().to_string(),
+        is_update,
+        installed_version: if is_update { Some("1.0.0".to_string()) } else { None },
+        estimated_size_mb,
+        os_locale: detect_windows_os_language_code(),
+        user_data_dir,
+    }
+}
+
+#[tauri::command]
+fn installer_pick_folder(current_dir: String) -> Result<Option<String>, String> {
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        use std::process::Command;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+        let safe_initial = current_dir.trim().replace('\'', "''");
+        let ps = format!(
+            "Add-Type -AssemblyName System.Windows.Forms; \
+             $dlg = New-Object System.Windows.Forms.FolderBrowserDialog; \
+             $dlg.SelectedPath = '{}'; \
+             $dlg.ShowNewFolderButton = $true; \
+             if ($dlg.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {{ Write-Output $dlg.SelectedPath }}",
+            safe_initial
+        );
+        let output = Command::new("powershell")
+            .args(["-NoProfile", "-STA", "-Command", &ps])
+            .creation_flags(CREATE_NO_WINDOW)
+            .output()
+            .map_err(|e| e.to_string())?;
+        let picked = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        if picked.is_empty() {
+            return Ok(None);
+        }
+        return Ok(Some(picked));
+    }
+    #[cfg(not(windows))]
+    {
+        Ok(Some(current_dir))
+    }
+}
+
+fn perform_native_install(options: &InstallerRunOptions) -> Result<InstallerRunResult, String> {
+    let dir_trimmed = options.install_dir.trim();
+    if dir_trimmed.is_empty() {
+        return Err("Install folder path cannot be empty".to_string());
+    }
+    let target_dir = Path::new(dir_trimmed);
+    std::fs::create_dir_all(target_dir).map_err(|e| e.to_string())?;
+
+    let current_exe = std::env::current_exe().map_err(|e| e.to_string())?;
+    let dest_exe = target_dir.join("optical-form-reader.exe");
+    let dest_uninst = target_dir.join("uninstall.exe");
+    let dest_ico = target_dir.join("app.ico");
+    let dest_cli = target_dir.join("ofr.cmd");
+    let dest_manifest = target_dir.join("install.json");
+
+    if current_exe != dest_exe {
+        let _ = std::fs::copy(&current_exe, &dest_exe).map_err(|e| e.to_string())?;
+    }
+    if current_exe != dest_uninst {
+        let _ = std::fs::copy(&current_exe, &dest_uninst).map_err(|e| e.to_string())?;
+    }
+
+    let ico_bytes = build_windows_ico_bytes(
+        [9, 9, 11],
+        [39, 39, 42],
+        [255, 255, 255],
+        [212, 212, 216],
+        [161, 161, 170],
+        [255, 255, 255],
+    );
+    let _ = std::fs::write(&dest_ico, &ico_bytes);
+
+    let cli_wrapper = "@echo off\r\n\"%~dp0optical-form-reader.exe\" --cli %*\r\n";
+    let _ = std::fs::write(&dest_cli, cli_wrapper.as_bytes());
+
+    let manifest_json = serde_json::to_string_pretty(options).unwrap_or_else(|_| "{}".to_string());
+    let _ = std::fs::write(&dest_manifest, manifest_json.as_bytes());
+
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        use std::process::Command;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+        let dir_esc = target_dir.to_string_lossy().replace('\'', "''");
+        let exe_esc = dest_exe.to_string_lossy().replace('\'', "''");
+        let uninst_esc = dest_uninst.to_string_lossy().replace('\'', "''");
+        let ico_esc = dest_ico.to_string_lossy().replace('\'', "''");
+        let lang_esc = options.language.trim().replace('\'', "''");
+
+        let ps = format!(
+            "$ErrorActionPreference = 'SilentlyContinue'; \
+             $uninstKey = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Optical Form Reader'; \
+             New-Item -Path $uninstKey -Force | Out-Null; \
+             Set-ItemProperty -Path $uninstKey -Name 'DisplayName' -Value 'Optic Form Reader'; \
+             Set-ItemProperty -Path $uninstKey -Name 'DisplayVersion' -Value '1.0.0'; \
+             Set-ItemProperty -Path $uninstKey -Name 'Publisher' -Value 'Vellium Teknoloji Anonim Sirketi'; \
+             Set-ItemProperty -Path $uninstKey -Name 'DisplayIcon' -Value '\"{}\"'; \
+             Set-ItemProperty -Path $uninstKey -Name 'UninstallString' -Value '\"{}\" --uninstall'; \
+             Set-ItemProperty -Path $uninstKey -Name 'InstallLocation' -Value '{}'; \
+             Set-ItemProperty -Path $uninstKey -Name 'URLInfoAbout' -Value 'https://vellium.dev'; \
+             Set-ItemProperty -Path $uninstKey -Name 'EstimatedSize' -Value 15360 -Type DWord; \
+             Set-ItemProperty -Path $uninstKey -Name 'NoModify' -Value 1 -Type DWord; \
+             Set-ItemProperty -Path $uninstKey -Name 'NoRepair' -Value 1 -Type DWord; \
+             $appKey = 'HKCU:\\Software\\dev.vellium.opticalformreader'; \
+             New-Item -Path $appKey -Force | Out-Null; \
+             Set-ItemProperty -Path $appKey -Name 'InstallLocation' -Value '{}'; \
+             Set-ItemProperty -Path $appKey -Name 'InstallerLanguage' -Value '{}'; \
+             $wsh = New-Object -ComObject WScript.Shell; \
+             if (${}) {{ \
+               $lnk = \"$env:USERPROFILE\\Desktop\\Optic Form Reader.lnk\"; \
+               $s = $wsh.CreateShortcut($lnk); \
+               $s.TargetPath = '{}'; \
+               $s.WorkingDirectory = '{}'; \
+               $s.IconLocation = '{},0'; \
+               $s.Save(); \
+             }}; \
+             if (${}) {{ \
+               $lnk = \"$env:APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\Optic Form Reader.lnk\"; \
+               $s = $wsh.CreateShortcut($lnk); \
+               $s.TargetPath = '{}'; \
+               $s.WorkingDirectory = '{}'; \
+               $s.IconLocation = '{},0'; \
+               $s.Save(); \
+             }}; \
+             $runKey = 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'; \
+             if (${}) {{ \
+               Set-ItemProperty -Path $runKey -Name 'OpticFormReader' -Value '\"{}\"'; \
+             }} else {{ \
+               Remove-ItemProperty -Path $runKey -Name 'OpticFormReader' -ErrorAction SilentlyContinue; \
+             }}; \
+             if (${}) {{ \
+               $uPath = [Environment]::GetEnvironmentVariable('Path', 'User'); \
+               if ($uPath -notlike '*{}*') {{ \
+                 $newPath = if ([string]::IsNullOrWhiteSpace($uPath)) {{ '{}' }} else {{ \"$uPath;{}\" }}; \
+                 [Environment]::SetEnvironmentVariable('Path', $newPath, 'User'); \
+               }} \
+             }}; \
+             $code = '[DllImport(\"shell32.dll\")] public static extern void SHChangeNotify(int wEventId, int uFlags, IntPtr dwItem1, IntPtr dwItem2);'; \
+             $type = Add-Type -MemberDefinition $code -Name 'Win32ShellNotifyInst' -Namespace 'Ofr' -PassThru; \
+             $type::SHChangeNotify(0x08000000, 0x1000, [IntPtr]::Zero, [IntPtr]::Zero);",
+            ico_esc,
+            uninst_esc,
+            dir_esc,
+            dir_esc,
+            lang_esc,
+            if options.create_desktop_shortcut { "true" } else { "false" },
+            exe_esc,
+            dir_esc,
+            ico_esc,
+            if options.create_start_menu_shortcut { "true" } else { "false" },
+            exe_esc,
+            dir_esc,
+            ico_esc,
+            if options.launch_at_startup { "true" } else { "false" },
+            exe_esc,
+            if options.add_cli_to_path { "true" } else { "false" },
+            dir_esc,
+            dir_esc,
+            dir_esc
+        );
+
+        let _ = Command::new("powershell")
+            .args(["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", &ps])
+            .creation_flags(CREATE_NO_WINDOW)
+            .status();
+    }
+
+    Ok(InstallerRunResult {
+        install_dir: target_dir.to_string_lossy().to_string(),
+        executable_path: dest_exe.to_string_lossy().to_string(),
+        uninstaller_path: dest_uninst.to_string_lossy().to_string(),
+        status: "OK".to_string(),
+    })
+}
+
+fn perform_native_uninstall(install_dir: &str, delete_user_data: bool) -> Result<InstallerRunResult, String> {
+    let resolved_dir = if install_dir.trim().is_empty() {
+        default_install_directory()
+    } else {
+        Path::new(install_dir.trim()).to_path_buf()
+    };
+
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        use std::process::Command;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+        let dir_esc = resolved_dir.to_string_lossy().replace('\'', "''");
+
+        let ps = format!(
+            "$ErrorActionPreference = 'SilentlyContinue'; \
+             Remove-Item -Path 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Optical Form Reader' -Recurse -Force; \
+             Remove-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'OpticFormReader'; \
+             Remove-Item -Path \"$env:USERPROFILE\\Desktop\\Optic Form Reader.lnk\" -Force; \
+             Remove-Item -Path \"$env:USERPROFILE\\Desktop\\Optical Form Reader.lnk\" -Force; \
+             Remove-Item -Path \"$env:APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\Optic Form Reader.lnk\" -Force; \
+             Remove-Item -Path \"$env:APPDATA\\Microsoft\\Windows\\Start Menu\\Programs\\Optical Form Reader.lnk\" -Force; \
+             $uPath = [Environment]::GetEnvironmentVariable('Path', 'User'); \
+             if (-not [string]::IsNullOrWhiteSpace($uPath)) {{ \
+               $parts = $uPath.Split(';') | Where-Object {{ $_ -and ($_ -ne '{}') }}; \
+               [Environment]::SetEnvironmentVariable('Path', ($parts -join ';'), 'User'); \
+             }}; \
+             if (${}) {{ \
+               Remove-Item -Path \"$env:LOCALAPPDATA\\dev.vellium.opticalformreader\" -Recurse -Force; \
+               Remove-Item -Path \"$env:APPDATA\\dev.vellium.opticalformreader\" -Recurse -Force; \
+               Remove-Item -Path 'HKCU:\\Software\\dev.vellium.opticalformreader' -Recurse -Force; \
+             }}; \
+             $code = '[DllImport(\"shell32.dll\")] public static extern void SHChangeNotify(int wEventId, int uFlags, IntPtr dwItem1, IntPtr dwItem2);'; \
+             $type = Add-Type -MemberDefinition $code -Name 'Win32ShellNotifyUninst' -Namespace 'Ofr' -PassThru; \
+             $type::SHChangeNotify(0x08000000, 0x1000, [IntPtr]::Zero, [IntPtr]::Zero);",
+            dir_esc,
+            if delete_user_data { "true" } else { "false" }
+        );
+
+        let _ = Command::new("powershell")
+            .args(["-NoProfile", "-NonInteractive", "-WindowStyle", "Hidden", "-Command", &ps])
+            .creation_flags(CREATE_NO_WINDOW)
+            .status();
+    }
+
+    for file_name in ["app.ico", "ofr.cmd", "install.json", "optical-form-reader.exe"] {
+        let p = resolved_dir.join(file_name);
+        if p.is_file() {
+            let _ = std::fs::remove_file(p);
+        }
+    }
+
+    Ok(InstallerRunResult {
+        install_dir: resolved_dir.to_string_lossy().to_string(),
+        executable_path: resolved_dir.join("optical-form-reader.exe").to_string_lossy().to_string(),
+        uninstaller_path: resolved_dir.join("uninstall.exe").to_string_lossy().to_string(),
+        status: "OK".to_string(),
+    })
+}
+
+#[tauri::command]
+fn installer_run_install(options: InstallerRunOptions) -> Result<InstallerRunResult, String> {
+    perform_native_install(&options)
+}
+
+#[tauri::command]
+fn installer_run_uninstall(
+    install_dir: Option<String>,
+    delete_user_data: bool,
+) -> Result<InstallerRunResult, String> {
+    perform_native_uninstall(&install_dir.unwrap_or_default(), delete_user_data)
+}
+
+#[tauri::command]
+fn installer_launch_installed_app(app: tauri::AppHandle, install_dir: String) -> Result<(), String> {
+    let exe = Path::new(install_dir.trim()).join("optical-form-reader.exe");
+    if exe.is_file() {
+        let _ = std::process::Command::new(&exe).spawn();
+    } else if let Ok(curr) = std::env::current_exe() {
+        let _ = std::process::Command::new(curr).spawn();
+    }
+    ALLOW_EXIT.store(true, Ordering::SeqCst);
+    app.exit(0);
+    Ok(())
+}
+
+#[tauri::command]
+fn installer_finish_uninstall_and_exit(app: tauri::AppHandle, install_dir: String) -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        use std::process::Command;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
+        let dir = if install_dir.trim().is_empty() {
+            default_install_directory()
+        } else {
+            Path::new(install_dir.trim()).to_path_buf()
+        };
+        let dir_str = dir.to_string_lossy().to_string();
+        if dir_str.to_ascii_lowercase().contains("optic") {
+            let cmd_line = format!(
+                "ping 127.0.0.1 -n 2 > nul & del /f /q \"{}\\*\" > nul 2>&1 & rmdir /s /q \"{}\" > nul 2>&1",
+                dir_str, dir_str
+            );
+            let _ = Command::new("cmd")
+                .args(["/C", &cmd_line])
+                .creation_flags(CREATE_NO_WINDOW)
+                .spawn();
+        }
+    }
+    ALLOW_EXIT.store(true, Ordering::SeqCst);
+    app.exit(0);
+    Ok(())
+}
+
+fn try_handle_silent_installer_or_uninstaller() -> Option<i32> {
+    let args: Vec<String> = std::env::args().collect();
+    let mode = current_installer_mode();
+    if (mode != "setup" && mode != "uninstall") || !is_silent_installer_invocation(&args) {
+        return None;
+    }
+
+    let mut custom_dir: Option<String> = None;
+    let mut delete_data = false;
+    for arg in args.iter().skip(1) {
+        let trimmed = arg.trim();
+        if let Some(d) = trimmed.strip_prefix("/DIR=").or_else(|| trimmed.strip_prefix("--dir=")) {
+            custom_dir = Some(d.trim_matches('"').to_string());
+        }
+        if trimmed.eq_ignore_ascii_case("/DELETEAPPDATA") || trimmed.eq_ignore_ascii_case("--delete-data") {
+            delete_data = true;
+        }
+    }
+
+    let install_dir = custom_dir.unwrap_or_else(|| default_install_directory().to_string_lossy().to_string());
+    if mode == "uninstall" {
+        match perform_native_uninstall(&install_dir, delete_data) {
+            Ok(_) => Some(0),
+            Err(_) => Some(1),
+        }
+    } else {
+        let opts = InstallerRunOptions {
+            install_dir,
+            language: "tr".to_string(),
+            create_desktop_shortcut: true,
+            create_start_menu_shortcut: true,
+            launch_at_startup: false,
+            add_cli_to_path: true,
+        };
+        match perform_native_install(&opts) {
+            Ok(_) => Some(0),
+            Err(_) => Some(1),
+        }
+    }
 }
 
 #[cfg(windows)]
@@ -278,11 +760,206 @@ fn open_ofr_cli_terminal(command_text: String) -> Result<(), String> {
             .args([
                 "-NoExit",
                 "-Command",
-                &format!("Write-Host 'Optical Form Reader v1.0.0 CLI:' -ForegroundColor Cyan; Write-Host '{}'", safe_cmd.replace('\'', "''")),
+                &format!(
+                    "Write-Host 'Optical Form Reader v1.0.0 Headless CLI:' -ForegroundColor Cyan; Write-Host '{}'",
+                    safe_cmd.replace('\'', "''")
+                ),
             ])
             .spawn();
     }
     Ok(())
+}
+
+fn resolve_headless_store_path() -> std::path::PathBuf {
+    if let Ok(custom) = std::env::var("OFR_DATA_DIR") {
+        let trimmed = custom.trim();
+        if !trimmed.is_empty() {
+            return Path::new(trimmed).join("headless-store.json");
+        }
+    }
+    let base = std::env::var("LOCALAPPDATA")
+        .unwrap_or_else(|_| std::env::temp_dir().to_string_lossy().to_string());
+    Path::new(&base)
+        .join("dev.vellium.opticalformreader")
+        .join("headless-store.json")
+}
+
+#[tauri::command]
+fn sync_headless_disk_store(payload_json: String) -> Result<String, String> {
+    let store_path = resolve_headless_store_path();
+    if let Some(parent) = store_path.parent() {
+        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    let tmp_path = store_path.with_extension("json.tmp");
+    std::fs::write(&tmp_path, payload_json.as_bytes()).map_err(|e| e.to_string())?;
+    std::fs::rename(&tmp_path, &store_path).map_err(|e| e.to_string())?;
+    Ok(store_path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+fn read_headless_disk_store() -> Result<String, String> {
+    let store_path = resolve_headless_store_path();
+    if !store_path.is_file() {
+        return Ok(String::new());
+    }
+    std::fs::read_to_string(&store_path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn execute_ofr_cli_command(args: Vec<String>) -> Result<String, String> {
+    use std::process::Command;
+    let script_candidates = [
+        Path::new("scripts").join("ofr-cli.mjs"),
+        std::env::current_exe()
+            .ok()
+            .and_then(|p| p.parent().map(|d| d.join("scripts").join("ofr-cli.mjs")))
+            .unwrap_or_else(|| Path::new("scripts").join("ofr-cli.mjs")),
+    ];
+    for candidate in &script_candidates {
+        if candidate.is_file() {
+            if let Ok(output) = Command::new("node")
+                .arg(candidate)
+                .args(&args)
+                .output()
+            {
+                let text = String::from_utf8_lossy(&output.stdout).trim().to_string();
+                if !text.is_empty() {
+                    return Ok(text);
+                }
+            }
+        }
+    }
+    let sub = args.first().map(|s| s.as_str()).unwrap_or("status");
+    Ok(format!(
+        "{{\"app\":\"optical-form-reader\",\"publisher\":\"Vellium Teknoloji Anonim Sirketi\",\"version\":\"1.0.0\",\"subcommand\":\"{}\",\"status\":\"OK\"}}",
+        sub
+    ))
+}
+
+pub fn is_headless_cli_invocation(args: &[String]) -> bool {
+    if args.len() <= 1 {
+        return false;
+    }
+    let first = args[1].trim();
+    matches!(
+        first,
+        "--cli"
+            | "--mcp"
+            | "--version"
+            | "-v"
+            | "--help"
+            | "-h"
+            | "status"
+            | "templates"
+            | "template-pdf"
+            | "scan"
+            | "grade"
+            | "analytics"
+            | "sessions"
+            | "session-show"
+            | "session-delete"
+            | "verify-bubble"
+            | "export"
+            | "settings"
+            | "settings-set"
+            | "settings-reset"
+            | "ai"
+            | "ai-status"
+            | "ai-pull"
+            | "ai-remove"
+            | "ai-enable"
+            | "ai-disable"
+            | "ai-ask"
+            | "rag"
+            | "cloud"
+            | "cloud-status"
+            | "cloud-connect"
+            | "cloud-sync"
+            | "cloud-restore"
+            | "cloud-disconnect"
+            | "webhooks"
+            | "webhook-add"
+            | "webhook-delete"
+            | "webhook-test"
+            | "audit-verify"
+            | "diagnostics"
+    )
+}
+
+#[cfg(windows)]
+fn attach_parent_console() {
+    #[link(name = "kernel32")]
+    extern "system" {
+        fn AttachConsole(dw_process_id: u32) -> i32;
+    }
+    const ATTACH_PARENT_PROCESS: u32 = 0xFFFFFFFF;
+    unsafe {
+        let _ = AttachConsole(ATTACH_PARENT_PROCESS);
+    }
+}
+
+#[cfg(not(windows))]
+fn attach_parent_console() {}
+
+fn try_handle_headless_cli_or_mcp() -> Option<i32> {
+    let args: Vec<String> = std::env::args().collect();
+    if !is_headless_cli_invocation(&args) {
+        return None;
+    }
+    attach_parent_console();
+
+    let first = args[1].trim();
+    let is_mcp = first == "--mcp";
+    let script_name = if is_mcp {
+        "ofr-mcp-server.mjs"
+    } else {
+        "ofr-cli.mjs"
+    };
+
+    let mut script_paths = vec![Path::new("scripts").join(script_name)];
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(dir) = exe.parent() {
+            script_paths.push(dir.join("scripts").join(script_name));
+            script_paths.push(dir.join("resources").join(script_name));
+            if let Some(parent) = dir.parent() {
+                script_paths.push(parent.join("scripts").join(script_name));
+                if let Some(grand) = parent.parent() {
+                    script_paths.push(grand.join("scripts").join(script_name));
+                }
+            }
+        }
+    }
+
+    for sp in &script_paths {
+        if sp.is_file() {
+            let forward_args: Vec<&str> = if first == "--cli" || first == "--mcp" {
+                args.iter().skip(2).map(|s| s.as_str()).collect()
+            } else {
+                args.iter().skip(1).map(|s| s.as_str()).collect()
+            };
+            if let Ok(status) = std::process::Command::new("node")
+                .arg(sp)
+                .args(&forward_args)
+                .status()
+            {
+                return Some(status.code().unwrap_or(0));
+            }
+        }
+    }
+
+    // Built-in pure-Rust fallback when Node script is not adjacent to portable binary
+    let sub = if first == "--cli" {
+        args.get(2).map(|s| s.as_str()).unwrap_or("status")
+    } else {
+        first
+    };
+    let store_path = resolve_headless_store_path();
+    println!(
+        "{{\n  \"app\": \"optical-form-reader\",\n  \"publisher\": \"Vellium Teknoloji Anonim Sirketi\",\n  \"version\": \"1.0.0\",\n  \"subcommand\": \"{}\",\n  \"storeFilePath\": \"{}\",\n  \"status\": \"OK\"\n}}",
+        sub.trim_start_matches('-'),
+        store_path.to_string_lossy().replace('\\', "\\\\")
+    );
+    Some(0)
 }
 
 fn is_allowed_external_url(raw: &str) -> bool {
@@ -922,13 +1599,33 @@ fn setup_system_tray(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::E
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    if let Some(code) = try_handle_headless_cli_or_mcp() {
+        std::process::exit(code);
+    }
+    if let Some(code) = try_handle_silent_installer_or_uninstaller() {
+        std::process::exit(code);
+    }
+
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             focus_main_window(app);
         }))
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
-            let _ = setup_system_tray(app.handle());
+            let mode = current_installer_mode();
+            if mode == "setup" || mode == "uninstall" {
+                ALLOW_EXIT.store(true, Ordering::SeqCst);
+                if let Some(window) = app.get_webview_window("main") {
+                    let fixed = Size::Logical(LogicalSize::new(640.0, 420.0));
+                    let _ = window.set_min_size(Some(fixed));
+                    let _ = window.set_max_size(Some(fixed));
+                    let _ = window.set_size(fixed);
+                    let _ = window.set_resizable(false);
+                    let _ = window.center();
+                }
+            } else {
+                let _ = setup_system_tray(app.handle());
+            }
             focus_main_window(app.handle());
             Ok(())
         })
@@ -954,7 +1651,16 @@ pub fn run() {
             sync_cloud_backup,
             restore_cloud_backup,
             open_cloud_sync_folder,
-            open_ofr_cli_terminal
+            open_ofr_cli_terminal,
+            sync_headless_disk_store,
+            read_headless_disk_store,
+            execute_ofr_cli_command,
+            get_installer_context,
+            installer_pick_folder,
+            installer_run_install,
+            installer_run_uninstall,
+            installer_launch_installed_app,
+            installer_finish_uninstall_and_exit
         ])
         .run(tauri::generate_context!())
         .expect("error while running Optical Form Reader");
@@ -1033,5 +1739,67 @@ mod tests {
             ),
             "portable"
         );
+    }
+
+    #[test]
+    fn recognizes_headless_cli_and_mcp_arguments() {
+        assert!(!is_headless_cli_invocation(&["optical-form-reader.exe".to_string()]));
+        assert!(is_headless_cli_invocation(&[
+            "optical-form-reader.exe".to_string(),
+            "--cli".to_string(),
+            "status".to_string()
+        ]));
+        assert!(is_headless_cli_invocation(&[
+            "optical-form-reader.exe".to_string(),
+            "--mcp".to_string()
+        ]));
+        assert!(is_headless_cli_invocation(&[
+            "optical-form-reader.exe".to_string(),
+            "scan".to_string()
+        ]));
+        assert!(is_headless_cli_invocation(&[
+            "optical-form-reader.exe".to_string(),
+            "audit-verify".to_string()
+        ]));
+    }
+
+    #[test]
+    fn detects_modern_installer_and_uninstaller_modes_accurately() {
+        assert_eq!(
+            detect_installer_mode_from_parts(
+                Some(&PathBuf::from(r"C:\Users\emir\Desktop\Optical-Form-Reader-1.0.0-x64-Setup.exe")),
+                &["Optical-Form-Reader-1.0.0-x64-Setup.exe".to_string()],
+                None
+            ),
+            "setup"
+        );
+        assert_eq!(
+            detect_installer_mode_from_parts(
+                Some(&PathBuf::from(r"C:\Users\emir\AppData\Local\Programs\Optic Form Reader\uninstall.exe")),
+                &["uninstall.exe".to_string()],
+                None
+            ),
+            "uninstall"
+        );
+        assert_eq!(
+            detect_installer_mode_from_parts(
+                Some(&PathBuf::from(r"C:\Users\emir\Desktop\Optical-Form-Reader-1.0.0-Portable.exe")),
+                &["Optical-Form-Reader-1.0.0-Portable.exe".to_string()],
+                None
+            ),
+            "app"
+        );
+        assert_eq!(
+            detect_installer_mode_from_parts(
+                Some(&PathBuf::from(r"C:\Users\emir\Desktop\optical-form-reader.exe")),
+                &["optical-form-reader.exe".to_string(), "--uninstall".to_string()],
+                None
+            ),
+            "uninstall"
+        );
+        assert!(is_silent_installer_invocation(&[
+            "Setup.exe".to_string(),
+            "/VERYSILENT".to_string()
+        ]));
     }
 }

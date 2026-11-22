@@ -747,6 +747,21 @@ export function SettingsPage() {
               })}
             </div>
           ))}
+          <div className="pp-split-nav-group">
+            <p className="pp-split-nav-group-title">
+              {isTr ? 'REHBER VE TANITIM' : 'GUIDE & ONBOARDING'}
+            </p>
+            <button
+              type="button"
+              data-testid="settings-sidebar-welcome-guide-btn"
+              className="pp-split-nav-link"
+              onClick={openOnboarding}
+              title={isTr ? 'Karşılama Rehberi' : 'Welcome Guide'}
+            >
+              <Sparkles size={16} className="pp-split-nav-icon" aria-hidden="true" />
+              <span>{isTr ? 'Karşılama Rehberi' : 'Welcome Guide'}</span>
+            </button>
+          </div>
         </nav>
       </aside>
 
@@ -1232,39 +1247,39 @@ export function SettingsPage() {
                         }
                         aria-hidden="true"
                       >
-                        {themeId !== CUSTOM_THEME_ID && <Plus size={11} />}
+                        {themeId !== CUSTOM_THEME_ID && <Palette size={12} />}
                       </span>
                       <span className="v-theme-label">
-                        {isTr ? 'Özel Renk' : 'Custom Color'}
+                        {themeId === CUSTOM_THEME_ID
+                          ? customAccent.toUpperCase()
+                          : isTr
+                            ? 'Özel Renk'
+                            : 'Custom Color'}
                       </span>
                     </span>
                     {themeId === CUSTOM_THEME_ID && <Check size={14} className="v-check-icon" />}
                   </button>
                 </div>
 
-                {/* Custom HEX Color Studio (2D ColorSpectrumPicker + Preset Dots + HEX Input) */}
+                {/* Custom HEX Color Studio (1:1 2D ColorSpectrumPicker) */}
                 {themeId === CUSTOM_THEME_ID && (
                   <div
                     className="pp-custom-theme-studio"
                     data-testid="custom-theme-studio"
                     role="region"
-                    aria-label={isTr ? 'Özel Tema Renk Stüdyosu' : 'Custom Theme Color Studio'}
+                    aria-label={isTr ? 'Özel Tema Rengi (HEX)' : 'Custom Theme Color (HEX)'}
                   >
                     <div className="pp-custom-studio-head">
                       <div>
                         <strong className="pp-custom-studio-title">
-                          {isTr ? 'Özel Renk Kodu (HEX) ve 2B Renk Spektrumu' : 'Custom HEX Color & 2D Spectrum Studio'}
+                          {isTr ? 'Özel Tema Rengi (HEX)' : 'Custom Theme Color (HEX)'}
                         </strong>
-                        <p className="v-row-desc" style={{ margin: 0 }}>
+                        <p className="v-row-desc" style={{ margin: '2px 0 0' }}>
                           {isTr
-                            ? '2B renk spektrumundan seçim yapın veya istediğiniz HEX renk kodunu girin (örn. #3B82F6). Kontrast otomatik olarak WCAG 2.2 AA standardına uyarlanır.'
-                            : 'Pick from the 2D color spectrum or enter any HEX code (e.g. #3B82F6). Contrast automatically adapts to WCAG 2.2 AA.'}
+                            ? 'İstediğiniz HEX renk kodunu girin veya renk seçiciden seçin.'
+                            : 'Enter any HEX color code or pick from the color spectrum.'}
                         </p>
                       </div>
-                      <span className="pp-contrast-pill">
-                        <ShieldCheck size={13} />
-                        <span>WCAG AA · {customContrast.toFixed(1)}:1</span>
-                      </span>
                     </div>
 
                     <ColorSpectrumPicker
@@ -1274,80 +1289,11 @@ export function SettingsPage() {
                         setInvalidHex(false);
                         setCustomAccent(hex);
                       }}
-                      hexInputLabel={isTr ? 'Özel Tema Rengi (HEX)' : 'Custom Theme Color (HEX)'}
-                      compact={true}
-                      hideFooter={true}
+                      hexInputLabel={isTr ? 'Özel renk kodu (HEX)' : 'Custom color code (HEX)'}
+                      hexInputTestId="custom-theme-hex-input"
+                      compact={false}
+                      hideFooter={false}
                     />
-
-                    <div className="pp-custom-color-bar">
-                      <input
-                        type="color"
-                        className="pp-color-wheel"
-                        value={customAccent}
-                        aria-label={isTr ? 'Renk seçici' : 'Color picker'}
-                        onChange={(e) => {
-                          const v = e.target.value.toUpperCase();
-                          setHexDraft(v);
-                          setInvalidHex(false);
-                          setCustomAccent(v);
-                        }}
-                      />
-                      <input
-                        type="text"
-                        data-testid="custom-theme-hex-input"
-                        className={`pp-hex-input ${invalidHex ? 'is-invalid' : ''}`}
-                        value={hexDraft}
-                        maxLength={7}
-                        spellCheck={false}
-                        placeholder="#3B82F6"
-                        aria-label={isTr ? 'HEX renk kodu' : 'HEX color code'}
-                        onChange={(e) => {
-                          const raw = e.target.value;
-                          setHexDraft(raw);
-                          const norm = normalizeHexColor(raw);
-                          if (norm) {
-                            setInvalidHex(false);
-                            setCustomAccent(norm);
-                          } else {
-                            setInvalidHex(raw.trim().length > 0);
-                          }
-                        }}
-                        onBlur={() => {
-                          const norm = normalizeHexColor(hexDraft);
-                          if (norm) {
-                            setHexDraft(norm);
-                            setInvalidHex(false);
-                          } else {
-                            setHexDraft(customAccent);
-                            setInvalidHex(false);
-                          }
-                        }}
-                      />
-                      <div className="pp-custom-preset-dots" role="group" aria-label={isTr ? 'Hazır özel renkler' : 'Custom color presets'}>
-                        {CUSTOM_THEME_PRESETS.map((preset) => (
-                          <button
-                            key={preset.hex}
-                            type="button"
-                            className={`pp-preset-dot ${customAccent.toUpperCase() === preset.hex.toUpperCase() ? 'is-active' : ''}`}
-                            style={{ backgroundColor: preset.hex }}
-                            title={`${isTr ? preset.labelTr : preset.labelEn} (${preset.hex})`}
-                            aria-label={`${isTr ? preset.labelTr : preset.labelEn} ${preset.hex}`}
-                            onClick={() => {
-                              setHexDraft(preset.hex);
-                              setInvalidHex(false);
-                              setCustomAccent(preset.hex);
-                            }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    {invalidHex && (
-                      <p className="pp-hex-error" role="alert">
-                        {isTr
-                          ? 'Lütfen geçerli bir HEX renk kodu girin (örn. #3B82F6 veya #09F).'
-                          : 'Please enter a valid HEX color code (e.g. #3B82F6 or #09F).'}
-                      </p>
-                    )}
                   </div>
                 )}
               </div>
@@ -1438,8 +1384,9 @@ export function SettingsPage() {
 
                 {isAppIconOpen && (
                   <>
+                    {/* Top 2-Column Row: Match Theme & Light Monochrome */}
                     <div
-                      className="v-icon-grid v-icon-grid--extended"
+                      className="agm-icon-mode-row"
                       role="group"
                       aria-labelledby="v-app-icon-label"
                       aria-describedby="v-app-icon-desc"
@@ -1448,36 +1395,11 @@ export function SettingsPage() {
                         [
                           {
                             id: 'theme-auto',
-                            label: isTr ? 'Tema ile Otomatik' : 'Auto Match Theme',
-                          },
-                          {
-                            id: 'monochrome-dark',
-                            label: t.settingsModal.appIconMonochromeDark,
+                            label: isTr ? 'Temayla Eşleştir' : 'Match Theme',
                           },
                           {
                             id: 'monochrome-light',
-                            label: t.settingsModal.appIconMonochromeLight,
-                          },
-                          {
-                            id: 'monochrome-contrast',
-                            label: t.settingsModal.appIconMonochromeContrast,
-                          },
-                          { id: 'theme-slate', label: isTr ? 'Gri (Slate)' : 'Slate' },
-                          { id: 'theme-navy', label: isTr ? 'Lacivert (Navy)' : 'Navy' },
-                          { id: 'theme-blue', label: isTr ? 'Mavi (Blue)' : 'Blue' },
-                          { id: 'theme-cyan', label: isTr ? 'Turkuaz (Cyan)' : 'Cyan' },
-                          { id: 'theme-indigo', label: isTr ? 'İndigo' : 'Indigo' },
-                          { id: 'theme-purple', label: isTr ? 'Mor (Purple)' : 'Purple' },
-                          { id: 'theme-pink', label: isTr ? 'Pembe (Pink)' : 'Pink' },
-                          { id: 'theme-red', label: isTr ? 'Kırmızı (Red)' : 'Red' },
-                          { id: 'theme-orange', label: isTr ? 'Turuncu (Orange)' : 'Orange' },
-                          { id: 'theme-yellow', label: isTr ? 'Sarı (Yellow)' : 'Yellow' },
-                          { id: 'theme-emerald', label: isTr ? 'Zümrüt (Emerald)' : 'Emerald' },
-                          { id: 'theme-grass', label: isTr ? 'Çimen Yeşili' : 'Forest' },
-                          { id: 'theme-lime', label: isTr ? 'Açık Yeşil (Lime)' : 'Lime' },
-                          {
-                            id: 'theme-custom',
-                            label: isTr ? `Özel (${customIconAccent})` : `Custom (${customIconAccent})`,
+                            label: isTr ? 'Açık Monokrom' : 'Light Monochrome',
                           },
                         ] as Array<{ id: AppIconVariant; label: string }>
                       ).map((opt) => {
@@ -1488,22 +1410,107 @@ export function SettingsPage() {
                             type="button"
                             data-testid={`app-icon-card-${opt.id}`}
                             aria-pressed={selected}
-                            className={`v-icon-card ${selected ? 'is-active' : ''}`}
+                            className={`v-theme-chip ${selected ? 'is-active' : ''}`}
                             onClick={() => setAppIconVariant(opt.id)}
                           >
+                            <span className="v-theme-chip-left">
+                              <ProductMark
+                                variant={opt.id}
+                                activeThemeId={themeId}
+                                mode={mode}
+                                customAccent={customAccent}
+                                customIconAccent={customIconAccent}
+                                className="agm-icon-chip-mark"
+                              />
+                              <span className="v-theme-label">{opt.label}</span>
+                            </span>
+                            {selected && <Check size={14} className="v-check-icon" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* 3-Column Compact Horizontal Icon Grid (14 Themes + Custom Icon) */}
+                    <div className="v-theme-grid">
+                      {(
+                        [
+                          { id: 'monochrome-dark', label: isTr ? 'Siyah' : 'Black' },
+                          { id: 'theme-slate', label: isTr ? 'Gri' : 'Gray' },
+                          { id: 'theme-navy', label: isTr ? 'Lacivert' : 'Navy' },
+                          { id: 'theme-blue', label: isTr ? 'Mavi' : 'Blue' },
+                          { id: 'theme-cyan', label: isTr ? 'Turkuaz' : 'Cyan' },
+                          { id: 'theme-indigo', label: isTr ? 'İndigo' : 'Indigo' },
+                          { id: 'theme-purple', label: isTr ? 'Mor' : 'Purple' },
+                          { id: 'theme-pink', label: isTr ? 'Pembe' : 'Pink' },
+                          { id: 'theme-red', label: isTr ? 'Kırmızı' : 'Red' },
+                          { id: 'theme-orange', label: isTr ? 'Turuncu' : 'Orange' },
+                          { id: 'theme-yellow', label: isTr ? 'Kehribar' : 'Amber' },
+                          { id: 'theme-emerald', label: isTr ? 'Zümrüt' : 'Emerald' },
+                          { id: 'theme-grass', label: isTr ? 'Yeşil' : 'Green' },
+                          { id: 'theme-lime', label: isTr ? 'Limon' : 'Lime' },
+                        ] as Array<{ id: AppIconVariant; label: string }>
+                      ).map((opt) => {
+                        const selected = appIconVariant === opt.id;
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            data-testid={`app-icon-card-${opt.id}`}
+                            aria-pressed={selected}
+                            className={`v-theme-chip ${selected ? 'is-active' : ''}`}
+                            onClick={() => setAppIconVariant(opt.id)}
+                          >
+                            <span className="v-theme-chip-left">
+                              <ProductMark
+                                variant={opt.id}
+                                activeThemeId={themeId}
+                                mode={mode}
+                                customAccent={customAccent}
+                                customIconAccent={customIconAccent}
+                                className="agm-icon-chip-mark"
+                              />
+                              <span className="v-theme-label">{opt.label}</span>
+                            </span>
+                            {selected && <Check size={14} className="v-check-icon" />}
+                          </button>
+                        );
+                      })}
+
+                      {/* 15th Slot: Custom Icon HEX Button */}
+                      <button
+                        type="button"
+                        data-testid="app-icon-card-theme-custom"
+                        aria-pressed={appIconVariant === 'theme-custom'}
+                        className={`v-theme-chip v-theme-chip--custom ${appIconVariant === 'theme-custom' ? 'is-active' : ''}`}
+                        onClick={() => setAppIconVariant('theme-custom')}
+                      >
+                        <span className="v-theme-chip-left">
+                          {appIconVariant === 'theme-custom' ? (
                             <ProductMark
-                              variant={opt.id}
+                              variant="theme-custom"
                               activeThemeId={themeId}
                               mode={mode}
                               customAccent={customAccent}
                               customIconAccent={customIconAccent}
-                              className="v-icon-card-preview"
+                              className="agm-icon-chip-mark"
                             />
-                            <span className="v-icon-card-label">{opt.label}</span>
-                            {selected && <Check size={14} className="v-icon-card-check" />}
-                          </button>
-                        );
-                      })}
+                          ) : (
+                            <span className="v-theme-swatch v-theme-swatch--plus" aria-hidden="true">
+                              <Palette size={12} />
+                            </span>
+                          )}
+                          <span className="v-theme-label">
+                            {appIconVariant === 'theme-custom'
+                              ? customIconAccent.toUpperCase()
+                              : isTr
+                                ? 'Özel İkon'
+                                : 'Custom Icon'}
+                          </span>
+                        </span>
+                        {appIconVariant === 'theme-custom' && (
+                          <Check size={14} className="v-check-icon" />
+                        )}
+                      </button>
                     </div>
 
                     {appIconVariant === 'theme-custom' && (
@@ -1511,12 +1518,25 @@ export function SettingsPage() {
                         data-testid="custom-icon-editor"
                         className="pp-custom-theme-studio"
                       >
+                        <div className="pp-custom-studio-head">
+                          <div>
+                            <strong className="pp-custom-studio-title">
+                              {isTr ? 'Özel İkon (HEX)' : 'Custom Icon (HEX)'}
+                            </strong>
+                            <p className="v-row-desc" style={{ margin: '2px 0 0' }}>
+                              {isTr
+                                ? 'İstediğiniz HEX renk kodunu girin veya renk seçiciden seçin.'
+                                : 'Enter any HEX color code or pick from the color spectrum.'}
+                            </p>
+                          </div>
+                        </div>
                         <ColorSpectrumPicker
                           value={customIconAccent}
                           onChange={(hex) => setCustomIconAccent(hex)}
-                          hexInputLabel={isTr ? 'Özel İkon Rengi (HEX)' : 'Custom Icon Color (HEX)'}
+                          hexInputLabel={isTr ? 'Özel İkon (HEX)' : 'Custom Icon (HEX)'}
                           hexInputTestId="custom-icon-hex-input"
-                          compact={true}
+                          compact={false}
+                          hideFooter={false}
                           previewNode={
                             <ProductMark
                               variant="theme-custom"

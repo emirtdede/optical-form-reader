@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { syncHeadlessDiskStore } from '../services/integrationsService';
 import { clearSessions, listSessions, putSession, putStudentResult, removeSession } from '../storage/database';
 import type { ExamSession, StudentResult } from '../types';
 
@@ -42,6 +43,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       }
       const clean = staleTestSessions.length > 0 ? all.filter((s) => !isTestOrSeedSession(s)) : all;
       setSessions(clean);
+      void syncHeadlessDiskStore(clean);
       setStorageError(null);
     } catch {
       setStorageError('Yerel kayıt alanına erişilemedi. Tarayıcı gizlilik veya depolama ayarlarını kontrol edin.');
@@ -61,8 +63,22 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
   const saveStudentResult = useCallback(async (sessionId: string, result: StudentResult, updatedAt: string) => {
     await putStudentResult(sessionId, result, updatedAt);
-    await refresh();
-  }, [refresh]);
+    setSessions((prev) => {
+      const next = prev.map((s) =>
+        s.id !== sessionId
+          ? s
+          : {
+              ...s,
+              updatedAt,
+              results: s.results.some((r) => r.id === result.id)
+                ? s.results.map((r) => (r.id === result.id ? result : r))
+                : [...s.results, result],
+            },
+      );
+      void syncHeadlessDiskStore(next);
+      return next;
+    });
+  }, []);
 
   const deleteSession = useCallback(async (id: string) => {
     await removeSession(id);

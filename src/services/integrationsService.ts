@@ -60,6 +60,12 @@ export const MCP_TOOLS_CATALOG: ReadonlyArray<{
   descEn: string;
 }> = [
   {
+    name: 'ofr_status',
+    role: 'viewer',
+    descTr: 'Optik okuma motoru durumunu, sürümü, oturum sayısını, donanım AI profilini ve denetim zincirini döndürür.',
+    descEn: 'Returns optical engine status, version, session counts, hardware AI profile, and audit chain integrity.',
+  },
+  {
     name: 'ofr_list_sessions',
     role: 'viewer',
     descTr: 'Kayıtlı tüm optik sınav değerlendirme oturumlarını ve özet metriklerini listeler.',
@@ -86,26 +92,68 @@ export const MCP_TOOLS_CATALOG: ReadonlyArray<{
   {
     name: 'ofr_generate_custom_template',
     role: 'operator',
-    descTr: '1-160 soru, 3-5 şık ve özel kurum başlığıyla vektörel A4 optik form şablonu üretir.',
-    descEn: 'Generates a calibrated custom A4 vector optical form template (1-160 questions).',
+    descTr: '1-160 soru, 3-5 şık ve özel kurum başlığıyla vektörel A4 optik form PDF şablonu üretir.',
+    descEn: 'Generates a calibrated custom A4 vector optical form PDF template (1-160 questions).',
   },
   {
     name: 'ofr_search_docs_rag',
     role: 'viewer',
-    descTr: 'Çevrimdışı BM25 RAG bilgi tabanında dokümantasyon ve sorun giderme araması yapar.',
-    descEn: 'Searches the offline BM25 RAG knowledge base for documentation and troubleshooting.',
+    descTr: 'Çevrimdışı BM25 RAG bilgi tabanında dokümantasyon ve sınav oturumu araması yapar.',
+    descEn: 'Searches the offline BM25 RAG knowledge base for documentation and exam sessions.',
   },
   {
     name: 'ofr_export_session_report',
     role: 'operator',
-    descTr: 'Sınav sonuçlarını Excel (XLSX), e-Okul CSV veya bireysel PDF karne olarak dışa aktarır.',
-    descEn: 'Exports exam session results as Excel (XLSX), CSV, or PDF student scorecards.',
+    descTr: 'Sınav sonuçlarını Excel (XLSX), e-Okul CSV, JSON veya bireysel PDF karne olarak dışa aktarır.',
+    descEn: 'Exports exam session results as Excel (XLSX), CSV, JSON, or PDF student scorecards.',
   },
   {
     name: 'ofr_verify_bubble_sheet',
     role: 'operator',
-    descTr: 'Şüpheli veya çift işaretli baloncukları denetler ve düzeltir.',
-    descEn: 'Verifies and resolves flagged or double-marked bubble reads.',
+    descTr: 'Şüpheli veya çift işaretli baloncukları denetler, düzeltir ve puanları yeniden hesaplar.',
+    descEn: 'Verifies and resolves flagged or double-marked bubble reads and recalculates scores.',
+  },
+  {
+    name: 'ofr_get_settings',
+    role: 'viewer',
+    descTr: 'Dil, tema, özel HEX renk, ikon, ölçek ve varsayılan ceza kuralı ayarlarını okur.',
+    descEn: 'Reads language, theme, custom HEX color, icon, UI scale, and penalty preferences.',
+  },
+  {
+    name: 'ofr_update_settings',
+    role: 'admin',
+    descTr: 'Uygulama tercihlerini (tema, dil, ikon, yakınlaştırma, ceza kuralı) arayüzsüz günceller veya sıfırlar.',
+    descEn: 'Updates or resets application preferences headlessly on disk.',
+  },
+  {
+    name: 'ofr_ai_hardware_status',
+    role: 'viewer',
+    descTr: 'CPU/RAM donanım profilini ve önerilen/kurulu yerel GGUF yapay zeka modellerini listeler.',
+    descEn: 'Profiles CPU/RAM hardware and lists recommended, installed, and active local AI models.',
+  },
+  {
+    name: 'ofr_ai_manage_model',
+    role: 'admin',
+    descTr: 'Yerel yapay zeka modellerini indirir (pull), siler (remove), etkinleştirir, devre dışı bırakır veya sorgular.',
+    descEn: 'Downloads, removes, enables, disables, or queries local GGUF AI models.',
+  },
+  {
+    name: 'ofr_cloud_sync',
+    role: 'operator',
+    descTr: 'OneDrive, Google Drive, iCloud, Dropbox veya özel klasörle 15 günlük yedek eşitlemesi ve geri yükleme yapar.',
+    descEn: 'Syncs or restores 15-day rolling backups across OneDrive, Google Drive, iCloud, Dropbox, or custom folders.',
+  },
+  {
+    name: 'ofr_webhooks_manage',
+    role: 'admin',
+    descTr: 'SSRF korumalı ve HMAC-SHA256 imzalı HTTPS webhook uç noktalarını listeler, ekler, siler veya test eder.',
+    descEn: 'Lists, adds, deletes, or tests SSRF-guarded HMAC-SHA256 HTTPS webhook endpoints.',
+  },
+  {
+    name: 'ofr_audit_verify',
+    role: 'viewer',
+    descTr: 'Kurcalamaya dayanıklı yerel HMAC-SHA256 denetim günlüğü zincirinin bütünlüğünü doğrular.',
+    descEn: 'Verifies the cryptographic integrity of the local HMAC-SHA256 tamper-evident audit log chain.',
   },
 ] as const;
 
@@ -172,9 +220,15 @@ export function generateNewApiKey(
   label: string,
   role: ApiRole,
 ): { state: IntegrationsConfigState; plainTextSecret: string } {
-  const randomPart = Array.from({ length: 24 }, () =>
-    Math.floor(Math.random() * 16).toString(16),
-  ).join('');
+  const randomBytes = new Uint8Array(12);
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    crypto.getRandomValues(randomBytes);
+  } else {
+    for (let i = 0; i < randomBytes.length; i += 1) {
+      randomBytes[i] = Math.floor(Math.random() * 256);
+    }
+  }
+  const randomPart = Array.from(randomBytes, (b) => b.toString(16).padStart(2, '0')).join('');
   const prefix = `ofr_${role.slice(0, 3)}_${randomPart.slice(0, 6)}`;
   const plainTextSecret = `${prefix}_${randomPart.slice(6)}`;
   const item: RestApiKeyItem = {
@@ -209,14 +263,23 @@ export function validateWebhookUrl(rawUrl: string): { valid: boolean; reason?: s
         reason: 'Güvenlik politikası gereği Webhook adresleri yalnızca HTTPS protokolünü kullanmalıdır.',
       };
     }
-    const host = parsed.hostname.toLowerCase();
+    const host = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, '');
+    const isRfc1918ClassB = /^172\.(1[6-9]|2\d|3[0-1])\./.test(host);
+    const isLoopbackRange = /^127\./.test(host) || host === '::1' || host === '0:0:0:0:0:0:0:1';
+    const isInternalTld =
+      host.endsWith('.local') || host.endsWith('.internal') || host.endsWith('.lan');
     if (
       host === 'localhost' ||
-      host === '127.0.0.1' ||
       host === '0.0.0.0' ||
+      isLoopbackRange ||
+      isRfc1918ClassB ||
+      isInternalTld ||
       host.startsWith('169.254.') ||
       host.startsWith('10.') ||
-      host.startsWith('192.168.')
+      host.startsWith('192.168.') ||
+      host.startsWith('fc') ||
+      host.startsWith('fd') ||
+      host.startsWith('fe80:')
     ) {
       return {
         valid: false,
@@ -300,8 +363,8 @@ export function buildMcpClientConfigJson(client: 'claude' | 'cursor' | 'windsurf
   const config = {
     mcpServers: {
       'optical-form-reader': {
-        command: 'node',
-        args: ['C:\\Program Files\\Optical Form Reader\\resources\\ofr-mcp-server.mjs'],
+        command: '%LOCALAPPDATA%\\Programs\\Optic Form Reader\\optical-form-reader.exe',
+        args: ['--mcp'],
         env: {
           OFR_API_HOST: '127.0.0.1',
           OFR_API_PORT: '18470',
@@ -324,4 +387,45 @@ export async function openOfrCliTerminal(commandText: string): Promise<boolean> 
     }
   }
   return false;
+}
+
+export async function executeOfrCliCommand(args: string[]): Promise<string | null> {
+  if (isTauriRuntime()) {
+    try {
+      const { invoke } = await import('@tauri-apps/api/core');
+      const output = await invoke<string>('execute_ofr_cli_command', { args });
+      return output || null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+export async function syncHeadlessDiskStore(sessions: unknown[]): Promise<void> {
+  if (!isTauriRuntime()) return;
+  try {
+    const { invoke } = await import('@tauri-apps/api/core');
+    const existingRaw = await invoke<string>('read_headless_disk_store');
+    let storeObj: Record<string, unknown> = {
+      schemaVersion: 1,
+      app: 'optical-form-reader',
+      version: APP_VERSION,
+      updatedAt: new Date().toISOString(),
+    };
+    if (existingRaw && existingRaw.trim().startsWith('{')) {
+      try {
+        storeObj = { ...storeObj, ...(JSON.parse(existingRaw) as Record<string, unknown>) };
+      } catch {
+        // Keep fresh storeObj
+      }
+    }
+    storeObj.sessions = sessions;
+    storeObj.updatedAt = new Date().toISOString();
+    await invoke('sync_headless_disk_store', {
+      payloadJson: JSON.stringify(storeObj, null, 2),
+    });
+  } catch {
+    // Ignore disk sync errors in sandboxed contexts
+  }
 }

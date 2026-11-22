@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { Check, Download, FilePlus2, FileSpreadsheet, LayoutTemplate, Sparkles, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Check, Download, LayoutTemplate, Sliders, X } from 'lucide-react';
 import {
-  BUILT_IN_TEMPLATES,
   createCustomTemplate,
   getAllTemplates,
 } from '../domain/templates/templateRegistry';
 import { generateOpticalFormPdf } from '../domain/templatePdfGenerator';
+import { OpticalFormThumbnail } from './OpticalFormThumbnail';
 import type { FormTemplateDefinition, TemplateChoiceCount, TemplateQuestionCount } from '../types';
 
 interface TemplateWizardModalProps {
@@ -32,10 +32,20 @@ export function TemplateWizardModal({
   const [customCCount, setCustomCCount] = useState<TemplateChoiceCount>(4);
   const [customDigits, setCustomDigits] = useState<number>(8);
 
-  if (!isOpen) return null;
+  const templates = useMemo(() => getAllTemplates(), []);
 
-  const templates = getAllTemplates();
-  const currentTemplate = templates.find((t) => t.id === selectedId) || templates[0];
+  const customTemplatePreview = useMemo(
+    () =>
+      createCustomTemplate({
+        name: customTitle || 'Özel Optik Form',
+        questionCount: customQCount,
+        choiceCount: customCCount,
+        studentIdDigits: customDigits,
+      }),
+    [customTitle, customQCount, customCCount, customDigits],
+  );
+
+  if (!isOpen) return null;
 
   function handleDownloadTemplatePdf(tmpl: FormTemplateDefinition) {
     const pdf = generateOpticalFormPdf(tmpl, {
@@ -47,14 +57,7 @@ export function TemplateWizardModal({
   }
 
   function handleCreateAndDownloadCustom() {
-    const customTmpl = createCustomTemplate({
-      name: customTitle,
-      questionCount: customQCount,
-      choiceCount: customCCount,
-      studentIdDigits: customDigits,
-    });
-
-    const pdf = generateOpticalFormPdf(customTmpl, {
+    const pdf = generateOpticalFormPdf(customTemplatePreview, {
       institutionName: customSchool,
       examTitle: customTitle,
       courseName: customCourse,
@@ -63,15 +66,36 @@ export function TemplateWizardModal({
     pdf.save(`optik-form-${customQCount}soru-${customCCount}sik.pdf`);
   }
 
+  function handleSelectCustomTemplate() {
+    if (!onSelectTemplate) return;
+    onSelectTemplate(customTemplatePreview);
+  }
+
   return (
-    <div className="modal-backdrop" role="dialog" aria-modal="true">
-      <div className="modal-window template-modal" style={{ maxWidth: 780, maxHeight: '90vh', overflowY: 'auto' }}>
-        <header className="modal-header" style={{ padding: '1rem 1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <LayoutTemplate size={22} className="text-primary" />
+    <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="Şablon Galerisi ve Özel Form Sihirbazı">
+      <div className="modal-window template-modal" style={{ maxWidth: 840, maxHeight: '90vh' }}>
+        <header className="modal-header" style={{ padding: '16px 22px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 10,
+                background: 'var(--accent-soft)',
+                border: '1px solid var(--border)',
+                color: 'var(--accent-strong)',
+                display: 'grid',
+                placeItems: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <LayoutTemplate size={19} />
+            </div>
             <div>
-              <h3 style={{ margin: 0 }}>Şablon Galerisi & Özel Form Sihirbazı</h3>
-              <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+              <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 750, color: 'var(--text)' }}>
+                Şablon Galerisi &amp; Özel Form Sihirbazı
+              </h3>
+              <p style={{ margin: '2px 0 0', fontSize: '12.5px', color: 'var(--text-soft)' }}>
                 İhtiyacınıza uygun soru sayısında optik şablon seçin veya tarayıcıda anında özel PDF form üretin.
               </p>
             </div>
@@ -81,30 +105,34 @@ export function TemplateWizardModal({
           </button>
         </header>
 
-        <div className="tab-bar" style={{ padding: '0 1.25rem', marginTop: '0.5rem' }}>
-          <button
-            type="button"
-            className={tab === 'gallery' ? 'is-active' : ''}
-            onClick={() => setTab('gallery')}
-          >
-            Hazır Standart Şablonlar ({templates.length})
-          </button>
-          <button
-            type="button"
-            className={tab === 'custom' ? 'is-active' : ''}
-            onClick={() => setTab('custom')}
-          >
-            Özel Form Oluşturucu (Dinamik PDF)
-          </button>
+        <div style={{ padding: '16px 22px 0' }}>
+          <div className="template-segmented-bar" style={{ marginBottom: 0 }}>
+            <button
+              type="button"
+              className={`template-segmented-btn ${tab === 'gallery' ? 'is-active' : ''}`}
+              onClick={() => setTab('gallery')}
+            >
+              <LayoutTemplate size={15} />
+              <span>Hazır Standart Şablonlar ({templates.length})</span>
+            </button>
+            <button
+              type="button"
+              className={`template-segmented-btn ${tab === 'custom' ? 'is-active' : ''}`}
+              onClick={() => setTab('custom')}
+            >
+              <Sliders size={15} />
+              <span>Özel Form Oluşturucu (Dinamik PDF)</span>
+            </button>
+          </div>
         </div>
 
-        <div className="modal-body" style={{ padding: '1.25rem' }}>
+        <div className="modal-body" style={{ padding: '18px 22px 22px' }}>
           {tab === 'gallery' ? (
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-                gap: '1rem',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+                gap: 14,
               }}
             >
               {templates.map((tmpl) => {
@@ -113,47 +141,62 @@ export function TemplateWizardModal({
                   <div
                     key={tmpl.id}
                     style={{
-                      backgroundColor: isSelected
-                        ? 'rgba(14, 165, 233, 0.08)'
-                        : 'var(--bg-card, rgba(255, 255, 255, 0.02))',
-                      border: `1.5px solid ${isSelected ? 'var(--accent-color)' : 'var(--border-color)'}`,
-                      borderRadius: 12,
-                      padding: '1.1rem',
+                      background: isSelected
+                        ? 'color-mix(in srgb, var(--accent-soft) 50%, var(--bg-elevated))'
+                        : 'var(--bg-subtle)',
+                      border: `1px solid ${isSelected ? 'color-mix(in srgb, var(--accent) 45%, var(--border-strong))' : 'var(--border)'}`,
+                      borderRadius: 14,
+                      padding: 16,
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
-                      gap: 12,
-                      transition: 'border-color 0.2s',
+                      gap: 14,
+                      transition: 'border-color 0.18s ease, background-color 0.18s ease',
                     }}
                   >
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                        <h4 style={{ margin: 0, fontSize: '1rem' }}>{tmpl.name}</h4>
-                        <span className="badge badge-primary" style={{ fontSize: '0.72rem' }}>
-                          {tmpl.questionCount} Soru
-                        </span>
+                    <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                      <div
+                        style={{
+                          padding: 6,
+                          borderRadius: 8,
+                          background: 'var(--bg-elevated)',
+                          border: '1px solid var(--border)',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <OpticalFormThumbnail template={tmpl} width={52} height={74} />
                       </div>
-                      <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                        {tmpl.description}
-                      </p>
-                      <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-                        <span className="booklet-chip" style={{ fontSize: '0.72rem' }}>
-                          Şıklar: {tmpl.choices.join('-')} ({tmpl.choiceCount} Seçenek)
-                        </span>
-                        <span className="booklet-chip" style={{ fontSize: '0.72rem' }}>
-                          Kitapçık: {tmpl.supportedBooklets.join(', ')}
-                        </span>
-                        <span className="booklet-chip" style={{ fontSize: '0.72rem' }}>
-                          {tmpl.studentIdDigits} Hane No
-                        </span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
+                          <h4 style={{ margin: 0, fontSize: '14.5px', fontWeight: 750, color: 'var(--text)' }}>
+                            {tmpl.name}
+                          </h4>
+                          <span className="badge badge-primary" style={{ fontSize: '11.5px', flexShrink: 0 }}>
+                            {tmpl.questionCount} Soru
+                          </span>
+                        </div>
+                        <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-soft)', lineHeight: 1.45 }}>
+                          {tmpl.description}
+                        </p>
+                        <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
+                          <span className="template-spec-chip" style={{ fontSize: '11px', padding: '3px 8px' }}>
+                            Şıklar: <strong>{tmpl.choices.join('-')} ({tmpl.choiceCount})</strong>
+                          </span>
+                          <span className="template-spec-chip" style={{ fontSize: '11px', padding: '3px 8px' }}>
+                            Kitapçık: <strong>{tmpl.supportedBooklets.join(', ')}</strong>
+                          </span>
+                          <span className="template-spec-chip" style={{ fontSize: '11px', padding: '3px 8px' }}>
+                            No: <strong>{tmpl.studentIdDigits} Hane</strong>
+                          </span>
+                        </div>
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                    <div style={{ display: 'flex', gap: 8 }}>
                       <button
                         type="button"
-                        className="button button-outline"
-                        style={{ flex: 1, fontSize: '0.8rem', padding: '6px 10px' }}
+                        className="button button-secondary"
+                        style={{ flex: 1, minHeight: 36, fontSize: '12.5px', padding: '0 12px' }}
                         onClick={() => handleDownloadTemplatePdf(tmpl)}
                       >
                         <Download size={14} /> PDF İndir
@@ -161,8 +204,8 @@ export function TemplateWizardModal({
                       {onSelectTemplate && (
                         <button
                           type="button"
-                          className={`button ${isSelected ? 'button-primary' : 'button-outline'}`}
-                          style={{ flex: 1, fontSize: '0.8rem', padding: '6px 10px' }}
+                          className={`button ${isSelected ? 'button-primary' : 'button-secondary'}`}
+                          style={{ flex: 1, minHeight: 36, fontSize: '12.5px', padding: '0 12px' }}
                           onClick={() => {
                             setSelectedId(tmpl.id);
                             onSelectTemplate(tmpl);
@@ -177,92 +220,93 @@ export function TemplateWizardModal({
               })}
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
               <div
                 className="custom-form-grid"
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                  gap: '1rem',
+                  gap: 14,
                 }}
               >
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: 4, color: 'var(--text-muted)' }}>
-                    Okul / Kurum Adı:
-                  </label>
+                <div className="custom-field-group">
+                  <label htmlFor="wizard-school-input">Okul / Kurum Adı:</label>
                   <input
+                    id="wizard-school-input"
                     type="text"
-                    className="input-field"
+                    className="form-input-styled"
                     value={customSchool}
                     onChange={(e) => setCustomSchool(e.target.value)}
                     placeholder="Örn: Atatürk Anadolu Lisesi"
                   />
                 </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: 4, color: 'var(--text-muted)' }}>
-                    Sınav Başlığı:
-                  </label>
+                <div className="custom-field-group">
+                  <label htmlFor="wizard-title-input">Sınav Başlığı:</label>
                   <input
+                    id="wizard-title-input"
                     type="text"
-                    className="input-field"
+                    className="form-input-styled"
                     value={customTitle}
                     onChange={(e) => setCustomTitle(e.target.value)}
                     placeholder="Örn: 1. Dönem 2. Yazılı Yoklama"
                   />
                 </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: 4, color: 'var(--text-muted)' }}>
-                    Ders / Branş:
-                  </label>
+                <div className="custom-field-group">
+                  <label htmlFor="wizard-course-input">Ders / Branş:</label>
                   <input
+                    id="wizard-course-input"
                     type="text"
-                    className="input-field"
+                    className="form-input-styled"
                     value={customCourse}
                     onChange={(e) => setCustomCourse(e.target.value)}
                     placeholder="Örn: Matematik / Fizik"
                   />
                 </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: 4, color: 'var(--text-muted)' }}>
-                    Soru Sayısı:
-                  </label>
+                <div className="custom-field-group">
+                  <label htmlFor="wizard-qcount-select">Soru Sayısı:</label>
                   <select
-                    className="input-field"
+                    id="wizard-qcount-select"
+                    className="form-input-styled"
                     value={customQCount}
-                    onChange={(e) => setCustomQCount(Number(e.target.value) as any)}
+                    onChange={(e) => setCustomQCount(Number(e.target.value) as TemplateQuestionCount)}
                   >
+                    <option value={10}>10 Soru (Çıkış Bileti)</option>
                     <option value={15}>15 Soru (Mini Quiz)</option>
                     <option value={20}>20 Soru (Quiz / Yoklama)</option>
+                    <option value={25}>25 Soru (Bölüm Tarama)</option>
                     <option value={30}>30 Soru (Konu Tarama)</option>
                     <option value={40}>40 Soru (LGS / Branş Denemesi)</option>
                     <option value={50}>50 Soru (Ara Sınav / Vize)</option>
-                    <option value={100}>100 Soru (Genel Sınav / YKS)</option>
+                    <option value={80}>80 Soru (YDT / Kurum Sınavı)</option>
+                    <option value={90}>90 Soru (LGS Tam Paket)</option>
+                    <option value={100}>100 Soru (Genel Sınav)</option>
+                    <option value={120}>120 Soru (TYT / KPSS)</option>
+                    <option value={160}>160 Soru (AYT Kapsamlı)</option>
                   </select>
                 </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: 4, color: 'var(--text-muted)' }}>
-                    Seçenek / Şık Adedi:
-                  </label>
+                <div className="custom-field-group">
+                  <label htmlFor="wizard-ccount-select">Seçenek / Şık Adedi:</label>
                   <select
-                    className="input-field"
+                    id="wizard-ccount-select"
+                    className="form-input-styled"
                     value={customCCount}
-                    onChange={(e) => setCustomCCount(Number(e.target.value) as any)}
+                    onChange={(e) => setCustomCCount(Number(e.target.value) as TemplateChoiceCount)}
                   >
+                    <option value={3}>3 Seçenek (A, B, C) - İlkokul</option>
                     <option value={4}>4 Seçenek (A, B, C, D) - LGS / Ortaokul</option>
                     <option value={5}>5 Seçenek (A, B, C, D, E) - Lise / Üniversite</option>
                   </select>
                 </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.82rem', marginBottom: 4, color: 'var(--text-muted)' }}>
-                    Öğrenci No Hanesi:
-                  </label>
+                <div className="custom-field-group">
+                  <label htmlFor="wizard-digits-select">Öğrenci No Hanesi:</label>
                   <select
-                    className="input-field"
+                    id="wizard-digits-select"
+                    className="form-input-styled"
                     value={customDigits}
                     onChange={(e) => setCustomDigits(Number(e.target.value))}
                   >
@@ -276,35 +320,77 @@ export function TemplateWizardModal({
 
               <div
                 style={{
-                  backgroundColor: 'rgba(14, 165, 233, 0.06)',
-                  border: '1px solid rgba(14, 165, 233, 0.2)',
-                  borderRadius: 10,
-                  padding: '1rem',
+                  background: 'var(--bg-subtle)',
+                  border: '1px solid var(--border-strong)',
+                  borderRadius: 14,
+                  padding: '16px 18px',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: 16,
                 }}
               >
-                <div>
-                  <strong>Baskıya Hazır Vektörel PDF Çıktısı</strong>
-                  <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                    Yazıcıdan standart A4 kağıdına doğrudan basabilirsiniz. Dört köşe hizalama işaretleri dahildir.
-                  </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, flex: '1 1 280px', minWidth: 0 }}>
+                  <div
+                    style={{
+                      padding: 6,
+                      borderRadius: 8,
+                      background: 'var(--bg-elevated)',
+                      border: '1px solid var(--border)',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <OpticalFormThumbnail template={customTemplatePreview} width={48} height={68} />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <strong style={{ display: 'block', fontSize: '14.5px', color: 'var(--text)' }}>
+                      Baskıya Hazır Vektörel PDF Çıktısı
+                    </strong>
+                    <p style={{ margin: '4px 0 8px', fontSize: '12.5px', color: 'var(--text-soft)', lineHeight: 1.45 }}>
+                      Yazıcıdan standart A4 kağıdına doğrudan basabilirsiniz. Dört köşe hizalama işaretleri dahildir.
+                    </p>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      <span className="template-spec-chip" style={{ fontSize: '11px', padding: '2px 8px' }}>
+                        <strong>{customQCount} Soru</strong>
+                      </span>
+                      <span className="template-spec-chip" style={{ fontSize: '11px', padding: '2px 8px' }}>
+                        <strong>{customCCount} Şık ({customTemplatePreview.choices.join('-')})</strong>
+                      </span>
+                      <span className="template-spec-chip" style={{ fontSize: '11px', padding: '2px 8px' }}>
+                        <strong>{customDigits} Hane No</strong>
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  className="button button-primary"
-                  onClick={handleCreateAndDownloadCustom}
-                >
-                  <Download size={16} /> Özel PDF Formu İndir
-                </button>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', flexShrink: 0 }}>
+                  {onSelectTemplate && (
+                    <button
+                      type="button"
+                      className="button button-secondary"
+                      style={{ whiteSpace: 'nowrap' }}
+                      onClick={handleSelectCustomTemplate}
+                    >
+                      <Check size={16} /> Bu Şablonu Seç
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="button button-primary"
+                    style={{ whiteSpace: 'nowrap' }}
+                    onClick={handleCreateAndDownloadCustom}
+                  >
+                    <Download size={16} /> Özel PDF Formu İndir
+                  </button>
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        <footer className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', padding: '1rem' }}>
-          <button type="button" className="button button-outline" onClick={onClose}>
+        <footer className="modal-footer" style={{ padding: '14px 22px' }}>
+          <button type="button" className="button button-secondary" onClick={onClose}>
             Kapat
           </button>
         </footer>

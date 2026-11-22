@@ -166,7 +166,9 @@ function wideTileSvg(width, height) {
 }
 
 /**
- * Custom NSIS Setup & Uninstall 24-bit DIB BMP graphics (Power Pilot standard, monochrome palette, no version strings):
+ * Custom NSIS Setup & Uninstall 24-bit DIB BMP graphics (100% language-neutral across all 73 languages:
+ * ZERO descriptive copy, ZERO taglines, ZERO URLs/emails, ZERO publisher wordmarks - ONLY the
+ * Optical Form Reader emblem and "Optical Form Reader" brand wordmark):
  * - installerSidebar.bmp   (164 x 314, rendered at 2x 328x628)
  * - uninstallerSidebar.bmp (164 x 314, rendered at 2x 328x628)
  * - installerHeader.bmp    (150 x 57, rendered at 2x 300x114)
@@ -174,107 +176,123 @@ function wideTileSvg(width, height) {
 const installerSidebarSvg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="${SVG_NS}" viewBox="0 0 328 628" width="328" height="628">
   <defs>
-    <linearGradient id="side-bg" x1="0" y1="0" x2="0.35" y2="1">
-      <stop offset="0%" stop-color="#18181b" />
-      <stop offset="55%" stop-color="#111114" />
-      <stop offset="100%" stop-color="#09090b" />
+    <linearGradient id="side-bg" x1="0" y1="0" x2="0.25" y2="1">
+      <stop offset="0%" stop-color="#14171e" />
+      <stop offset="48%" stop-color="#0c0e13" />
+      <stop offset="100%" stop-color="#07080b" />
     </linearGradient>
-    <radialGradient id="top-glow" cx="42%" cy="16%" r="58%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.12" />
+    <radialGradient id="studio-top" cx="50%" cy="24%" r="58%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.085" />
+      <stop offset="60%" stop-color="#cbd5e1" stop-opacity="0.025" />
       <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
     </radialGradient>
-    <linearGradient id="accent-bar" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.92" />
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.08" />
+    <radialGradient id="studio-corner" cx="88%" cy="92%" r="58%">
+      <stop offset="0%" stop-color="#94a3b8" stop-opacity="0.11" />
+      <stop offset="55%" stop-color="#64748b" stop-opacity="0.035" />
+      <stop offset="100%" stop-color="#94a3b8" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="emblem-halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.09" />
+      <stop offset="65%" stop-color="#cbd5e1" stop-opacity="0.02" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="platinum-rule" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#e2e8f0" stop-opacity="0" />
+      <stop offset="50%" stop-color="#e2e8f0" stop-opacity="0.72" />
+      <stop offset="100%" stop-color="#e2e8f0" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="arc-stroke" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.11" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.02" />
     </linearGradient>
   </defs>
-  <rect width="328" height="628" fill="url(#side-bg)" />
-  <rect width="328" height="628" fill="url(#top-glow)" />
-  <line x1="327" y1="0" x2="327" y2="628" stroke="#ffffff" stroke-opacity="0.1" stroke-width="2" />
-  <circle cx="292" cy="70" r="96" fill="none" stroke="#ffffff" stroke-opacity="0.04" stroke-width="2" />
-  <circle cx="292" cy="70" r="146" fill="none" stroke="#ffffff" stroke-opacity="0.025" stroke-width="2" />
 
-  <g transform="translate(36 48) scale(0.375)">
+  <rect width="328" height="628" fill="url(#side-bg)" />
+  <rect width="328" height="628" fill="url(#studio-top)" />
+  <rect width="328" height="628" fill="url(#studio-corner)" />
+
+  <circle cx="24" cy="24" r="136" fill="none" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1.4" />
+  <circle cx="316" cy="612" r="246" fill="none" stroke="url(#arc-stroke)" stroke-width="1.5" />
+  <circle cx="316" cy="612" r="184" fill="none" stroke="#ffffff" stroke-opacity="0.045" stroke-width="1.4" />
+  <circle cx="316" cy="612" r="122" fill="none" stroke="#ffffff" stroke-opacity="0.03" stroke-width="1.2" />
+  <line x1="0" y1="518" x2="328" y2="454" stroke="#ffffff" stroke-opacity="0.035" stroke-width="1.2" />
+  <line x1="327" y1="0" x2="327" y2="628" stroke="#ffffff" stroke-opacity="0.11" stroke-width="2" />
+
+  <circle cx="164" cy="216" r="92" fill="url(#emblem-halo)" />
+  <rect x="97" y="149" width="134" height="134" rx="34" fill="rgba(255,255,255,0.025)" stroke="rgba(255,255,255,0.10)" stroke-width="1.5" />
+  <g transform="translate(108 160) scale(0.4375)">
     ${buildOpticalMarkInner('inst', PALETTES['monochrome-dark'])}
   </g>
 
-  <text x="36" y="186" fill="#fafafa" font-family="'Segoe UI', system-ui, sans-serif" font-size="27" font-weight="700" letter-spacing="-0.6">Optical Form</text>
-  <text x="36" y="216" fill="#fafafa" font-family="'Segoe UI', system-ui, sans-serif" font-size="27" font-weight="700" letter-spacing="-0.6">Reader</text>
-  <text x="36" y="242" fill="#a1a1aa" font-family="'Segoe UI', system-ui, sans-serif" font-size="15" font-weight="400">Optik Form Okuyucu</text>
-
-  <rect x="36" y="266" width="132" height="2.5" rx="1.25" fill="url(#accent-bar)" />
-
-  <g font-family="'Segoe UI', system-ui, sans-serif" font-size="14.5" fill="#d4d4d8">
-    <circle cx="44" cy="308" r="3.8" fill="#ffffff" />
-    <text x="60" y="313">1-160 soru &amp; 4 kitapcik</text>
-
-    <circle cx="44" cy="346" r="3.8" fill="#ffffff" />
-    <text x="60" y="351">%100 yerel OpenCV OMR</text>
-
-    <circle cx="44" cy="384" r="3.8" fill="#ffffff" />
-    <text x="60" y="389">28 tema ve 73 dil destegi</text>
-
-    <circle cx="44" cy="422" r="3.8" fill="#ffffff" />
-    <text x="60" y="427">Sifir telemetri &amp; tam gizlilik</text>
-  </g>
-
-  <line x1="36" y1="534" x2="292" y2="534" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.5" />
-  <text x="36" y="566" fill="#fafafa" font-family="'Segoe UI', system-ui, sans-serif" font-size="16" font-weight="700" letter-spacing="2.4">VELLIUM</text>
-  <text x="36" y="592" fill="#a1a1aa" font-family="'Segoe UI', system-ui, sans-serif" font-size="14" font-weight="400">vellium.dev</text>
+  <text x="164" y="328" text-anchor="middle" fill="#f8fafc" font-family="'Segoe UI', system-ui, sans-serif" font-size="28" font-weight="600" letter-spacing="-0.4">Optic Form</text>
+  <text x="164" y="362" text-anchor="middle" fill="#f8fafc" font-family="'Segoe UI', system-ui, sans-serif" font-size="28" font-weight="600" letter-spacing="-0.4">Reader</text>
+  <rect x="116" y="382" width="96" height="2" rx="1" fill="url(#platinum-rule)" />
 </svg>`;
 
 const uninstallerSidebarSvg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="${SVG_NS}" viewBox="0 0 328 628" width="328" height="628">
   <defs>
-    <linearGradient id="unside-bg" x1="0" y1="0" x2="0.4" y2="1">
-      <stop offset="0%" stop-color="#18181b" />
-      <stop offset="55%" stop-color="#101013" />
-      <stop offset="100%" stop-color="#09090b" />
+    <linearGradient id="unside-bg" x1="0" y1="0" x2="0.25" y2="1">
+      <stop offset="0%" stop-color="#191417" />
+      <stop offset="48%" stop-color="#100d10" />
+      <stop offset="100%" stop-color="#080709" />
     </linearGradient>
-    <radialGradient id="untop-glow" cx="45%" cy="16%" r="55%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.12" />
+    <radialGradient id="unstudio-top" cx="50%" cy="24%" r="58%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.075" />
+      <stop offset="60%" stop-color="#e2e8f0" stop-opacity="0.02" />
       <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
     </radialGradient>
-    <linearGradient id="unaccent-bar" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#e4e4e7" stop-opacity="0.88" />
-      <stop offset="100%" stop-color="#e4e4e7" stop-opacity="0.08" />
+    <radialGradient id="unstudio-corner" cx="88%" cy="92%" r="58%">
+      <stop offset="0%" stop-color="#fb7185" stop-opacity="0.095" />
+      <stop offset="55%" stop-color="#f43f5e" stop-opacity="0.03" />
+      <stop offset="100%" stop-color="#fb7185" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="unemblem-halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.08" />
+      <stop offset="65%" stop-color="#fda4af" stop-opacity="0.02" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="rose-platinum-rule" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#fda4af" stop-opacity="0" />
+      <stop offset="50%" stop-color="#fda4af" stop-opacity="0.65" />
+      <stop offset="100%" stop-color="#fda4af" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="unarc-stroke" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fda4af" stop-opacity="0.11" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.02" />
     </linearGradient>
   </defs>
-  <rect width="328" height="628" fill="url(#unside-bg)" />
-  <rect width="328" height="628" fill="url(#untop-glow)" />
-  <line x1="327" y1="0" x2="327" y2="628" stroke="#ffffff" stroke-opacity="0.1" stroke-width="2" />
 
-  <g transform="translate(36 48) scale(0.375)">
+  <rect width="328" height="628" fill="url(#unside-bg)" />
+  <rect width="328" height="628" fill="url(#unstudio-top)" />
+  <rect width="328" height="628" fill="url(#unstudio-corner)" />
+
+  <circle cx="24" cy="24" r="136" fill="none" stroke="#ffffff" stroke-opacity="0.038" stroke-width="1.4" />
+  <circle cx="316" cy="612" r="246" fill="none" stroke="url(#unarc-stroke)" stroke-width="1.5" />
+  <circle cx="316" cy="612" r="184" fill="none" stroke="#ffffff" stroke-opacity="0.042" stroke-width="1.4" />
+  <circle cx="316" cy="612" r="122" fill="none" stroke="#fda4af" stroke-opacity="0.045" stroke-width="1.2" />
+  <line x1="0" y1="518" x2="328" y2="454" stroke="#ffffff" stroke-opacity="0.032" stroke-width="1.2" />
+  <line x1="327" y1="0" x2="327" y2="628" stroke="#ffffff" stroke-opacity="0.11" stroke-width="2" />
+
+  <circle cx="164" cy="216" r="92" fill="url(#unemblem-halo)" />
+  <rect x="97" y="149" width="134" height="134" rx="34" fill="rgba(255,255,255,0.025)" stroke="rgba(255,255,255,0.10)" stroke-width="1.5" />
+  <g transform="translate(108 160) scale(0.4375)">
     ${buildOpticalMarkInner('uninst', PALETTES['monochrome-dark'])}
   </g>
 
-  <text x="36" y="186" fill="#fafafa" font-family="'Segoe UI', system-ui, sans-serif" font-size="27" font-weight="700" letter-spacing="-0.6">Optical Form</text>
-  <text x="36" y="216" fill="#fafafa" font-family="'Segoe UI', system-ui, sans-serif" font-size="27" font-weight="700" letter-spacing="-0.6">Reader</text>
-  <text x="36" y="242" fill="#d4d4d8" font-family="'Segoe UI', system-ui, sans-serif" font-size="15" font-weight="500">Kaldirma Yardimcisi</text>
-
-  <rect x="36" y="266" width="132" height="2.5" rx="1.25" fill="url(#unaccent-bar)" />
-
-  <g font-family="'Segoe UI', system-ui, sans-serif" font-size="14.5" fill="#a1a1aa">
-    <text x="36" y="310">Uygulama dosyalari ve kisayol</text>
-    <text x="36" y="334">kayitlari temiz sekilde</text>
-    <text x="36" y="358">sisteminizden kaldirilir.</text>
-    <text x="36" y="400" fill="#e4e4e7">Isterseniz yerel sinav ve</text>
-    <text x="36" y="424" fill="#e4e4e7">ayar verilerinizi korursunuz.</text>
-  </g>
-
-  <line x1="36" y1="534" x2="292" y2="534" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1.5" />
-  <text x="36" y="566" fill="#fafafa" font-family="'Segoe UI', system-ui, sans-serif" font-size="16" font-weight="700" letter-spacing="2.4">VELLIUM</text>
-  <text x="36" y="592" fill="#a1a1aa" font-family="'Segoe UI', system-ui, sans-serif" font-size="14" font-weight="400">support@vellium.dev</text>
+  <text x="164" y="328" text-anchor="middle" fill="#f8fafc" font-family="'Segoe UI', system-ui, sans-serif" font-size="28" font-weight="600" letter-spacing="-0.4">Optic Form</text>
+  <text x="164" y="362" text-anchor="middle" fill="#f8fafc" font-family="'Segoe UI', system-ui, sans-serif" font-size="28" font-weight="600" letter-spacing="-0.4">Reader</text>
+  <rect x="116" y="382" width="96" height="2" rx="1" fill="url(#rose-platinum-rule)" />
 </svg>`;
 
 const installerHeaderSvg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="${SVG_NS}" viewBox="0 0 300 114" width="300" height="114">
   <rect width="300" height="114" fill="#ffffff" />
-  <g transform="translate(18 21) scale(0.28125)">
+  <g transform="translate(22 24) scale(0.2578125)">
     ${buildOpticalMarkInner('hdr', PALETTES['monochrome-dark'])}
   </g>
-  <text x="102" y="53" fill="#09090b" font-family="'Segoe UI', system-ui, sans-serif" font-size="22" font-weight="700" letter-spacing="-0.5">Optical Form</text>
-  <text x="102" y="79" fill="#27272a" font-family="'Segoe UI', system-ui, sans-serif" font-size="22" font-weight="700" letter-spacing="-0.5">Reader</text>
+  <text x="102" y="52" fill="#0f172a" font-family="'Segoe UI', system-ui, sans-serif" font-size="23" font-weight="600" letter-spacing="-0.4">Optic Form</text>
+  <text x="102" y="79" fill="#0f172a" font-family="'Segoe UI', system-ui, sans-serif" font-size="23" font-weight="600" letter-spacing="-0.4">Reader</text>
 </svg>`;
 
 /**

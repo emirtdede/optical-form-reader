@@ -1,12 +1,18 @@
-import { Component, lazy, Suspense, useEffect, type ErrorInfo, type ReactNode } from 'react';
+import { Component, lazy, Suspense, useEffect, useState, type ErrorInfo, type ReactNode } from 'react';
 import { BrowserRouter, HashRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { AlertTriangle } from 'lucide-react';
 import { AppShell } from './components/AppShell';
 import { DesktopShell } from './components/desktop/DesktopShell';
+import { ModernSetupApp } from './components/installer/ModernSetupApp';
 import { AppDataProvider, useAppData } from './context/AppDataContext';
 import { AppSettingsProvider } from './context/AppSettingsContext';
 import { I18nProvider, useI18n } from './i18n/I18nContext';
 import { isDesktopShell, isTauriRuntime } from './platform/runtime';
+import {
+  detectQueryInstallerMode,
+  fetchInstallerContext,
+  type InstallerContext,
+} from './services/modernInstallerService';
 import { ThemeProvider } from './theme/ThemeContext';
 import { useTheme } from './hooks/useTheme';
 
@@ -136,6 +142,46 @@ function RoutedApplication() {
 }
 
 export default function App() {
+  const [installerCtx, setInstallerCtx] = useState<InstallerContext | null>(() => {
+    const queryMode = detectQueryInstallerMode();
+    if (queryMode) {
+      return {
+        mode: queryMode,
+        version: '1.0.0',
+        defaultInstallDir: 'C:\\Users\\User\\AppData\\Local\\Programs\\Optic Form Reader',
+        isUpdate: false,
+        installedVersion: null,
+        estimatedSizeMb: 15,
+        osLocale:
+          typeof navigator !== 'undefined' && navigator.language
+            ? navigator.language.split('-')[0]
+            : 'tr',
+        userDataDir: 'C:\\Users\\User\\AppData\\Local\\dev.vellium.opticalformreader',
+      };
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    let active = true;
+    fetchInstallerContext().then((ctx) => {
+      if (active && (ctx.mode === 'setup' || ctx.mode === 'uninstall')) {
+        setInstallerCtx(ctx);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (installerCtx && (installerCtx.mode === 'setup' || installerCtx.mode === 'uninstall')) {
+    return (
+      <ApplicationErrorBoundary>
+        <ModernSetupApp context={installerCtx} />
+      </ApplicationErrorBoundary>
+    );
+  }
+
   const RouterComponent = isTauriRuntime() ? HashRouter : BrowserRouter;
   return (
     <ApplicationErrorBoundary>

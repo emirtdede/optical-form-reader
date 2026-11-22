@@ -10,9 +10,25 @@
 !define MUI_LANGDLL_INFO "$(DcPickerInfo)"
 !define MUI_LANGDLL_ALWAYSSHOW
 
+; Prevent multi-line welcome/finish titles and descriptions from clipping in long languages (e.g. Bulgarian, Russian, German, Greek)
+!define MUI_WELCOMEPAGE_TITLE_3LINES
+!define MUI_FINISHPAGE_TITLE_3LINES
+!define MUI_FINISHPAGE_TEXT_LARGE
+!define MUI_UNWELCOMEPAGE_TITLE_3LINES
+!define MUI_UNFINISHPAGE_TITLE_3LINES
+
 !ifndef MUI_HEADERIMAGE_RIGHT
   !define MUI_HEADERIMAGE_RIGHT
 !endif
+
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW OfrWelcomePageShow
+
+Function OfrWelcomePageShow
+  ${If} $mui.WelcomePage.Title != 0
+    CreateFont $0 "$(^Font)" "11" "700"
+    SendMessage $mui.WelcomePage.Title ${WM_SETFONT} $0 1
+  ${EndIf}
+FunctionEnd
 
 !define MUI_ABORTWARNING
 !define MUI_INSTFILESPAGE_PROGRESSBAR "smooth colored"

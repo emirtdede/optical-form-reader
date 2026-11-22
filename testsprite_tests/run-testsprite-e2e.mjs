@@ -14,8 +14,11 @@ const { chromium } = require('playwright');
 
 const ROOT = 'D:/SOFTWARE DEVELOPMENT/Website/optikformokuyucu.com';
 const DIST_DIR = path.join(ROOT, 'dist');
-const OUT_DIR = 'C:/Users/emir/.gemini/antigravity/brain/93eae350-b448-41f6-9607-f605b819168a';
+const OUT_DIR =
+  process.env.OFR_SCREENSHOT_DIR ||
+  'C:/Users/emir/.gemini/antigravity/brain/96983bea-fed7-4b0c-873a-5566a339fd60';
 const REPORT_DIR = path.join(ROOT, 'testsprite_tests');
+fs.mkdirSync(OUT_DIR, { recursive: true });
 fs.mkdirSync(REPORT_DIR, { recursive: true });
 
 const MIME = {
@@ -117,7 +120,28 @@ await page.waitForSelector('[data-testid="generate-api-key-btn"]');
 await page.screenshot({ path: path.join(OUT_DIR, 'proof-integrations-mcp-cli.png') });
 record('TS-INTEGRATIONS', 'Integrations 2nd-Sidebar (REST API, Webhooks, MCP, CLI)', true);
 
+await page.evaluate(() => {
+  localStorage.setItem('optik-theme-id', 'obsidian');
+  localStorage.setItem('optik-app-icon', 'monochrome-dark');
+});
 await page.goto('http://127.0.0.1:4191/tara?desktop=1', { waitUntil: 'networkidle' });
+await page.evaluate(() => {
+  const main = document.querySelector('.desktop-main');
+  if (main) main.scrollTop = 180;
+});
+await page.waitForTimeout(200);
+await page.screenshot({ path: path.join(OUT_DIR, 'proof-scanner-spacing-and-window-controls.png') });
+
+// Verify TemplateWizardModal (Gallery + Custom Form Creator)
+await page.click('button:has-text("Şablon Değiştir / Özel Form")');
+await page.waitForSelector('.template-modal');
+await page.waitForTimeout(150);
+await page.screenshot({ path: path.join(OUT_DIR, 'proof-template-wizard-gallery.png') });
+await page.click('.template-modal button:has-text("Özel Form Oluşturucu")');
+await page.waitForTimeout(150);
+await page.screenshot({ path: path.join(OUT_DIR, 'proof-template-wizard-custom.png') });
+await page.click('.template-modal button:has-text("Kapat")');
+await page.waitForTimeout(150);
 
 // 2. Category B..E: Desktop Shell, ScannerPage & Camera Modal (TS-009..TS-045)
 const topbarCount = await page.locator('.topbar').count();

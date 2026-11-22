@@ -86,8 +86,8 @@ export function CameraScannerModal({ isOpen, onClose, onAddFiles }: CameraScanne
 
         try {
           await video.play();
-        } catch (playErr) {
-          console.warn('Video oynatma bildirimi:', playErr);
+        } catch {
+          // Autoplay notification ignored safely
         }
       }
 
@@ -164,8 +164,8 @@ export function CameraScannerModal({ isOpen, onClose, onAddFiles }: CameraScanne
           detectorRef.current?.reset();
         }, 1200);
       }
-    } catch (captureErr) {
-      console.error('Fotoğraf yakalama hatası:', captureErr);
+    } catch {
+      setError('Kamera karesi yakalanamadı. Lütfen kamerayı kontrol edip tekrar deneyin.');
     } finally {
       isCapturingRef.current = false;
     }

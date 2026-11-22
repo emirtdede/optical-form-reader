@@ -149,10 +149,12 @@ export function ResultsPage() {
     });
   }, [filteredStudents, sortField, sortOrder]);
 
+  const selectedIdSet = useMemo(() => new Set(selectedStudentIds), [selectedStudentIds]);
+
   const isAllSelected = useMemo(() => {
     if (filteredStudents.length === 0) return false;
-    return filteredStudents.every((s) => selectedStudentIds.includes(s.id));
-  }, [filteredStudents, selectedStudentIds]);
+    return filteredStudents.every((s) => selectedIdSet.has(s.id));
+  }, [filteredStudents, selectedIdSet]);
 
   const toggleSelectAll = () => {
     if (isAllSelected) {
@@ -208,7 +210,7 @@ export function ResultsPage() {
 
   async function exportSelectedScorecardsPdf() {
     if (!session || selectedStudentIds.length === 0) return;
-    const selectedResults = activeSession.results.filter((r) => selectedStudentIds.includes(r.id));
+    const selectedResults = activeSession.results.filter((r) => selectedIdSet.has(r.id));
     if (selectedResults.length === 0) return;
     await runExport('bulk-selected-pdf', () => {
       generateBulkScorecardsPdf({ ...activeSession, results: selectedResults }).save(
@@ -222,7 +224,7 @@ export function ResultsPage() {
     const count = selectedStudentIds.length;
     if (!window.confirm(`Seçili ${count} öğrenci sonucunu kalıcı olarak silmek istediğinize emin misiniz?`)) return;
     try {
-      const remainingResults = session.results.filter((r) => !selectedStudentIds.includes(r.id));
+      const remainingResults = session.results.filter((r) => !selectedIdSet.has(r.id));
       const updatedSession: ExamSession = {
         ...session,
         results: remainingResults,

@@ -212,10 +212,10 @@ describe('DesktopShell, 2nd-Sidebar SettingsPage, AboutPage, GuidePage & Exit Co
 
     // 1. Active Scan Exit Confirmation
     fireEvent.click(screen.getByRole('button', { name: 'Trigger Active Scan Close' }));
-    expect(screen.getByText('Aktif Tarama Devam Ediyor - Çıkış Onayı')).toBeInTheDocument();
+    expect(screen.getByText('Aktif Tarama Devam Ediyor')).toBeInTheDocument();
     expect(screen.getByText('8-A LGS Deneme Sınavı (50 form)')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Taramayı Durdur ve Çık/i })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /Vazgeç \(Taramaya Devam Et\)/i }));
+    fireEvent.click(screen.getByTestId('close-action-cancel'));
 
     // 2. Idle Exit Confirmation
     fireEvent.click(screen.getByRole('button', { name: 'Trigger Idle Close' }));

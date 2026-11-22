@@ -10,17 +10,19 @@ import {
 } from 'react';
 import {
   AlertTriangle,
+  ArrowDownToLine,
   CheckCircle2,
+  ChevronRight,
   Copy,
   ExternalLink,
   Info,
-  LogOut,
-  Minimize2,
+  Power,
   X,
   XCircle,
 } from 'lucide-react';
 import { APP_VERSION } from '../brand/vellium';
 import { OnboardingModal } from '../components/OnboardingModal';
+import { ProductMark } from '../components/Brand';
 import { useI18n } from '../i18n/I18nContext';
 import {
   forceExitDesktopApp,
@@ -694,125 +696,147 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
         </div>
       )}
 
-      {/* Exit / Active Scan Close Confirmation Modal */}
+      {/* Exit / Active Scan Close Confirmation Modal (1:1 Clean Two-Row Action List) */}
       {exitModalOpen && (
         <div
           id="modal-confirm-exit"
+          data-testid="close-action-modal"
           className="pp-modal-backdrop"
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-confirm-exit-title"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setExitModalOpen(false);
+          }}
         >
-          <div className="pp-modal-panel pp-modal-panel-md">
-            <div className="pp-modal-header">
-              <div className="pp-modal-title-row">
-                <span
-                  className={`pp-modal-icon ${isScanningActive ? 'pp-modal-icon--warning' : ''}`}
-                  aria-hidden="true"
-                >
-                  {isScanningActive ? <AlertTriangle size={17} /> : <LogOut size={17} />}
-                </span>
-                <h3 id="modal-confirm-exit-title" className="pp-modal-title">
-                  {isScanningActive
-                    ? isTr
-                      ? 'Aktif Tarama Devam Ediyor - Çıkış Onayı'
-                      : 'Active Scan Running - Exit Confirmation'
-                    : isTr
-                      ? 'Uygulamadan Çıkış'
-                      : 'Exit Application'}
-                </h3>
+          <div className="agm-close-card">
+            {/* Clean Borderless Header */}
+            <div className="agm-close-head">
+              <div className="agm-close-head-left">
+                {isScanningActive ? (
+                  <span className="agm-close-warn-mark" aria-hidden="true">
+                    <AlertTriangle size={16} />
+                  </span>
+                ) : (
+                  <ProductMark className="agm-close-brand-mark" />
+                )}
+                <div className="agm-close-head-copy">
+                  <h2 id="modal-confirm-exit-title" className="agm-close-title">
+                    {isScanningActive
+                      ? isTr
+                        ? 'Aktif Tarama Devam Ediyor'
+                        : 'Active Scan Running'
+                      : isTr
+                        ? 'Uygulamadan Çıkış'
+                        : 'Exit Application'}
+                  </h2>
+                  <p className="agm-close-desc">
+                    {isScanningActive
+                      ? isTr
+                        ? 'Tarama devam ederken nasıl devam etmek istersiniz?'
+                        : 'How would you like to proceed while scanning is active?'
+                      : isTr
+                        ? 'Pencere kapatıldığında ne yapılsın?'
+                        : 'What should happen when closing the window?'}
+                  </p>
+                </div>
               </div>
               <button
                 type="button"
-                className="pp-modal-close"
+                className="agm-close-x-btn"
                 onClick={() => setExitModalOpen(false)}
-                aria-label={isTr ? 'Kapat' : 'Close'}
+                aria-label={isTr ? 'Vazgeç' : 'Cancel'}
               >
-                <X size={17} />
+                <X size={16} />
               </button>
             </div>
 
-            <div className="pp-modal-body">
-              {isScanningActive ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <p style={{ margin: 0 }}>
-                    {isTr
-                      ? 'Şu anda optik form okuma ve değerlendirme işlemi devam ediyor. Uygulamadan tamamen çıkarsanız aktif işlem durdurulur (şimdiye kadar tamamlanan öğrenci sonuçları cihazınızda güvenle korunur).'
-                      : 'An optical form scan and grading session is currently running. Exiting the application will stop the active queue (all student results completed so far remain safely stored on your device).'}
-                  </p>
-                  {scanningLabel && (
-                    <div className="pp-url-pill" style={{ fontWeight: 600 }}>
-                      {scanningLabel}
-                    </div>
-                  )}
-                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>
-                    {isTr
-                      ? 'İsterseniz uygulamayı sistem tepsisine küçülterek taramanın arka planda kesintisiz devam etmesini sağlayabilirsiniz.'
-                      : 'You can minimize the window to the system tray to let scanning continue uninterrupted in the background.'}
-                  </p>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <p style={{ margin: 0 }}>
-                    {isTr
-                      ? 'Optik Form Okuyucu kapatılsın mı, yoksa sistem tepsisine küçültülerek arka planda hazır mı bekletilsin?'
-                      : 'Would you like to close Optical Form Reader completely or minimize it to the Windows system tray?'}
-                  </p>
-                  <label className="pp-checkbox-row">
-                    <input
-                      type="checkbox"
-                      checked={rememberExitChoice}
-                      onChange={(e) => setRememberExitChoice(e.target.checked)}
-                    />
-                    <span>
-                      {isTr
-                        ? 'Seçimimi hatırla (Ayarlar -> Genel bölümünden istediğiniz zaman değiştirebilirsiniz)'
-                        : 'Remember my choice (can be changed anytime in Settings -> General)'}
-                    </span>
-                  </label>
-                </div>
-              )}
-            </div>
+            {isScanningActive && scanningLabel && (
+              <div className="pp-url-pill" style={{ marginTop: 12, fontWeight: 600 }}>
+                {scanningLabel}
+              </div>
+            )}
 
-            <div className="pp-modal-footer" style={{ flexWrap: 'wrap' }}>
+            {/* Unified Balanced Two-Row Action List (Single Clean Container) */}
+            <div className="agm-close-action-list">
               <button
                 type="button"
-                className="pp-btn-secondary"
-                onClick={() => setExitModalOpen(false)}
-              >
-                {isScanningActive
-                  ? isTr
-                    ? 'Vazgeç (Taramaya Devam Et)'
-                    : 'Cancel (Continue Scanning)'
-                  : isTr
-                    ? 'Vazgeç'
-                    : 'Cancel'}
-              </button>
-              <button
-                type="button"
-                className="pp-btn-secondary"
+                data-testid="close-action-tray"
+                className="agm-close-action-row is-tray"
                 onClick={() => void handleMinimizeToTrayFromModal()}
               >
-                <Minimize2 size={14} />
-                <span>
-                  {isTr ? 'Sistem Tepsisine Küçült' : 'Minimize to System Tray'}
+                <ArrowDownToLine size={16} className="agm-close-row-icon is-accent" />
+                <span className="agm-close-row-copy">
+                  <span className="agm-close-row-title">
+                    {isTr ? 'Sistem Tepsisine Küçült' : 'Minimize to System Tray'}
+                  </span>
+                  <span className="agm-close-row-desc">
+                    {isScanningActive
+                      ? isTr
+                        ? 'Tarama arka planda kesintisiz devam eder'
+                        : 'Scanning continues uninterrupted in the background'
+                      : isTr
+                        ? 'Arka planda hazır beklet, hızlı erişim sağla'
+                        : 'Keep ready in the background for quick access'}
+                  </span>
                 </span>
+                <ChevronRight size={16} className="agm-close-row-chevron" />
               </button>
+
               <button
                 type="button"
-                className={isScanningActive ? 'pp-btn-danger' : 'pp-btn-primary'}
+                data-testid="close-action-quit"
+                className="agm-close-action-row is-quit"
                 onClick={() => void handleQuitFromModal()}
               >
-                <LogOut size={14} />
-                <span>
-                  {isScanningActive
-                    ? isTr
-                      ? 'Taramayı Durdur ve Çık'
-                      : 'Stop Scan & Quit'
-                    : isTr
-                      ? 'Uygulamayı Kapat'
-                      : 'Quit Application'}
+                <Power size={16} className="agm-close-row-icon is-danger" />
+                <span className="agm-close-row-copy">
+                  <span className="agm-close-row-title">
+                    {isScanningActive
+                      ? isTr
+                        ? 'Taramayı Durdur ve Çık'
+                        : 'Stop Scan & Quit'
+                      : isTr
+                        ? 'Uygulamayı Kapat'
+                        : 'Quit Application'}
+                  </span>
+                  <span className="agm-close-row-desc">
+                    {isScanningActive
+                      ? isTr
+                        ? 'Aktif kuyruğu durdur (tamamlanan sonuçlar korunur)'
+                        : 'Stop active queue (completed results stay saved)'
+                      : isTr
+                        ? 'Optik Form Okuyucu oturumunu tamamen sonlandır'
+                        : 'Close Optical Form Reader completely'}
+                  </span>
                 </span>
+                <ChevronRight size={16} className="agm-close-row-chevron" />
+              </button>
+            </div>
+
+            {/* Borderless Inline Remember Preference + Minimal Cancel Action */}
+            <div className="agm-close-footer">
+              {!isScanningActive ? (
+                <label className="agm-close-remember">
+                  <input
+                    type="checkbox"
+                    data-testid="close-action-remember"
+                    checked={rememberExitChoice}
+                    onChange={(e) => setRememberExitChoice(e.target.checked)}
+                  />
+                  <span>{isTr ? 'Seçimimi hatırla' : 'Remember my choice'}</span>
+                </label>
+              ) : (
+                <span />
+              )}
+
+              <button
+                type="button"
+                data-testid="close-action-cancel"
+                className="agm-close-cancel-btn"
+                onClick={() => setExitModalOpen(false)}
+              >
+                {isTr ? 'Vazgeç' : 'Cancel'}
               </button>
             </div>
           </div>

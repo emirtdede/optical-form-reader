@@ -36,31 +36,31 @@ export const CLOUD_PROVIDERS: ReadonlyArray<{
     id: 'onedrive',
     labelTr: 'OneDrive',
     labelEn: 'OneDrive',
-    defaultSubfolder: 'C:\\Users\\User\\OneDrive\\OpticalFormReader',
+    defaultSubfolder: '%USERPROFILE%\\OneDrive\\OpticalFormReader',
   },
   {
     id: 'gdrive',
     labelTr: 'Google Drive',
     labelEn: 'Google Drive',
-    defaultSubfolder: 'C:\\Users\\User\\Google Drive\\OpticalFormReader',
+    defaultSubfolder: '%USERPROFILE%\\Google Drive\\OpticalFormReader',
   },
   {
     id: 'icloud',
     labelTr: 'iCloud Drive',
     labelEn: 'iCloud Drive',
-    defaultSubfolder: 'C:\\Users\\User\\iCloudDrive\\OpticalFormReader',
+    defaultSubfolder: '%USERPROFILE%\\iCloudDrive\\OpticalFormReader',
   },
   {
     id: 'dropbox',
     labelTr: 'Dropbox',
     labelEn: 'Dropbox',
-    defaultSubfolder: 'C:\\Users\\User\\Dropbox\\OpticalFormReader',
+    defaultSubfolder: '%USERPROFILE%\\Dropbox\\OpticalFormReader',
   },
   {
     id: 'custom',
     labelTr: 'Özel Klasör',
     labelEn: 'Custom Folder',
-    defaultSubfolder: 'C:\\Users\\User\\Documents\\OpticalFormReader-CloudBackup',
+    defaultSubfolder: '%USERPROFILE%\\Documents\\OpticalFormReader-CloudBackup',
   },
 ] as const;
 
