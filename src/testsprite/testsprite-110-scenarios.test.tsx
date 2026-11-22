@@ -18,12 +18,17 @@ import { getLegalDocuments } from '../i18n/legal';
 import { EN_DICTIONARY } from '../i18n/locales/en';
 import { TR_DICTIONARY } from '../i18n/locales/tr';
 import { AboutPage } from '../pages/AboutPage';
+import { AiAssistantPage } from '../pages/AiAssistantPage';
 import { GuidePage } from '../pages/GuidePage';
+import { IntegrationsPage } from '../pages/IntegrationsPage';
 import { ResultsPage } from '../pages/ResultsPage';
 import { ScannerPage } from '../pages/ScannerPage';
 import { SettingsPage } from '../pages/SettingsPage';
 import { TemplatesPage } from '../pages/TemplatesPage';
 import { isNewerVersion, parseSemver } from '../platform/updates';
+import { CLOUD_PROVIDERS } from '../services/cloudSyncService';
+import { LOCAL_AI_MODELS } from '../services/localAiService';
+import { executeAiAssistantPrompt, searchDocsBm25 } from '../services/ragKnowledgeBase';
 import {
   APP_ICON_VARIANTS,
   buildCustomColorTheme,
@@ -86,7 +91,7 @@ describe('TestSprite Master Suite - 110 Ruthless End-User Scenarios (TS-001 .. T
     cleanup();
   });
 
-  it('Category A (TS-001..TS-008): Sequential 6-Step Onboarding (Language -> Theme -> Icon -> Welcome -> Workflow -> Ready) & Test Data Purge', () => {
+  it('Category A (TS-001..TS-008): Agendamea-Parity 7-Step Onboarding (Language -> Theme -> Icon -> Welcome Hero -> 4 Modules -> Shortcuts -> Privacy & Cloud Sync) & Test Data Purge', () => {
     const mockSess = { id: 'sess-b1', title: 'Mock Session' } as ExamSession;
     const realSess = { id: '2026-yks-deneme-1', title: '12. Sınıf YKS Genel Deneme' } as ExamSession;
     expect(isTestOrSeedSession(mockSess)).toBe(true);
@@ -98,12 +103,12 @@ describe('TestSprite Master Suite - 110 Ruthless End-User Scenarios (TS-001 .. T
 
     expect(screen.getByTestId('onboarding-modal')).toBeInTheDocument();
 
-    // Step 1: Language Selection
+    // Step 1 / 7: Language Selection
     expect(screen.getByTestId('onboarding-step-1')).toBeInTheDocument();
     fireEvent.change(screen.getByTestId('onboarding-lang-search'), { target: { value: 'Türkçe' } });
     fireEvent.click(screen.getByTestId('onboarding-lang-tr'));
 
-    // Step 2: Theme, Custom HEX, Zoom & High Contrast
+    // Step 2 / 7: Theme, Custom HEX Spectrum, Zoom & High Contrast
     fireEvent.click(screen.getByRole('button', { name: /İleri/i }));
     expect(screen.getByTestId('onboarding-step-2')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Geri/i }));
@@ -114,28 +119,32 @@ describe('TestSprite Master Suite - 110 Ruthless End-User Scenarios (TS-001 .. T
     fireEvent.click(screen.getByRole('button', { name: '%125' }));
     expect(document.documentElement.dataset.uiScale).toBe('125');
 
-    // Step 3: App Icon Picker
+    // Step 3 / 7: App Icon Picker + Custom Icon Spectrum
     fireEvent.click(screen.getByRole('button', { name: /İleri/i }));
     expect(screen.getByTestId('onboarding-step-3')).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('onboarding-icon-theme-custom'));
     expect(document.documentElement.dataset.appIcon).toBe('theme-custom');
 
-    // Step 4: Welcome & 3 Feature Cards
+    // Step 4 / 7: Welcome Hero & 3 Feature Pillars
     fireEvent.click(screen.getByRole('button', { name: /İleri/i }));
     expect(screen.getByTestId('onboarding-step-4')).toBeInTheDocument();
 
-    // Step 5: 3-Step Optical Workflow
+    // Step 5 / 7: 4 Core Modules (2x2 Grid)
     fireEvent.click(screen.getByRole('button', { name: /İleri/i }));
     expect(screen.getByTestId('onboarding-step-5')).toBeInTheDocument();
 
-    // Step 6: Ready & Quick Start
+    // Step 6 / 7: Smart Grading Preview & Keyboard Shortcuts
     fireEvent.click(screen.getByRole('button', { name: /İleri/i }));
     expect(screen.getByTestId('onboarding-step-6')).toBeInTheDocument();
+
+    // Step 7 / 7: Privacy, Multi-Cloud Sync & Recovery
+    fireEvent.click(screen.getByRole('button', { name: /İleri/i }));
+    expect(screen.getByTestId('onboarding-step-7')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Form Taramaya Başla/i }));
     expect(closed).toBe(true);
   });
 
-  it('Category B (TS-009..TS-016): Desktop Shell, 1st Sidebar, Collapse, GitHub/Sponsor Parity & Zero Long-Dash', () => {
+  it('Category B (TS-009..TS-016): Desktop Shell, 1st Sidebar (8 Top-Level Items), Collapse, GitHub/Sponsor Parity & Zero Long-Dash', () => {
     const { container } = renderInApp(
       <DesktopShell>
         <div data-testid="workspace-child">Active View</div>
@@ -147,6 +156,8 @@ describe('TestSprite Master Suite - 110 Ruthless End-User Scenarios (TS-001 .. T
     expect(screen.getByRole('link', { name: 'Form Tara' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Şablonlar' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Sonuçlar' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'AI Asistan' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Entegrasyonlar' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Dokümantasyon' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Ayarlar' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Hakkında' })).toBeInTheDocument();
@@ -312,12 +323,54 @@ describe('TestSprite Master Suite - 110 Ruthless End-User Scenarios (TS-001 .. T
     expect(DEFAULT_SHORTCUTS.theme).toBe('Ctrl+T');
 
     fireEvent.click(screen.getByRole('button', { name: 'Veri ve Yedekleme' }));
+    expect(screen.getByTestId('cloud-sync-panel')).toBeInTheDocument();
+    for (const p of CLOUD_PROVIDERS) {
+      expect(screen.getByTestId(`cloud-provider-${p.id}`)).toBeInTheDocument();
+    }
+    fireEvent.click(screen.getByTestId('cloud-provider-gdrive'));
+    expect(screen.getByTestId('cloud-sync-path')).toHaveTextContent('Google Drive');
     fireEvent.click(screen.getByRole('button', { name: /Varsayılana Dön/i }));
     expect(screen.getByText(/Varsayılan ayarlara dönülsün mü/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Vazgeç/i }));
 
     fireEvent.click(screen.getByRole('button', { name: 'Tanılama ve Destek' }));
     expect(screen.getByRole('button', { name: /Destek Paketi Oluştur/i })).toBeInTheDocument();
+  });
+
+  it('Category M (Power Pilot 1:1 Parity): Local AI Models Lifecycle, Offline BM25 RAG Assistant & Integrations (REST API, Webhooks, MCP, CLI)', () => {
+    expect(LOCAL_AI_MODELS.length).toBe(4);
+    const ragCitations = searchDocsBm25('yazıcı %100 ölçek gerçek boyut', 'tr', 3);
+    expect(ragCitations.length).toBeGreaterThan(0);
+    expect(ragCitations[0].sectionId).toBe('templates');
+
+    const tplIntent = executeAiAssistantPrompt('60 soruluk 5 şıklı özel şablon oluştur', [], 'tr');
+    expect(tplIntent.intent).toBe('create-template');
+    expect(tplIntent.answerTitle).toContain('60');
+
+    // Render AI Assistant Page
+    renderInApp(<AiAssistantPage />, '/asistan');
+    expect(screen.getByTestId('ai-rag-prompt-input')).toBeInTheDocument();
+    expect(screen.getByTestId('ai-rag-response-card')).toBeInTheDocument();
+    for (const m of LOCAL_AI_MODELS) {
+      expect(screen.getByTestId(`ai-model-card-${m.id}`)).toBeInTheDocument();
+    }
+    cleanup();
+
+    // Render Integrations Page (2nd Sidebar: REST API, Webhooks, MCP, CLI)
+    renderInApp(<IntegrationsPage />, '/entegrasyonlar');
+    expect(screen.getByTestId('generate-api-key-btn')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('generate-api-key-btn'));
+    expect(screen.getByTestId('generated-api-secret-box')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('integrations-nav-webhooks'));
+    expect(screen.getByTestId('add-webhook-btn')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('integrations-nav-mcp'));
+    expect(screen.getByTestId('mcp-config-json')).toHaveTextContent('optical-form-reader');
+
+    fireEvent.click(screen.getByTestId('integrations-nav-cli'));
+    fireEvent.click(screen.getByTestId('run-cli-preview-btn'));
+    expect(screen.getByTestId('cli-output-preview')).toHaveTextContent('ofr-cli');
   });
 
   it('Category J & K & L (TS-091..TS-110): AboutPage, 9 Legal Docs, 6 Emails, WCAG Contrast & Dual-Channel Updates', () => {

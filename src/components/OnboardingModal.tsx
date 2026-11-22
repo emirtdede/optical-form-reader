@@ -1,63 +1,98 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  ArrowLeft,
   ArrowRight,
-  BookOpen,
-  Camera,
+  BarChart3,
+  Bot,
   Check,
-  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Cloud,
   Cpu,
   Eye,
-  FileSpreadsheet,
   Globe,
-  LayoutGrid,
+  Hash,
+  LayoutTemplate,
+  Monitor,
   Moon,
   Palette,
-  Plus,
-  Rocket,
+  RotateCcw,
   ScanLine,
   Search,
+  Shield,
   ShieldCheck,
   Sun,
+  WifiOff,
   X,
+  Zap,
   ZoomIn,
 } from 'lucide-react';
 import { APP_VERSION, VELLIUM_BRAND } from '../brand/vellium';
 import { useI18n } from '../i18n/I18nContext';
 import type { LanguageCode } from '../i18n/languages';
 import {
-  buildCustomColorTheme,
+  COLOR_THEMES,
   CUSTOM_THEME_ID,
-  CUSTOM_THEME_PRESETS,
-  normalizeHexColor,
+  getContrastingForeground,
+  resolveEffectiveThemeMode,
   type AppIconVariant,
+  type BuiltInThemeId,
 } from '../theme/themes';
 import { useThemeContext } from '../theme/ThemeContext';
 import { ProductMark } from './Brand';
+import { ColorSpectrumPicker } from './ColorSpectrumPicker';
 
 export interface OnboardingModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const TOTAL_STEPS = 6;
+export const TOTAL_ONBOARDING_STEPS = 7;
+
+const FEATURED_THEME_IDS: readonly BuiltInThemeId[] = [
+  'obsidian',
+  'blue',
+  'emerald',
+  'cyan',
+  'indigo',
+  'purple',
+  'pink',
+  'red',
+  'orange',
+  'yellow',
+];
+
+const FEATURED_ICON_THEMES: ReadonlyArray<{ themeId: BuiltInThemeId; iconVariant: AppIconVariant }> = [
+  { themeId: 'slate', iconVariant: 'theme-slate' },
+  { themeId: 'blue', iconVariant: 'theme-blue' },
+  { themeId: 'emerald', iconVariant: 'theme-emerald' },
+  { themeId: 'cyan', iconVariant: 'theme-cyan' },
+  { themeId: 'indigo', iconVariant: 'theme-indigo' },
+  { themeId: 'purple', iconVariant: 'theme-purple' },
+  { themeId: 'pink', iconVariant: 'theme-pink' },
+  { themeId: 'red', iconVariant: 'theme-red' },
+  { themeId: 'orange', iconVariant: 'theme-orange' },
+  { themeId: 'yellow', iconVariant: 'theme-yellow' },
+];
+
 const ONBOARDING_ZOOM_OPTIONS = [90, 100, 110, 125] as const;
 
 export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
   const navigate = useNavigate();
-  const { lang, t, languages, setLanguage, getThemeName } = useI18n();
+  const { lang, meta, t, languages, setLanguage, getThemeName } = useI18n();
   const {
     mode,
     themeId,
     customAccent,
+    customIconAccent,
     appIconVariant,
     uiScale,
     highContrast,
-    themes,
     setMode,
     setThemeId,
     setCustomAccent,
+    setCustomIconAccent,
     setAppIconVariant,
     setUiScale,
     setHighContrast,
@@ -66,8 +101,6 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
   const isTr = lang === 'tr';
   const [step, setStep] = useState(0);
   const [langQuery, setLangQuery] = useState('');
-  const [hexDraft, setHexDraft] = useState(customAccent);
-  const [invalidHex, setInvalidHex] = useState(false);
 
   const filteredLanguages = useMemo(() => {
     const q = langQuery.trim().toLowerCase();
@@ -80,718 +113,809 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
     );
   }, [langQuery, languages]);
 
-  const customContrast = useMemo(() => {
-    const built = buildCustomColorTheme(customAccent);
-    return mode === 'dark' ? built.contrastDark : built.contrastLight;
-  }, [customAccent, mode]);
-
-  const iconOptions = useMemo<Array<{ id: AppIconVariant; label: string }>>(
-    () => [
-      { id: 'theme-auto', label: isTr ? 'Tema ile Otomatik' : 'Auto Match Theme' },
-      { id: 'monochrome-dark', label: t.settingsModal.appIconMonochromeDark },
-      { id: 'monochrome-light', label: t.settingsModal.appIconMonochromeLight },
-      { id: 'monochrome-contrast', label: t.settingsModal.appIconMonochromeContrast },
-      { id: 'theme-slate', label: isTr ? 'Gri (Slate)' : 'Slate' },
-      { id: 'theme-navy', label: isTr ? 'Lacivert (Navy)' : 'Navy' },
-      { id: 'theme-blue', label: isTr ? 'Mavi (Blue)' : 'Blue' },
-      { id: 'theme-cyan', label: isTr ? 'Turkuaz (Cyan)' : 'Cyan' },
-      { id: 'theme-indigo', label: isTr ? 'İndigo' : 'Indigo' },
-      { id: 'theme-purple', label: isTr ? 'Mor (Purple)' : 'Purple' },
-      { id: 'theme-pink', label: isTr ? 'Pembe (Pink)' : 'Pink' },
-      { id: 'theme-red', label: isTr ? 'Kırmızı (Red)' : 'Red' },
-      { id: 'theme-orange', label: isTr ? 'Turuncu (Orange)' : 'Orange' },
-      { id: 'theme-yellow', label: isTr ? 'Sarı (Yellow)' : 'Yellow' },
-      { id: 'theme-emerald', label: isTr ? 'Zümrüt (Emerald)' : 'Emerald' },
-      { id: 'theme-grass', label: isTr ? 'Çimen Yeşili' : 'Forest' },
-      { id: 'theme-lime', label: isTr ? 'Açık Yeşil (Lime)' : 'Lime' },
-      {
-        id: 'theme-custom',
-        label: isTr ? `Özel (${customAccent})` : `Custom (${customAccent})`,
-      },
-    ],
-    [customAccent, isTr, t.settingsModal],
+  const featuredThemes = useMemo(
+    () =>
+      FEATURED_THEME_IDS.map((id) => COLOR_THEMES.find((item) => item.id === id)).filter(
+        (item): item is (typeof COLOR_THEMES)[number] => Boolean(item),
+      ),
+    [],
   );
-
-  if (!isOpen) return null;
 
   const handleFinish = (targetPath?: string) => {
     setStep(0);
     setLangQuery('');
-    setInvalidHex(false);
     onClose();
     if (targetPath) {
       navigate(targetPath);
     }
   };
 
-  const isCustomTheme = themeId === CUSTOM_THEME_ID;
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isInput =
+        target?.tagName === 'INPUT' ||
+        target?.tagName === 'TEXTAREA' ||
+        target?.tagName === 'SELECT';
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        handleFinish();
+        return;
+      }
+      if (isInput) return;
+
+      const forwardKey = meta.dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
+      const backKey = meta.dir === 'rtl' ? 'ArrowRight' : 'ArrowLeft';
+
+      if (e.key === forwardKey) {
+        e.preventDefault();
+        setStep((prev) => (prev < TOTAL_ONBOARDING_STEPS - 1 ? prev + 1 : prev));
+      } else if (e.key === backKey) {
+        e.preventDefault();
+        setStep((prev) => (prev > 0 ? prev - 1 : prev));
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  });
+
+  if (!isOpen) return null;
+
+  const effectiveMode = resolveEffectiveThemeMode(mode);
+  const isFirst = step === 0;
+  const isLast = step === TOTAL_ONBOARDING_STEPS - 1;
+
+  const slideCopy = [
+    {
+      title: isTr ? 'Uygulama Dili' : 'Application Language',
+      desc: isTr
+        ? 'Başlamadan önce tercih ettiğiniz arayüz dilini seçin. 73 dil desteklenir ve seçim anında uygulanır.'
+        : 'Choose your preferred interface language before starting. 73 locales are supported and applied immediately.',
+    },
+    {
+      title: isTr ? 'Renk Teması ve Görünüm' : 'Color Theme & Appearance',
+      desc: isTr
+        ? 'Açık, koyu veya sistem modunu seçin; 14 hazır temadan birini veya 2B renk spektrumuyla özel HEX renginizi belirleyin.'
+        : 'Select light, dark, or system mode; pick a preset theme or any custom HEX accent from the 2D color spectrum.',
+    },
+    {
+      title: t.settingsModal.appIconTitle,
+      desc: isTr
+        ? 'Seçtiğiniz ikon; uygulama logosunu, pencere başlığını, Görev Çubuğunu, Sistem Tepsisini ve Masaüstü kısayolunu (.lnk) günceller.'
+        : 'Updates the in-app brand mark, window title icon, Windows Taskbar, System Tray, and Desktop shortcut (.lnk) in real time.',
+    },
+    {
+      title: isTr
+        ? 'Yerel Optik Değerlendirme Stüdyosuna Hoş Geldiniz'
+        : 'Welcome to the Local-First Optical Grading Studio',
+      desc: isTr
+        ? '10 ile 160 soru arasındaki optik cevap kağıtlarını sunucuya tek bayt göndermeden doğrudan bilgisayarınızda okuyun.'
+        : 'Grade and analyze 10 to 160 question optical answer sheets directly on your computer without external cloud uploads.',
+    },
+    {
+      title: isTr ? '4 Temel Değerlendirme ve Yapay Zeka Modülü' : '4 Core Grading & Local AI Modules',
+      desc: isTr
+        ? 'Görüntü işleme, vektörel form tasarımı, akademik psikometri ve yerel RAG doküman asistanı tek çatı altında.'
+        : 'Computer vision OMR, vector form design, psychometric analytics, and local RAG assistant under one roof.',
+    },
+    {
+      title: isTr ? 'Akıllı Okuma Detayları ve Klavye Kısayolları' : 'Smart Grading Details & Keyboard Shortcuts',
+      desc: isTr
+        ? 'Çoklu kitapçık, şüpheli baloncuk denetimi, e-Okul sınıf listesi eşleştirme ve hızlı klavye navigasyonu.'
+        : 'Multi-booklet keys, flagged bubble verification, fuzzy roster matching, and instant keyboard navigation.',
+    },
+    {
+      title: isTr ? 'Gizlilik, Çoklu Bulut Yedekleme ve Kurtarma' : 'Privacy, Multi-Cloud Backup & Recovery',
+      desc: isTr
+        ? 'Verileriniz yerel IndexedDB üzerinde kalır; dilerseniz kendi OneDrive, Google Drive, iCloud veya Dropbox klasörünüzle eşitleyin.'
+        : 'Your records stay in local IndexedDB; optionally sync encrypted backups with OneDrive, Google Drive, iCloud, or Dropbox.',
+    },
+  ][step];
 
   return (
     <div
       id="modal-onboarding"
       data-testid="onboarding-modal"
-      className="pp-modal-backdrop"
       role="dialog"
       aria-modal="true"
       aria-labelledby="onboarding-modal-title"
+      className="pp-modal-backdrop agm-welcome-backdrop"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) {
+          handleFinish();
+        }
+      }}
     >
-      <div className="pp-modal-panel pp-onboarding-panel">
-        {/* Header */}
-        <div className="pp-modal-header">
-          <div className="pp-modal-title-row">
+      {/* Strictly Fixed 700x560 Welcome Dialog */}
+      <div className="agm-welcome-dialog" data-testid="welcome-modal">
+        {/* Top Bar (Fixed 48px) */}
+        <div className="agm-welcome-topbar">
+          <div className="agm-welcome-topbar-left">
             <ProductMark
               variant={appIconVariant}
               activeThemeId={themeId}
               mode={mode}
               customAccent={customAccent}
-              className="pp-onboarding-header-logo"
+              customIconAccent={customIconAccent}
+              className="agm-welcome-brand-icon"
             />
-            <h3 id="onboarding-modal-title" className="pp-modal-title">
-              {isTr ? 'Optik Form Okuyucu - Karşılama Rehberi' : 'Optical Form Reader - Welcome Guide'}
-            </h3>
-            <span className="pp-onboarding-step-pill">
-              {isTr ? `Adım ${step + 1} / ${TOTAL_STEPS}` : `Step ${step + 1} of ${TOTAL_STEPS}`}
+            <span className="agm-welcome-brand-title">{t.meta.productName}</span>
+            <span className="agm-welcome-step-pill pp-onboarding-step-pill">
+              {step + 1} / {TOTAL_ONBOARDING_STEPS}
             </span>
           </div>
+
           <button
             type="button"
             className="pp-modal-close"
             onClick={() => handleFinish()}
             aria-label={isTr ? 'Kapat' : 'Close'}
           >
-            <X size={17} />
+            <X size={16} />
           </button>
         </div>
 
-        {/* Body */}
-        <div className="pp-modal-body pp-onboarding-body">
-          {/* 6-bar Step Progress */}
-          <div className="pp-onboarding-progress" aria-hidden="true">
-            {Array.from({ length: TOTAL_STEPS }, (_, idx) => (
+        {/* 7-Segment Horizontal Progress Bar (Fixed 16px) */}
+        <div
+          className="agm-welcome-progress"
+          role="tablist"
+          aria-label={t.meta.productName}
+        >
+          {Array.from({ length: TOTAL_ONBOARDING_STEPS }).map((_, idx) => {
+            const active = idx === step;
+            const completed = idx < step;
+            return (
               <button
                 key={idx}
                 type="button"
-                className={`pp-onboarding-progress-bar ${idx <= step ? 'is-active' : ''}`}
+                role="tab"
+                aria-selected={active}
+                aria-label={`${idx + 1} / ${TOTAL_ONBOARDING_STEPS}`}
                 onClick={() => setStep(idx)}
-                tabIndex={-1}
+                className={`agm-welcome-progress-seg ${active ? 'is-active' : completed ? 'is-completed' : ''}`}
               />
-            ))}
-          </div>
+            );
+          })}
+        </div>
 
-          {/* STEP 1: LANGUAGE SELECTION */}
-          {step === 0 && (
-            <div className="pp-onboarding-step" data-testid="onboarding-step-1">
-              <div className="pp-onboarding-hero pp-onboarding-hero--compact">
-                <div className="pp-onboarding-hero-mark pp-onboarding-hero-mark--ready" aria-hidden="true">
-                  <Globe size={25} />
+        {/* Fixed-Height Content Area (438px) */}
+        <div key={step} className="agm-welcome-content">
+          {/* STEP 1 / 7: CENTERED GLOBE HERO + SEARCH & SELECTED READOUT + 3-COLUMN 73-LANGUAGE GRID */}
+          {step === 0 ? (
+            <div className="agm-welcome-step1" data-testid="onboarding-step-1">
+              <div className="agm-welcome-step1-hero">
+                <div className="agm-welcome-globe-box" aria-hidden="true">
+                  <Globe size={20} />
                 </div>
-                <h2 className="pp-onboarding-heading">
-                  {isTr ? 'Uygulama Dili' : 'Application Language'}
+                <h2 id="onboarding-modal-title" className="agm-welcome-step1-title">
+                  {slideCopy.title}
                 </h2>
-                <p className="pp-onboarding-lead">
-                  {isTr
-                    ? 'Başlamadan önce tercih ettiğiniz arayüz dilini seçin. 73 dil desteklenir ve seçim anında uygulanır.'
-                    : 'Choose your preferred interface language before starting. 73 locales are supported and applied immediately.'}
-                </p>
+                <p className="agm-welcome-step1-desc">{slideCopy.desc}</p>
               </div>
 
-              <div className="pp-onboarding-lang-toolbar">
-                <div className="pp-onboarding-lang-search-wrap">
-                  <Search size={14} className="pp-onboarding-lang-search-icon" aria-hidden="true" />
+              {/* Search Input (Cols 1-2) + Selected Language Display (Col 3) */}
+              <div className="agm-welcome-lang-bar">
+                <div className="agm-welcome-lang-search-box">
+                  <Search size={14} className="agm-welcome-lang-search-icon" aria-hidden="true" />
                   <input
                     type="search"
                     data-testid="onboarding-lang-search"
-                    className="pp-onboarding-lang-search"
                     value={langQuery}
                     onChange={(e) => setLangQuery(e.target.value)}
-                    placeholder={
-                      isTr
-                        ? 'Dil ara (örn. Türkçe, English, Deutsch)...'
-                        : 'Search language (e.g. English, Türkçe, Deutsch)...'
-                    }
-                    aria-label={isTr ? 'Dil ara' : 'Search language'}
+                    placeholder={t.settingsModal.languageSearchPlaceholder}
+                    aria-label={t.settingsModal.languageSearchPlaceholder}
+                    className="agm-welcome-lang-search-input"
                   />
                 </div>
-                <select
-                  className="pp-select pp-select-compact"
-                  value={lang}
-                  aria-label={isTr ? 'Arayüz Dili' : 'Interface Language'}
-                  onChange={(e) => setLanguage(e.target.value as LanguageCode)}
+
+                <div
+                  data-testid="welcome-selected-language"
+                  aria-live="polite"
+                  className="agm-welcome-selected-lang-pill"
                 >
-                  {languages.map((item) => (
-                    <option key={item.code} value={item.code}>
-                      {item.nativeName}
-                    </option>
-                  ))}
-                </select>
+                  <span className="agm-welcome-lang-tile-left">
+                    <span className="agm-welcome-lang-native">{meta.nativeName}</span>
+                    <span className="agm-welcome-lang-code">{meta.code}</span>
+                  </span>
+                  <Check size={14} className="agm-welcome-accent-check" />
+                </div>
               </div>
 
+              {/* 3-Column x 5-Row Scrollable Language Tile Grid (All 73 Languages) */}
               <div
-                className="pp-onboarding-lang-grid"
                 role="listbox"
-                aria-label={isTr ? 'Desteklenen diller' : 'Supported languages'}
+                aria-label={t.settingsModal.languageSectionTitle}
+                data-testid="welcome-language-listbox"
+                className="agm-welcome-lang-grid"
               >
                 {filteredLanguages.map((item) => {
-                  const isSelected = lang === item.code;
+                  const selected = item.code === lang;
                   return (
                     <button
                       key={item.code}
                       type="button"
                       role="option"
-                      aria-selected={isSelected}
+                      aria-selected={selected}
                       data-testid={`onboarding-lang-${item.code}`}
-                      className={`pp-onboarding-lang-option ${isSelected ? 'is-active' : ''}`}
-                      onClick={() => setLanguage(item.code)}
+                      onClick={() => setLanguage(item.code as LanguageCode)}
+                      className={`agm-welcome-lang-tile ${selected ? 'is-selected' : ''}`}
                     >
-                      <span className="pp-onboarding-lang-copy">
-                        <span className="pp-onboarding-lang-native">{item.nativeName}</span>
-                        <span className="pp-onboarding-lang-code">{item.code.toUpperCase()}</span>
+                      <span className="agm-welcome-lang-tile-left">
+                        <span className="agm-welcome-lang-native">{item.nativeName}</span>
+                        <span className="agm-welcome-lang-code">{item.code}</span>
                       </span>
-                      {isSelected && (
-                        <Check size={14} className="pp-onboarding-lang-check" aria-hidden="true" />
-                      )}
+                      {selected && <Check size={14} className="agm-welcome-tile-check" />}
                     </button>
                   );
                 })}
               </div>
             </div>
-          )}
-
-          {/* STEP 2: THEME, APPEARANCE MODE & ACCESSIBILITY */}
-          {step === 1 && (
-            <div className="pp-onboarding-step" data-testid="onboarding-step-2">
-              <div className="pp-onboarding-hero pp-onboarding-hero--compact">
-                <div className="pp-onboarding-hero-mark pp-onboarding-hero-mark--ready" aria-hidden="true">
-                  <Palette size={25} />
-                </div>
-                <h2 className="pp-onboarding-heading">
-                  {isTr ? 'Tema ve Görünüm Tercihleri' : 'Theme & Display Preferences'}
+          ) : (
+            <>
+              {/* Consistent 76px Step Header across steps 2..7 */}
+              <div className="agm-welcome-step-header">
+                <h2 id="onboarding-modal-title" className="agm-welcome-step-title">
+                  {slideCopy.title}
                 </h2>
-                <p className="pp-onboarding-lead">
-                  {isTr
-                    ? 'Açık veya koyu mod ile 15 renk temasından birini seçin, özel HEX rengi tanımlayın ve yakınlaştırmayı ayarlayın.'
-                    : 'Choose light or dark mode, pick from 15 color themes or a custom HEX accent, and set your interface zoom.'}
-                </p>
+                <p className="agm-welcome-step-desc">{slideCopy.desc}</p>
               </div>
 
-              <div className="pp-onboarding-theme-section">
-                {/* Light / Dark Mode Switch */}
-                <div className="v-mode-grid">
-                  <button
-                    type="button"
-                    aria-pressed={mode === 'light'}
-                    className={`v-mode-btn ${mode === 'light' ? 'is-active' : ''}`}
-                    onClick={() => setMode('light')}
-                  >
-                    <Sun size={14} />
-                    <span>{t.settingsModal.lightMode}</span>
-                  </button>
-                  <button
-                    type="button"
-                    aria-pressed={mode === 'dark'}
-                    className={`v-mode-btn ${mode === 'dark' ? 'is-active' : ''}`}
-                    onClick={() => setMode('dark')}
-                  >
-                    <Moon size={14} />
-                    <span>{t.settingsModal.darkMode}</span>
-                  </button>
-                </div>
-
-                {/* 15 Color Themes (5x3 Grid) */}
-                <div className="pp-onboarding-theme-grid">
-                  {themes.map((theme) => {
-                    const selected = theme.id === themeId;
-                    const swatch = mode === 'dark' ? theme.swatchDark : theme.swatch;
-                    return (
-                      <button
-                        key={theme.id}
-                        type="button"
-                        aria-pressed={selected}
-                        className={`v-theme-chip ${selected ? 'is-active' : ''}`}
-                        onClick={() => setThemeId(theme.id)}
-                      >
-                        <span className="v-theme-chip-left">
-                          <span
-                            className="v-theme-swatch"
-                            style={{ backgroundColor: swatch }}
-                            aria-hidden="true"
-                          />
-                          <span className="v-theme-label">{getThemeName(theme.id)}</span>
-                        </span>
-                        {selected && <Check size={13} className="v-check-icon" />}
-                      </button>
-                    );
-                  })}
-
-                  <button
-                    type="button"
-                    data-testid="onboarding-custom-theme-btn"
-                    aria-pressed={isCustomTheme}
-                    className={`v-theme-chip v-theme-chip--custom ${isCustomTheme ? 'is-active' : ''}`}
-                    onClick={() => setThemeId(CUSTOM_THEME_ID)}
-                  >
-                    <span className="v-theme-chip-left">
-                      <span
-                        className="v-theme-swatch v-theme-swatch--plus"
-                        style={isCustomTheme ? { backgroundColor: customAccent } : undefined}
-                        aria-hidden="true"
-                      >
-                        {!isCustomTheme && <Plus size={11} />}
+              <div className="agm-welcome-step-body">
+                {/* STEP 2 / 7: APPEARANCE MODE, PRESET SWATCHES & 2D COLOR SPECTRUM PICKER */}
+                {step === 1 && (
+                  <div className="agm-welcome-theme-step" data-testid="onboarding-step-2">
+                    {/* Row 1: Appearance Mode (Light / Dark / System) */}
+                    <div className="agm-welcome-row-between">
+                      <span className="agm-welcome-row-label">
+                        {t.settingsModal.appearanceModeTitle}
                       </span>
-                      <span className="v-theme-label">
-                        {isTr ? 'Özel Renk' : 'Custom Color'}
-                      </span>
-                    </span>
-                    {isCustomTheme && <Check size={13} className="v-check-icon" />}
-                  </button>
-                </div>
-
-                {/* Compact Inline Custom HEX Studio when Custom is active */}
-                {isCustomTheme && (
-                  <div
-                    className="pp-onboarding-hex-bar"
-                    data-testid="onboarding-custom-hex-studio"
-                    role="region"
-                    aria-label={isTr ? 'Özel HEX renk seçici' : 'Custom HEX color studio'}
-                  >
-                    <div className="pp-onboarding-hex-inputs">
-                      <input
-                        type="color"
-                        className="pp-color-wheel-sm"
-                        value={customAccent}
-                        aria-label={isTr ? 'Özel renk seçici' : 'Custom color picker'}
-                        onChange={(e) => {
-                          const v = e.target.value.toUpperCase();
-                          setHexDraft(v);
-                          setInvalidHex(false);
-                          setCustomAccent(v);
-                        }}
-                      />
-                      <input
-                        type="text"
-                        data-testid="onboarding-hex-input"
-                        className={`pp-hex-input-sm ${invalidHex ? 'is-invalid' : ''}`}
-                        value={hexDraft}
-                        maxLength={7}
-                        spellCheck={false}
-                        placeholder="#3B82F6"
-                        aria-label={isTr ? 'Özel HEX renk kodu' : 'Custom HEX color code'}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          setHexDraft(v);
-                          const norm = normalizeHexColor(v);
-                          if (norm) {
-                            setInvalidHex(false);
-                            setCustomAccent(norm);
-                          } else {
-                            setInvalidHex(v.trim().length > 0);
-                          }
-                        }}
-                        onBlur={() => {
-                          const norm = normalizeHexColor(hexDraft);
-                          if (norm) {
-                            setHexDraft(norm);
-                            setInvalidHex(false);
-                          } else {
-                            setHexDraft(customAccent);
-                            setInvalidHex(false);
-                          }
-                        }}
-                      />
-                      <span className="pp-contrast-pill">
-                        <ShieldCheck size={12} />
-                        <span>WCAG AA · {customContrast.toFixed(1)}:1</span>
-                      </span>
+                      <div className="agm-welcome-segmented">
+                        <button
+                          type="button"
+                          data-testid="welcome-mode-light"
+                          onClick={() => setMode('light')}
+                          className={`agm-welcome-seg-btn ${mode === 'light' ? 'is-active' : ''}`}
+                        >
+                          <Sun size={13} />
+                          <span>{t.settingsModal.lightMode}</span>
+                        </button>
+                        <button
+                          type="button"
+                          data-testid="welcome-mode-dark"
+                          onClick={() => setMode('dark')}
+                          className={`agm-welcome-seg-btn ${mode === 'dark' ? 'is-active' : ''}`}
+                        >
+                          <Moon size={13} />
+                          <span>{t.settingsModal.darkMode}</span>
+                        </button>
+                        <button
+                          type="button"
+                          data-testid="welcome-mode-system"
+                          onClick={() => setMode('system')}
+                          className={`agm-welcome-seg-btn ${mode === 'system' ? 'is-active' : ''}`}
+                        >
+                          <Monitor size={13} />
+                          <span>{isTr ? 'Sistem' : 'System'}</span>
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="pp-custom-preset-dots" role="group" aria-label={isTr ? 'Hazır renkler' : 'Preset colors'}>
-                      {CUSTOM_THEME_PRESETS.map((preset) => (
+                    {/* Row 2: 10 Preset Theme Circles + Custom Palette Circle */}
+                    <div className="agm-welcome-row-between">
+                      <span className="agm-welcome-row-label">
+                        {t.settingsModal.colorThemeTitle}
+                      </span>
+                      <div className="agm-welcome-circle-row">
+                        {featuredThemes.map((item) => {
+                          const selected = item.id === themeId;
+                          const colorHex =
+                            effectiveMode === 'dark' ? item.dark.accent : item.light.accent;
+                          const fgHex =
+                            effectiveMode === 'dark' ? item.dark.accentFg : item.light.accentFg;
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              title={getThemeName(item.id)}
+                              aria-label={getThemeName(item.id)}
+                              aria-pressed={selected}
+                              onClick={() => setThemeId(item.id)}
+                              className={`agm-welcome-swatch-circle ${selected ? 'is-selected' : ''}`}
+                              style={{ backgroundColor: colorHex }}
+                            >
+                              {selected && <Check size={13} style={{ color: fgHex }} />}
+                            </button>
+                          );
+                        })}
                         <button
-                          key={preset.hex}
                           type="button"
-                          className={`pp-preset-dot ${customAccent.toUpperCase() === preset.hex.toUpperCase() ? 'is-active' : ''}`}
-                          style={{ backgroundColor: preset.hex }}
-                          title={`${isTr ? preset.labelTr : preset.labelEn} (${preset.hex})`}
-                          aria-label={`${isTr ? preset.labelTr : preset.labelEn} ${preset.hex}`}
-                          onClick={() => {
-                            setHexDraft(preset.hex);
-                            setInvalidHex(false);
-                            setCustomAccent(preset.hex);
-                          }}
+                          data-testid="onboarding-custom-theme-btn"
+                          title={isTr ? 'Özel Renk (HEX)' : 'Custom Color (HEX)'}
+                          aria-label={isTr ? 'Özel Renk (HEX)' : 'Custom Color (HEX)'}
+                          aria-pressed={themeId === CUSTOM_THEME_ID}
+                          onClick={() => setThemeId(CUSTOM_THEME_ID)}
+                          className={`agm-welcome-swatch-circle is-custom ${
+                            themeId === CUSTOM_THEME_ID ? 'is-selected' : ''
+                          }`}
+                          style={
+                            themeId === CUSTOM_THEME_ID
+                              ? {
+                                  backgroundColor: customAccent,
+                                  color: getContrastingForeground(customAccent),
+                                }
+                              : undefined
+                          }
+                        >
+                          <Palette size={13} />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Row 3: Always-Open 2D ColorSpectrumPicker */}
+                    <div
+                      className="agm-welcome-spectrum-box"
+                      data-testid="onboarding-custom-hex-studio"
+                    >
+                      <ColorSpectrumPicker
+                        value={customAccent}
+                        onChange={(hex) => {
+                          if (themeId !== CUSTOM_THEME_ID) {
+                            setThemeId(CUSTOM_THEME_ID);
+                          }
+                          setCustomAccent(hex);
+                        }}
+                        hexInputLabel={isTr ? 'Özel Tema Rengi (HEX)' : 'Custom Theme Color (HEX)'}
+                        hexInputTestId="onboarding-hex-input"
+                        paletteHeight={88}
+                        previewNode={
+                          <span
+                            aria-hidden="true"
+                            className="agm-spectrum-swatch-box"
+                            style={{
+                              backgroundColor: customAccent,
+                              color: getContrastingForeground(customAccent),
+                            }}
+                          >
+                            <Check size={14} />
+                          </span>
+                        }
+                      />
+                    </div>
+
+                    {/* Row 4: Compact Accessibility Zoom & High Contrast Bar */}
+                    <div className="agm-welcome-a11y-bar">
+                      <div className="agm-welcome-a11y-item">
+                        <ZoomIn size={13} />
+                        <span>{isTr ? 'Ölçek:' : 'Zoom:'}</span>
+                        <div className="agm-welcome-segmented">
+                          {ONBOARDING_ZOOM_OPTIONS.map((preset) => (
+                            <button
+                              key={preset}
+                              type="button"
+                              aria-pressed={uiScale === preset}
+                              className={`agm-welcome-seg-btn is-xs ${uiScale === preset ? 'is-active' : ''}`}
+                              onClick={() => setUiScale(preset)}
+                            >
+                              %{preset}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        data-testid="onboarding-high-contrast-switch"
+                        role="switch"
+                        aria-checked={highContrast}
+                        className={`agm-welcome-hc-btn ${highContrast ? 'is-active' : ''}`}
+                        onClick={() => setHighContrast(!highContrast)}
+                      >
+                        <Eye size={13} />
+                        <span>{isTr ? 'Yüksek Kontrast' : 'High Contrast'}</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 3 / 7: APP ICON SELECTION */}
+                {step === 2 && (
+                  <div className="agm-welcome-icon-step" data-testid="onboarding-step-3">
+                    {/* Row 1: Large Active 48x48 Icon Preview (Left) + 4-Mode Selector (Right) */}
+                    <div className="agm-welcome-row-between">
+                      <div className="agm-welcome-icon-preview-left">
+                        <ProductMark
+                          variant={appIconVariant}
+                          activeThemeId={themeId}
+                          mode={mode}
+                          customAccent={customAccent}
+                          customIconAccent={customIconAccent}
+                          className="agm-welcome-icon-preview-lg"
                         />
+                        <span className="agm-welcome-icon-preview-name">
+                          {t.meta.productName}
+                        </span>
+                      </div>
+
+                      <div className="agm-welcome-segmented">
+                        {(
+                          [
+                            {
+                              id: 'theme-auto' as AppIconVariant,
+                              label: isTr ? 'Tema ile Eşleş' : 'Match Theme',
+                            },
+                            {
+                              id: 'monochrome-dark' as AppIconVariant,
+                              label: isTr ? 'Koyu Monokrom' : 'Dark Mono',
+                            },
+                            {
+                              id: 'monochrome-light' as AppIconVariant,
+                              label: isTr ? 'Açık Monokrom' : 'Light Mono',
+                            },
+                            {
+                              id: 'theme-custom' as AppIconVariant,
+                              label: isTr ? 'Özel' : 'Custom',
+                            },
+                          ] as const
+                        ).map((modeOpt) => {
+                          const active = appIconVariant === modeOpt.id;
+                          return (
+                            <button
+                              key={modeOpt.id}
+                              type="button"
+                              data-testid={`onboarding-icon-${modeOpt.id}`}
+                              onClick={() => setAppIconVariant(modeOpt.id)}
+                              className={`agm-welcome-seg-btn ${active ? 'is-active' : ''}`}
+                            >
+                              {modeOpt.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Row 2: 10 Preset Theme 36x36 App Icons */}
+                    <div className="agm-welcome-icon-presets-row">
+                      {FEATURED_ICON_THEMES.map(({ themeId: tId, iconVariant }) => {
+                        const selected = appIconVariant === iconVariant;
+                        const label = getThemeName(tId);
+                        return (
+                          <button
+                            key={iconVariant}
+                            type="button"
+                            data-testid={`onboarding-icon-${iconVariant}`}
+                            title={label}
+                            aria-label={label}
+                            aria-pressed={selected}
+                            onClick={() => setAppIconVariant(iconVariant)}
+                            className={`agm-welcome-icon-tile ${selected ? 'is-selected' : ''}`}
+                          >
+                            <ProductMark
+                              variant={iconVariant}
+                              activeThemeId={themeId}
+                              mode={mode}
+                              customAccent={customAccent}
+                              customIconAccent={customIconAccent}
+                              className="agm-welcome-icon-tile-svg"
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Row 3: Always-Open Custom App Icon ColorSpectrumPicker */}
+                    <div className="agm-welcome-spectrum-box">
+                      <ColorSpectrumPicker
+                        value={customIconAccent}
+                        onChange={(hex) => {
+                          if (appIconVariant !== 'theme-custom') {
+                            setAppIconVariant('theme-custom');
+                          }
+                          setCustomIconAccent(hex);
+                        }}
+                        hexInputLabel={isTr ? 'Özel İkon Rengi (HEX)' : 'Custom Icon Color (HEX)'}
+                        hexInputTestId="welcome-custom-icon-hex"
+                        paletteHeight={88}
+                        previewNode={
+                          <ProductMark
+                            variant={appIconVariant}
+                            activeThemeId={themeId}
+                            mode={mode}
+                            customAccent={customAccent}
+                            customIconAccent={customIconAccent}
+                            className="agm-welcome-icon-mini-preview"
+                          />
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* STEP 4 / 7: END-USER WELCOME HERO + 3 BOTTOM PILLARS */}
+                {step === 3 && (
+                  <div className="agm-welcome-hero-step" data-testid="onboarding-step-4">
+                    <div className="agm-welcome-hero-center">
+                      <ProductMark
+                        variant={appIconVariant}
+                        activeThemeId={themeId}
+                        mode={mode}
+                        customAccent={customAccent}
+                        customIconAccent={customIconAccent}
+                        className="agm-welcome-hero-logo"
+                      />
+                      <div className="agm-welcome-hero-copy">
+                        <p className="agm-welcome-hero-title">
+                          {t.meta.productName} · {VELLIUM_BRAND.brandName} v{APP_VERSION}
+                        </p>
+                        <p className="agm-welcome-hero-subtitle">{t.meta.tagline}</p>
+                      </div>
+                    </div>
+
+                    <div className="agm-welcome-pillars-3">
+                      {[
+                        {
+                          Icon: WifiOff,
+                          label: isTr ? '%100 Çevrimdışı Optik Motor' : '100% Offline Vision Engine',
+                        },
+                        {
+                          Icon: Zap,
+                          label: isTr ? '10-160 Soru Anında Okuma' : 'Instant 10-160Q Grading',
+                        },
+                        {
+                          Icon: ShieldCheck,
+                          label: isTr ? 'Tam Veri Gizliliği (KVKK/GDPR)' : 'Full Data Privacy (GDPR/KVKK)',
+                        },
+                      ].map(({ Icon, label }) => (
+                        <div key={label} className="agm-welcome-pillar">
+                          <span className="agm-welcome-pillar-icon">
+                            <Icon size={16} />
+                          </span>
+                          <span className="agm-welcome-pillar-label">{label}</span>
+                        </div>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Accessibility Zoom & High Contrast Rows */}
-                <div className="pp-onboarding-clean-list">
-                  <div className="pp-onboarding-clean-row">
-                    <span className="pp-onboarding-clean-title">
-                      <ZoomIn size={14} aria-hidden="true" />
-                      <span>
-                        {isTr ? `Yakınlaştırma Yüzdesi: %${uiScale}` : `Interface Zoom: ${uiScale}%`}
-                      </span>
-                    </span>
-                    <div
-                      className="pp-inline-segmented"
-                      role="group"
-                      aria-label={isTr ? 'Yakınlaştırma Yüzdesi' : 'Interface Zoom Scale'}
-                    >
-                      {ONBOARDING_ZOOM_OPTIONS.map((preset) => (
-                        <button
-                          key={preset}
-                          type="button"
-                          aria-pressed={uiScale === preset}
-                          className={`pp-inline-seg-btn ${uiScale === preset ? 'is-active' : ''}`}
-                          onClick={() => setUiScale(preset)}
-                        >
-                          %{preset}
-                        </button>
+                {/* STEP 5 / 7: 4 CORE MODULES (2x2 GRID) */}
+                {step === 4 && (
+                  <div className="agm-welcome-grid-2x2" data-testid="onboarding-step-5">
+                    {[
+                      {
+                        Icon: Cpu,
+                        title: isTr ? 'OpenCV WASM Optik Motoru' : 'OpenCV WASM Vision Engine',
+                        desc: isTr
+                          ? '4 köşe hizalama karesiyle perspektif eğriliğini düzeltir; PDF, ZIP, görsel ve canlı kamera akışını okur.'
+                          : 'Corrects perspective skew via 4 corner fiducial markers across PDFs, ZIPs, images, and live camera streams.',
+                      },
+                      {
+                        Icon: LayoutTemplate,
+                        title: isTr ? '12 Hazır Şablon & Özel Tasarımcı' : '12 Templates & Custom Wizard',
+                        desc: isTr
+                          ? 'ÖSYM, MEB/LGS ve Quiz şablonlarını %100 ölçekli vektörel A4 PDF olarak indirin veya özel form üretin.'
+                          : 'Download 12 calibrated A4 vector PDF templates at 100% print scale or design custom institution forms.',
+                      },
+                      {
+                        Icon: BarChart3,
+                        title: isTr ? 'A-D Kitapçık & KR-20 / T-Skor' : 'A-D Booklets & KR-20 / T-Score',
+                        desc: isTr
+                          ? 'Çoklu kitapçık, ceza formülleri (4Y=1D, 3Y=1D), YÖK çan eğrisi, madde güçlük analizi ve PDF karneler.'
+                          : 'Multi-booklet answer keys, penalty rules, T-score bell curves, item discrimination, and PDF scorecards.',
+                      },
+                      {
+                        Icon: Bot,
+                        title: isTr ? 'Yerel AI Asistan & Doküman RAG' : 'Local AI Assistant & Docs RAG',
+                        desc: isTr
+                          ? 'Sistem gücüne göre indirilebilir yerel yapay zeka modelleri, çevrimdışı BM25 RAG ve MCP/CLI/Webhook otomasyonu.'
+                          : 'Hardware-aware downloadable local AI models, offline BM25 documentation RAG, and MCP/CLI/Webhook automation.',
+                      },
+                    ].map(({ Icon, title, desc }) => (
+                      <div key={title} className="agm-welcome-module-card">
+                        <div className="agm-welcome-module-head">
+                          <span className="agm-welcome-module-icon">
+                            <Icon size={16} />
+                          </span>
+                          <span className="agm-welcome-module-title">{title}</span>
+                        </div>
+                        <p className="agm-welcome-module-desc">{desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* STEP 6 / 7: SMART GRADING PREVIEW & KEYBOARD SHORTCUTS */}
+                {step === 5 && (
+                  <div className="agm-welcome-shortcuts-step" data-testid="onboarding-step-6">
+                    <div className="agm-welcome-preview-card">
+                      <div className="agm-welcome-preview-row">
+                        <span className="agm-welcome-preview-check">
+                          <Check size={12} />
+                        </span>
+                        <div className="agm-welcome-preview-main">
+                          <div className="agm-welcome-row-between">
+                            <span className="agm-welcome-preview-title">
+                              {isTr
+                                ? '160 Soruluk YKS Genel Deneme · A/B/C/D Kitapçık'
+                                : '160-Question Comprehensive Exam · A/B/C/D Booklets'}
+                            </span>
+                            <span className="agm-welcome-preview-meta">
+                              <Clock size={13} />
+                              <span>42 ms / form</span>
+                            </span>
+                          </div>
+
+                          <div className="agm-welcome-preview-tags">
+                            <span className="agm-welcome-tag">
+                              <ScanLine size={13} />
+                              <span>{isTr ? '4 Köşe Kilitli' : '4 Corners Locked'}</span>
+                            </span>
+                            <span className="agm-welcome-tag is-accent">
+                              <Hash size={13} />
+                              <span>KR-20: 0.92</span>
+                            </span>
+                            <span className="agm-welcome-tag is-accent">
+                              <Hash size={13} />
+                              <span>{isTr ? 'e-Okul Eşleşti' : 'Roster Matched'}</span>
+                            </span>
+                            <button
+                              type="button"
+                              className="agm-welcome-inline-action"
+                              onClick={() => handleFinish('/tara')}
+                            >
+                              {isTr ? 'Form Taramaya Başla' : 'Start Scanning Forms'}
+                            </button>
+                          </div>
+
+                          <div className="agm-welcome-progress-track">
+                            <div className="agm-welcome-progress-fill" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="agm-welcome-keycaps-3">
+                      {[
+                        {
+                          keycap: 'Alt + 1..8',
+                          label: isTr ? 'Görünümler Arası Geçiş' : 'Switch Workspace Views',
+                        },
+                        {
+                          keycap: 'Ctrl + T',
+                          label: isTr ? 'Açık / Koyu Tema Değiştir' : 'Toggle Light / Dark Theme',
+                        },
+                        {
+                          keycap: 'F1',
+                          label: isTr ? 'Dokümantasyon ve RAG Rehberi' : 'Documentation & RAG Guide',
+                        },
+                      ].map((item) => (
+                        <div key={item.keycap} className="agm-welcome-keycap-col">
+                          <kbd className="agm-welcome-kbd">{item.keycap}</kbd>
+                          <span className="agm-welcome-keycap-label">{item.label}</span>
+                        </div>
                       ))}
                     </div>
                   </div>
+                )}
 
-                  <div className="pp-onboarding-clean-row">
-                    <span className="pp-onboarding-clean-title">
-                      <Eye size={14} aria-hidden="true" />
-                      <span>{isTr ? 'Yüksek Kontrast Modu (WCAG AAA)' : 'High Contrast Mode (WCAG AAA)'}</span>
-                    </span>
-                    <button
-                      type="button"
-                      data-testid="onboarding-high-contrast-switch"
-                      role="switch"
-                      aria-checked={highContrast}
-                      className={`v-pill-toggle ${highContrast ? 'is-active' : ''}`}
-                      onClick={() => setHighContrast(!highContrast)}
-                    >
-                      {highContrast ? t.settingsModal.onLabel : t.settingsModal.offLabel}
-                    </button>
+                {/* STEP 7 / 7: PRIVACY, MULTI-CLOUD SYNC & CHECKPOINT RECOVERY */}
+                {step === 6 && (
+                  <div className="agm-welcome-privacy-step" data-testid="onboarding-step-7">
+                    {[
+                      {
+                        Icon: Shield,
+                        title: isTr
+                          ? 'Yerel-Öncelikli Mimari (IndexedDB & Sıfır Telemetri)'
+                          : 'Local-First Architecture (IndexedDB & Zero Telemetry)',
+                        desc: isTr
+                          ? 'Tüm optik okuma işlemleri, öğrenci cevapları ve puanlar yalnızca bu bilgisayarda işlenir ve saklanır.'
+                          : 'All optical grading, student sheets, and scores are processed and stored strictly on this computer.',
+                        action: null,
+                      },
+                      {
+                        Icon: Cloud,
+                        title: isTr
+                          ? 'Çoklu Bulut Klasör Eşitleme (OneDrive, Google Drive, iCloud, Dropbox)'
+                          : 'Multi-Cloud Folder Sync (OneDrive, Google Drive, iCloud, Dropbox)',
+                        desc: isTr
+                          ? 'Üçüncü taraf sunucu olmadan kendi yerel bulut klasörünüzle 15 günlük otomatik yedek geçmişi tutun.'
+                          : 'Maintain a 15-day rolling backup snapshot inside your own local cloud drive folder without external servers.',
+                        action: (
+                          <button
+                            type="button"
+                            data-testid="welcome-open-settings"
+                            onClick={() => handleFinish('/ayarlar?section=data')}
+                            className="agm-welcome-settings-btn"
+                          >
+                            <span>{t.nav.settings}</span>
+                            <ChevronRight size={14} />
+                          </button>
+                        ),
+                      },
+                      {
+                        Icon: RotateCcw,
+                        title: isTr
+                          ? 'Kesintiye Dayanıklı Checkpoint & Şifreli ZIP Kasası'
+                          : 'Resilient Checkpoint Recovery & Encrypted ZIP Vault',
+                        desc: isTr
+                          ? 'Her okunan kağıt anında checkpoint olarak kaydedilir; yarıda kalan taramalar veri kaybı olmadan sürdürülür.'
+                          : 'Every graded sheet is checkpointed immediately so interrupted batch scans resume with zero data loss.',
+                        action: (
+                          <button
+                            type="button"
+                            onClick={() => handleFinish('/tara')}
+                            className="agm-welcome-settings-btn"
+                          >
+                            <span>{isTr ? 'Form Taramaya Başla' : 'Start Scanning Forms'}</span>
+                            <ChevronRight size={14} />
+                          </button>
+                        ),
+                      },
+                    ].map(({ Icon, title, desc, action }) => (
+                      <div key={title} className="agm-welcome-privacy-row">
+                        <span className="agm-welcome-privacy-icon">
+                          <Icon size={16} />
+                        </span>
+                        <div className="agm-welcome-privacy-copy">
+                          <p className="agm-welcome-privacy-title">{title}</p>
+                          <p className="agm-welcome-privacy-desc">{desc}</p>
+                        </div>
+                        {action}
+                      </div>
+                    ))}
                   </div>
-                </div>
+                )}
               </div>
-            </div>
-          )}
-
-          {/* STEP 3: APPLICATION & DESKTOP ICON SELECTION */}
-          {step === 2 && (
-            <div className="pp-onboarding-step" data-testid="onboarding-step-3">
-              <div className="pp-onboarding-hero pp-onboarding-hero--compact">
-                <div className="pp-onboarding-hero-mark pp-onboarding-hero-mark--icon" aria-hidden="true">
-                  <ProductMark
-                    variant={appIconVariant}
-                    activeThemeId={themeId}
-                    mode={mode}
-                    customAccent={customAccent}
-                    className="pp-onboarding-live-icon-lg"
-                  />
-                </div>
-                <h2 className="pp-onboarding-heading">
-                  {t.settingsModal.appIconTitle}
-                </h2>
-                <p className="pp-onboarding-lead">
-                  {isTr
-                    ? 'Uygulamanızın görsel kimliğini seçin. Tema ile otomatik eşleşebilir, siyah-beyaz veya özel renginizi kullanabilirsiniz.'
-                    : 'Choose your app icon style. Automatically match your active theme, keep it monochrome, or use your custom accent color.'}
-                </p>
-                <p className="pp-onboarding-subhint">
-                  {isTr
-                    ? 'Pencere başlığı, Windows Görev Çubuğu, Sistem Tepsisi ve Masaüstü kısayolu (.lnk) gerçek zamanlı olarak güncellenir.'
-                    : 'Updates window icon, Windows Taskbar, System Tray, and Desktop shortcut (.lnk) in real time.'}
-                </p>
-              </div>
-
-              <div
-                className="pp-onboarding-icon-grid"
-                role="group"
-                aria-label={t.settingsModal.appIconTitle}
-              >
-                {iconOptions.map((opt) => {
-                  const selected = appIconVariant === opt.id;
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      data-testid={`onboarding-icon-${opt.id}`}
-                      aria-pressed={selected}
-                      className={`pp-onboarding-icon-option ${opt.id === 'theme-custom' ? 'is-custom' : ''} ${selected ? 'is-active' : ''}`}
-                      onClick={() => setAppIconVariant(opt.id)}
-                    >
-                      <ProductMark
-                        variant={opt.id}
-                        activeThemeId={themeId}
-                        mode={mode}
-                        customAccent={customAccent}
-                        className="pp-onboarding-icon-option-svg"
-                      />
-                      <span className="pp-onboarding-icon-option-name">{opt.label}</span>
-                      {selected && (
-                        <Check size={13} className="pp-onboarding-icon-option-check" aria-hidden="true" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* STEP 4: WELCOME & CORE VALUE PROPOSITION (Preserved Existing Step 1) */}
-          {step === 3 && (
-            <div className="pp-onboarding-step" data-testid="onboarding-step-4">
-              <div className="pp-onboarding-hero">
-                <div className="pp-onboarding-hero-mark pp-onboarding-hero-mark--icon" aria-hidden="true">
-                  <ProductMark
-                    variant={appIconVariant}
-                    activeThemeId={themeId}
-                    mode={mode}
-                    customAccent={customAccent}
-                    className="pp-onboarding-live-icon-lg"
-                  />
-                </div>
-                <span className="pp-onboarding-badge">
-                  {VELLIUM_BRAND.brandName} · v{APP_VERSION}
-                </span>
-                <h2 className="pp-onboarding-heading">
-                  {isTr
-                    ? 'Yerel ve Güvenli Optik Değerlendirme Stüdyosuna Hoş Geldiniz'
-                    : 'Welcome to the Local-First Optical Grading Suite'}
-                </h2>
-                <p className="pp-onboarding-lead">
-                  {isTr
-                    ? '10 ile 160 soru arasındaki optik cevap kağıtlarını buluta veya harici sunuculara tek bayt bile göndermeden, doğrudan bilgisayarınızda saniyeler içinde okuyun ve analiz edin.'
-                    : 'Grade and analyze 10 to 160 question optical answer sheets in seconds directly on your computer without sending a single byte to external servers.'}
-                </p>
-              </div>
-
-              <div className="pp-onboarding-cards-3">
-                <div className="pp-onboarding-feature-card">
-                  <span className="pp-onboarding-card-icon">
-                    <Cpu size={18} />
-                  </span>
-                  <strong>
-                    {isTr ? 'OpenCV WASM Optik Motoru' : 'OpenCV WASM Vision Engine'}
-                  </strong>
-                  <p>
-                    {isTr
-                      ? '4 köşe hizalama karesi ile perspektif eğriliklerini otomatik düzeltir; PDF, görsel ve canlı kamera akışını okur.'
-                      : 'Automatically corrects perspective skew via 4 corner fiducial markers across PDFs, images, and live camera streams.'}
-                  </p>
-                </div>
-
-                <div className="pp-onboarding-feature-card">
-                  <span className="pp-onboarding-card-icon">
-                    <FileSpreadsheet size={18} />
-                  </span>
-                  <strong>
-                    {isTr ? 'A-D Kitapçık & KR-20 Analizi' : 'A-D Booklets & KR-20 Analytics'}
-                  </strong>
-                  <p>
-                    {isTr
-                      ? 'Çoklu kitapçık, ÖSYM/LGS ceza kuralları, YÖK T-Skor çan eğrisi, madde güçlük analizi ve PDF karne üretimi.'
-                      : 'Multi-booklet keys, configurable penalty formulas, T-Score bell curves, item difficulty analysis, and PDF scorecards.'}
-                  </p>
-                </div>
-
-                <div className="pp-onboarding-feature-card">
-                  <span className="pp-onboarding-card-icon">
-                    <ShieldCheck size={18} />
-                  </span>
-                  <strong>
-                    {isTr ? '%100 Çevrimdışı & Sıfır Telemetri' : '100% Offline & Zero Telemetry'}
-                  </strong>
-                  <p>
-                    {isTr
-                      ? 'Öğrenci verileri yalnızca yerel IndexedDB veritabanında tutulur; KVKK, GDPR ve FERPA standartlarıyla tam uyumludur.'
-                      : 'Student records stay strictly in your local IndexedDB database with full GDPR, KVKK, and FERPA privacy compliance.'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 5: 3-STEP OPTICAL GRADING WORKFLOW (Preserved Existing Step 2) */}
-          {step === 4 && (
-            <div className="pp-onboarding-step" data-testid="onboarding-step-5">
-              <div className="pp-onboarding-hero pp-onboarding-hero--compact">
-                <div className="pp-onboarding-hero-mark pp-onboarding-hero-mark--ready" aria-hidden="true">
-                  <ScanLine size={24} />
-                </div>
-                <h2 className="pp-onboarding-heading">
-                  {isTr
-                    ? '3 Adımda Optik Sınav Okuma İş Akışı'
-                    : '3-Step Optical Grading Workflow'}
-                </h2>
-                <p className="pp-onboarding-lead">
-                  {isTr
-                    ? 'Form hazırlamadan bireysel öğrenci karnesine kadar tüm süreç tek ekranda, hatasız ilerler.'
-                    : 'From printing calibrated A4 sheets to exporting student scorecards, every stage runs seamlessly.'}
-                </p>
-              </div>
-
-              <div className="pp-onboarding-workflow-list">
-                <div className="pp-onboarding-workflow-row">
-                  <span className="pp-onboarding-workflow-num">1</span>
-                  <div className="pp-onboarding-workflow-copy">
-                    <strong>
-                      {isTr
-                        ? 'Şablon Seçin veya Özel Form Tasarlayın'
-                        : 'Select a Template or Design a Custom Form'}
-                    </strong>
-                    <p>
-                      {isTr
-                        ? 'Şablonlar sayfasından 12 hazır ÖSYM / MEB / Quiz formunu %100 ölçekli vektörel A4 PDF olarak indirin ya da kurum başlığınızla özel form üretin.'
-                        : 'Download 12 ready-to-print standard A4 vector PDF templates at 100% scale or customize question, choice, and ID digit counts.'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="pp-onboarding-workflow-row">
-                  <span className="pp-onboarding-workflow-num">2</span>
-                  <div className="pp-onboarding-workflow-copy">
-                    <strong>
-                      {isTr
-                        ? 'Cevap Anahtarını Girin ve Formları Tarayın'
-                        : 'Enter Answer Keys & Scan Answer Sheets'}
-                    </strong>
-                    <p>
-                      {isTr
-                        ? 'Form Tara sayfasında A/B/C/D cevap anahtarını girin; çok sayfalı PDF, ZIP, JPG/PNG yükleyin veya Canlı Kamera Otomatik Yakalama vizörünü açın.'
-                        : 'Configure A/B/C/D answer keys on the Scan Form page, then drop multi-page PDFs, ZIPs, images, or launch Live Camera Auto-Capture.'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="pp-onboarding-workflow-row">
-                  <span className="pp-onboarding-workflow-num">3</span>
-                  <div className="pp-onboarding-workflow-copy">
-                    <strong>
-                      {isTr
-                        ? 'Şüpheli Şıkları Denetleyin ve Sonuçları Dışa Aktarın'
-                        : 'Review Flagged Bubbles & Export Reports'}
-                    </strong>
-                    <p>
-                      {isTr
-                        ? 'Belirsiz veya çift işaretlemeler otomatik vurgulanır. Tek tıkla düzelttikten sonra Excel (XLSX), CSV, PDF Karne veya şifreli ZIP yedeği alın.'
-                        : 'Ambiguous or double marks are highlighted automatically. Verify them in one click and export XLSX, CSV, PDF Scorecards, or ZIP backups.'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 6: READY TO LAUNCH */}
-          {step === 5 && (
-            <div className="pp-onboarding-step" data-testid="onboarding-step-6">
-              <div className="pp-onboarding-hero pp-onboarding-hero--compact">
-                <div className="pp-onboarding-hero-mark pp-onboarding-hero-mark--ready" aria-hidden="true">
-                  <Rocket size={26} />
-                </div>
-                <h2 className="pp-onboarding-heading">
-                  {isTr ? 'Her Şey Hazır - Değerlendirmeye Başlayın' : 'All Set - Start Grading'}
-                </h2>
-                <p className="pp-onboarding-lead">
-                  {isTr
-                    ? 'Bu karşılama rehberini istediğiniz zaman Ayarlar veya Hakkında sayfasından tekrar açabilirsiniz.'
-                    : 'You can reopen this welcome tour anytime from the Settings or About page.'}
-                </p>
-              </div>
-
-              <div className="pp-onboarding-tips">
-                <div className="pp-onboarding-tip-item">
-                  <CheckCircle2 size={15} />
-                  <span>
-                    {isTr
-                      ? 'Klavye ile hızlı geçiş: Alt+1 (Form Tara), Alt+2 (Şablonlar), Alt+3 (Sonuçlar), Alt+4 (Dokümantasyon), Alt+5 (Ayarlar), Alt+6 (Hakkında).'
-                      : 'Fast keyboard navigation: Alt+1 (Scan), Alt+2 (Templates), Alt+3 (Results), Alt+4 (Docs), Alt+5 (Settings), Alt+6 (About).'}
-                  </span>
-                </div>
-                <div className="pp-onboarding-tip-item">
-                  <CheckCircle2 size={15} />
-                  <span>
-                    {isTr
-                      ? 'Erişilebilirlik yakınlaştırması için klavyeden Ctrl + (+), Ctrl + (-) ve Ctrl + 0 kısayollarını kullanabilirsiniz.'
-                      : 'Use Ctrl + (+), Ctrl + (-), and Ctrl + 0 anytime to adjust interface zoom.'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="pp-onboarding-quick-actions">
-                <button
-                  type="button"
-                  className="pp-btn-primary"
-                  onClick={() => handleFinish('/tara')}
-                >
-                  <ScanLine size={15} />
-                  <span>{isTr ? 'Form Taramaya Başla' : 'Start Scanning Forms'}</span>
-                </button>
-                <button
-                  type="button"
-                  className="pp-btn-secondary"
-                  onClick={() => handleFinish('/sablonlar')}
-                >
-                  <LayoutGrid size={15} />
-                  <span>{isTr ? 'Şablon Galerisini Aç' : 'Open Template Gallery'}</span>
-                </button>
-                <button
-                  type="button"
-                  className="pp-btn-secondary"
-                  onClick={() => handleFinish('/tara?camera=1')}
-                >
-                  <Camera size={15} />
-                  <span>{isTr ? 'Canlı Kamerayla Tara' : 'Live Camera Scanner'}</span>
-                </button>
-                <button
-                  type="button"
-                  className="pp-btn-secondary"
-                  onClick={() => handleFinish('/rehber')}
-                >
-                  <BookOpen size={15} />
-                  <span>{isTr ? 'Dokümantasyonu İncele' : 'Read Documentation'}</span>
-                </button>
-              </div>
-            </div>
+            </>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="pp-modal-footer pp-onboarding-footer">
-          <button
-            type="button"
-            className="pp-btn-secondary"
-            onClick={() => handleFinish()}
-          >
-            {isTr ? 'Rehberi Atla' : 'Skip Tour'}
-          </button>
-
-          <div className="pp-onboarding-footer-nav">
-            {step > 0 && (
+        {/* Fixed 58px Footer: Left Back/Skip, Right Fixed Next/Start Button */}
+        <div className="agm-welcome-footer">
+          <div className="agm-welcome-footer-left">
+            {!isFirst && (
               <button
                 type="button"
+                data-testid="welcome-step-back"
+                onClick={() => setStep((prev) => Math.max(0, prev - 1))}
                 className="pp-btn-secondary"
-                onClick={() => setStep((s) => Math.max(0, s - 1))}
               >
-                <ArrowLeft size={14} />
+                <ChevronLeft size={14} />
                 <span>{isTr ? 'Geri' : 'Back'}</span>
               </button>
             )}
-            {step < TOTAL_STEPS - 1 ? (
+            {!isLast && (
               <button
                 type="button"
-                className="pp-btn-primary"
-                onClick={() => setStep((s) => Math.min(TOTAL_STEPS - 1, s + 1))}
+                data-testid="welcome-step-skip"
+                onClick={() => handleFinish()}
+                className="agm-welcome-skip-btn"
               >
-                <span>{isTr ? 'İleri' : 'Next'}</span>
-                <ArrowRight size={14} />
+                {isTr ? 'Rehberi Atla' : 'Skip Tour'}
+              </button>
+            )}
+          </div>
+
+          <div className="agm-welcome-footer-right">
+            {isLast ? (
+              <button
+                type="button"
+                data-testid="welcome-step-start"
+                onClick={() => handleFinish()}
+                className="pp-btn-primary"
+              >
+                <span>{isTr ? 'Başla' : 'Get Started'}</span>
+                <Check size={14} />
               </button>
             ) : (
               <button
                 type="button"
+                data-testid="welcome-step-next"
+                onClick={() => setStep((prev) => Math.min(TOTAL_ONBOARDING_STEPS - 1, prev + 1))}
                 className="pp-btn-primary"
-                onClick={() => handleFinish()}
               >
-                <Rocket size={14} />
-                <span>{isTr ? 'Başla' : 'Get Started'}</span>
+                <span>{isTr ? 'İleri' : 'Next'}</span>
+                <ArrowRight size={14} />
               </button>
             )}
           </div>
@@ -800,3 +924,5 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
     </div>
   );
 }
+
+export default OnboardingModal;

@@ -49,6 +49,43 @@ FunctionEnd
 
 !macro NSIS_HOOK_PREUNINSTALL
   Call un.OfrStyleProgressBar
+  ; Ask user whether to delete or keep local Optical Form Reader exam data & AI models
+  ; (Skipped automatically during silent installs or in-place app updates)
+  ${IfNot} ${Silent}
+    ${If} $UpdateMode != 1
+      !insertmacro GetCleanableUninstDataPrompt $R9
+      MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "$R9" IDYES ofr_wipe_user_data IDNO ofr_keep_user_data
+      ofr_wipe_user_data:
+        RMDir /r "$LOCALAPPDATA\dev.vellium.opticalformreader"
+        RMDir /r "$APPDATA\dev.vellium.opticalformreader"
+        DeleteRegKey HKCU "Software\dev.vellium.opticalformreader"
+      ofr_keep_user_data:
+    ${EndIf}
+  ${EndIf}
+!macroend
+
+!macro GetCleanableUninstDataPrompt OUTVAR
+  StrCpy ${OUTVAR} "Do you also want to permanently delete all saved exam sessions, answer keys, local AI models, and preferences?$\r$\n$\r$\nClick 'No' to keep your data for future installations."
+  ${Switch} $LANGUAGE
+    ${Case} 1055 ; Turkish
+      StrCpy ${OUTVAR} "Kayıtlı tüm sınav oturumlarını, cevap anahtarlarını, indirilen yerel yapay zeka modellerini ve uygulama tercihlerini de kalıcı olarak silmek istiyor musunuz?$\r$\n$\r$\nVerilerinizi sonraki kurulumlar için korumak istiyorsanız 'Hayır' seçeneğine tıklayın."
+      ${Break}
+    ${Case} 1031 ; German
+      StrCpy ${OUTVAR} "Möchten Sie auch alle gespeicherten Prüfungssitzungen, Antwortschlüssel, lokalen KI-Modelle und Einstellungen dauerhaft löschen?$\r$\n$\r$\nKlicken Sie auf 'Nein', um Ihre Daten zu behalten."
+      ${Break}
+    ${Case} 1036 ; French
+      StrCpy ${OUTVAR} "Voulez-vous également supprimer définitivement toutes les sessions d'examen, corrigés, modèles IA locaux et préférences ?$\r$\n$\r$\nCliquez sur 'Non' pour conserver vos données."
+      ${Break}
+    ${Case} 3082 ; Spanish
+      StrCpy ${OUTVAR} "¿Desea eliminar también permanentemente todas las sesiones de examen, claves de respuestas, modelos de IA locales y preferencias?$\r$\n$\r$\nHaga clic en 'No' para conservar sus datos."
+      ${Break}
+    ${Case} 1049 ; Russian
+      StrCpy ${OUTVAR} "Удалить также все сохраненные сессии экзаменов, ключи ответов, локальные ИИ-модели и настройки?$\r$\n$\r$\nНажмите «Нет», чтобы сохранить данные."
+      ${Break}
+    ${Case} 1025 ; Arabic
+      StrCpy ${OUTVAR} "هل تريد أيضًا حذف جميع جلسات الاختبار المحفوظة ومفاتيح الإجابات ونماذج الذكاء الاصطناعي المحلية والإعدادات نهائيًا؟"
+      ${Break}
+  ${EndSwitch}
 !macroend
 
 !define OFR_SHCNE_ASSOCCHANGED 0x08000000

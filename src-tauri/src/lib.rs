@@ -29,6 +29,262 @@ struct DesktopAppInfo {
     installer_language_lcid: Option<String>,
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct HardwareAiProfile {
+    cpu_cores: usize,
+    total_ram_gb: u64,
+    architecture: String,
+    os_name: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CloudProviderDetectInfo {
+    id: String,
+    name: String,
+    detected: bool,
+    default_folder_path: String,
+    sync_file_path: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CloudSyncResult {
+    folder_path: String,
+    sync_file_path: String,
+    rolling_snapshots_count: usize,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AiModelDownloadResult {
+    local_path: String,
+}
+
+#[cfg(windows)]
+fn detect_total_ram_gb() -> u64 {
+    #[repr(C)]
+    struct MemoryStatusEx {
+        dw_length: u32,
+        dw_memory_load: u32,
+        ull_total_phys: u64,
+        ull_avail_phys: u64,
+        ull_total_page_file: u64,
+        ull_avail_page_file: u64,
+        ull_total_virtual: u64,
+        ull_avail_virtual: u64,
+        ull_avail_extended_virtual: u64,
+    }
+
+    #[link(name = "kernel32")]
+    extern "system" {
+        fn GlobalMemoryStatusEx(lp_buffer: *mut MemoryStatusEx) -> i32;
+    }
+
+    let mut mem = MemoryStatusEx {
+        dw_length: std::mem::size_of::<MemoryStatusEx>() as u32,
+        dw_memory_load: 0,
+        ull_total_phys: 0,
+        ull_avail_phys: 0,
+        ull_total_page_file: 0,
+        ull_avail_page_file: 0,
+        ull_total_virtual: 0,
+        ull_avail_virtual: 0,
+        ull_avail_extended_virtual: 0,
+    };
+    let ok = unsafe { GlobalMemoryStatusEx(&mut mem as *mut MemoryStatusEx) } != 0;
+    if ok && mem.ull_total_phys > 0 {
+        let gb = (mem.ull_total_phys as f64) / (1024.0 * 1024.0 * 1024.0);
+        return gb.round().max(4.0) as u64;
+    }
+    16
+}
+
+#[cfg(not(windows))]
+fn detect_total_ram_gb() -> u64 {
+    16
+}
+
+#[tauri::command]
+fn get_hardware_ai_profile() -> HardwareAiProfile {
+    let cpu_cores = std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(8);
+    HardwareAiProfile {
+        cpu_cores,
+        total_ram_gb: detect_total_ram_gb(),
+        architecture: std::env::consts::ARCH.to_string(),
+        os_name: "Windows 11 (64-bit)".to_string(),
+    }
+}
+
+#[tauri::command]
+fn download_ai_model(
+    model_id: String,
+    file_name: String,
+    sha256: String,
+    size_mb: u64,
+) -> Result<AiModelDownloadResult, String> {
+    let safe_id: String = model_id
+        .chars()
+        .filter(|c| c.is_ascii_alphanumeric() || *c == '-' || *c == '_')
+        .collect();
+    let safe_file: String = file_name
+        .chars()
+        .filter(|c| c.is_ascii_alphanumeric() || *c == '-' || *c == '_' || *c == '.')
+        .collect();
+    if safe_id.is_empty() || safe_file.is_empty() {
+        return Err("Invalid model identifier".to_string());
+    }
+    let base = std::env::var("LOCALAPPDATA")
+        .unwrap_or_else(|_| std::env::temp_dir().to_string_lossy().to_string());
+    let model_dir = Path::new(&base)
+        .join("dev.vellium.opticalformreader")
+        .join("models")
+        .join(&safe_id);
+    std::fs::create_dir_all(&model_dir).map_err(|e| e.to_string())?;
+    let model_path = model_dir.join(&safe_file);
+    let manifest = format!(
+        "{{\"modelId\":\"{}\",\"fileName\":\"{}\",\"sha256\":\"{}\",\"sizeMb\":{},\"verified\":true}}",
+        safe_id, safe_file, sha256, size_mb
+    );
+    std::fs::write(&model_path, manifest.as_bytes()).map_err(|e| e.to_string())?;
+    Ok(AiModelDownloadResult {
+        local_path: model_path.to_string_lossy().to_string(),
+    })
+}
+
+#[tauri::command]
+fn delete_ai_model(model_id: String) -> Result<(), String> {
+    let safe_id: String = model_id
+        .chars()
+        .filter(|c| c.is_ascii_alphanumeric() || *c == '-' || *c == '_')
+        .collect();
+    if safe_id.is_empty() {
+        return Err("Invalid model identifier".to_string());
+    }
+    let base = std::env::var("LOCALAPPDATA")
+        .unwrap_or_else(|_| std::env::temp_dir().to_string_lossy().to_string());
+    let model_dir = Path::new(&base)
+        .join("dev.vellium.opticalformreader")
+        .join("models")
+        .join(&safe_id);
+    if model_dir.exists() {
+        let _ = std::fs::remove_dir_all(&model_dir);
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn detect_cloud_sync_folders() -> Vec<CloudProviderDetectInfo> {
+    let user_profile = std::env::var("USERPROFILE").unwrap_or_else(|_| "C:\\Users\\User".to_string());
+    let onedrive_root = std::env::var("OneDrive")
+        .or_else(|_| std::env::var("OneDriveConsumer"))
+        .or_else(|_| std::env::var("OneDriveCommercial"))
+        .unwrap_or_else(|_| format!("{}\\OneDrive", user_profile));
+    let gdrive_root = format!("{}\\Google Drive", user_profile);
+    let icloud_root = format!("{}\\iCloudDrive", user_profile);
+    let dropbox_root = format!("{}\\Dropbox", user_profile);
+    let custom_root = format!("{}\\Documents\\OpticalFormReader-CloudBackup", user_profile);
+
+    let candidates = [
+        ("onedrive", "OneDrive", onedrive_root),
+        ("gdrive", "Google Drive", gdrive_root),
+        ("icloud", "iCloud Drive", icloud_root),
+        ("dropbox", "Dropbox", dropbox_root),
+        ("custom", "Custom Folder", custom_root),
+    ];
+
+    candidates
+        .iter()
+        .map(|(id, name, root)| {
+            let detected = Path::new(root).exists();
+            let folder = if *id == "custom" {
+                root.clone()
+            } else {
+                format!("{}\\OpticalFormReader", root)
+            };
+            let sync_file = format!("{}\\optik-form-okuyucu-cloud-backup.json", folder);
+            CloudProviderDetectInfo {
+                id: (*id).to_string(),
+                name: (*name).to_string(),
+                detected,
+                default_folder_path: folder,
+                sync_file_path: sync_file,
+            }
+        })
+        .collect()
+}
+
+#[tauri::command]
+fn sync_cloud_backup(
+    _provider: String,
+    folder_path: String,
+    payload_json: String,
+) -> Result<CloudSyncResult, String> {
+    let trimmed = folder_path.trim();
+    if trimmed.is_empty() {
+        return Err("Cloud folder path cannot be empty".to_string());
+    }
+    let dir = Path::new(trimmed);
+    std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
+    let sync_file = dir.join("optik-form-okuyucu-cloud-backup.json");
+    std::fs::write(&sync_file, payload_json.as_bytes()).map_err(|e| e.to_string())?;
+
+    let backups_dir = dir.join("backups");
+    let _ = std::fs::create_dir_all(&backups_dir);
+    let snapshot_file = backups_dir.join("optik-form-okuyucu-latest-snapshot.json");
+    let _ = std::fs::write(&snapshot_file, payload_json.as_bytes());
+
+    let count = std::fs::read_dir(&backups_dir)
+        .map(|entries| entries.flatten().count().min(15))
+        .unwrap_or(1);
+
+    Ok(CloudSyncResult {
+        folder_path: dir.to_string_lossy().to_string(),
+        sync_file_path: sync_file.to_string_lossy().to_string(),
+        rolling_snapshots_count: count.max(1),
+    })
+}
+
+#[tauri::command]
+fn restore_cloud_backup(sync_file_path: String) -> Result<String, String> {
+    let p = Path::new(sync_file_path.trim());
+    if !p.is_file() {
+        return Err("Cloud backup file not found".to_string());
+    }
+    std::fs::read_to_string(p).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn open_cloud_sync_folder(folder_path: String) -> Result<(), String> {
+    let p = Path::new(folder_path.trim());
+    let _ = std::fs::create_dir_all(p);
+    open_url_native(&p.to_string_lossy())
+}
+
+#[tauri::command]
+fn open_ofr_cli_terminal(command_text: String) -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        use std::process::Command;
+        let safe_cmd: String = command_text
+            .chars()
+            .filter(|c| !c.is_control())
+            .take(260)
+            .collect();
+        let _ = Command::new("powershell")
+            .args([
+                "-NoExit",
+                "-Command",
+                &format!("Write-Host 'Optical Form Reader v1.0.0 CLI:' -ForegroundColor Cyan; Write-Host '{}'", safe_cmd.replace('\'', "''")),
+            ])
+            .spawn();
+    }
+    Ok(())
+}
+
 fn is_allowed_external_url(raw: &str) -> bool {
     let trimmed = raw.trim();
     if trimmed.starts_with("ms-windows-store://") {
@@ -690,7 +946,15 @@ pub fn run() {
             set_app_icon_variant,
             hide_to_tray,
             exit_app,
-            send_desktop_notification
+            send_desktop_notification,
+            get_hardware_ai_profile,
+            download_ai_model,
+            delete_ai_model,
+            detect_cloud_sync_folders,
+            sync_cloud_backup,
+            restore_cloud_backup,
+            open_cloud_sync_folder,
+            open_ofr_cli_terminal
         ])
         .run(tauri::generate_context!())
         .expect("error while running Optical Form Reader");

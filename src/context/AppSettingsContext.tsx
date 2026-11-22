@@ -615,7 +615,7 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
       {/* Welcome & Onboarding Tour Modal */}
       <OnboardingModal isOpen={isOnboardingOpen} onClose={closeOnboarding} />
 
-      {/* Power Pilot Floating Zero-Shift Toast Container */}
+      {/* Floating Zero-Shift Toast Container */}
       <div
         id="toast-container"
         data-pos={prefs.toastPosition}
@@ -627,7 +627,7 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
         ))}
       </div>
 
-      {/* Power Pilot External Link Confirmation Modal (#modal-confirm-link) */}
+      {/* External Link Confirmation Modal (#modal-confirm-link) */}
       {pendingExternalUrl && (
         <div
           id="modal-confirm-link"
@@ -694,7 +694,7 @@ export function AppSettingsProvider({ children }: { children: ReactNode }) {
         </div>
       )}
 
-      {/* Power Pilot Exit / Active Scan Close Confirmation Modal */}
+      {/* Exit / Active Scan Close Confirmation Modal */}
       {exitModalOpen && (
         <div
           id="modal-confirm-exit"

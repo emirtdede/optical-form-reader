@@ -28,10 +28,11 @@
     "msix:build": "node scripts/build-msix.mjs",
     "msix:verify": "node scripts/verify-msix.mjs",
     "check:no-long-dash": "node scripts/check-no-long-dash.mjs",
+    "check:zero-leakage": "node scripts/check-zero-leakage.mjs",
     "check:i18n": "node scripts/check-i18n.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check": "node scripts/check-no-long-dash.mjs && npm run build && npm test && npm run check:i18n",
+    "check": "node scripts/check-no-long-dash.mjs && node scripts/check-zero-leakage.mjs && npm run build && npm test && npm run check:i18n",
     "release:build": "node scripts/build-release.mjs",
     "audit:prod": "npm audit --omit=dev"
   },

@@ -61,7 +61,7 @@ describe('OnboardingModal, Custom HEX Theme, 18 App Icons, Accessibility Zoom & 
     Object.defineProperty(globalThis, 'localStorage', { value: mem, configurable: true, writable: true });
   });
 
-  it('renders all 6 sequential steps (Language -> Theme -> App Icon -> Welcome -> Workflow -> Ready)', () => {
+  it('renders all 7 Agendamea-parity sequential steps (Language -> Theme -> App Icon -> Welcome Hero -> 4 Core Modules -> Smart Grading & Shortcuts -> Privacy & Cloud Sync)', () => {
     let closed = false;
     renderWithProviders(
       <OnboardingModal
@@ -74,35 +74,45 @@ describe('OnboardingModal, Custom HEX Theme, 18 App Icons, Accessibility Zoom & 
 
     expect(screen.getByTestId('onboarding-modal')).toBeInTheDocument();
 
-    // Step 1: Dedicated Language Selection
+    // Step 1 / 7: Dedicated Language Selection + Selected Language Readout
     expect(screen.getByTestId('onboarding-step-1')).toBeInTheDocument();
     expect(screen.getByTestId('onboarding-lang-search')).toBeInTheDocument();
+    expect(screen.getByTestId('welcome-selected-language')).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('onboarding-lang-tr'));
 
-    // Step 2: Dedicated Theme, Mode, Custom HEX & Accessibility
+    // Step 2 / 7: Appearance Mode (Light/Dark/System), Theme Swatches & 2D ColorSpectrumPicker
     fireEvent.click(screen.getByRole('button', { name: /İleri|Next/i }));
     expect(screen.getByTestId('onboarding-step-2')).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('welcome-mode-system'));
     fireEvent.click(screen.getByTestId('onboarding-custom-theme-btn'));
     expect(document.documentElement.dataset.colorTheme).toBe(CUSTOM_THEME_ID);
     expect(screen.getByTestId('onboarding-custom-hex-studio')).toBeInTheDocument();
+    expect(screen.getByTestId('color-spectrum-sv')).toBeInTheDocument();
+    expect(screen.getByTestId('color-spectrum-hue')).toBeInTheDocument();
 
-    // Step 3: Dedicated Application Icon Selection
+    // Step 3 / 7: Application Icon Selection + Custom Icon ColorSpectrumPicker
     fireEvent.click(screen.getByRole('button', { name: /İleri|Next/i }));
     expect(screen.getByTestId('onboarding-step-3')).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('onboarding-icon-theme-auto'));
     expect(document.documentElement.dataset.appIcon).toBe('theme-auto');
+    fireEvent.click(screen.getByTestId('onboarding-icon-theme-custom'));
+    expect(document.documentElement.dataset.appIcon).toBe('theme-custom');
 
-    // Step 4: Welcome & Core Architecture Cards (Preserved Step 1)
+    // Step 4 / 7: Welcome Hero & 3 Bottom Pillars
     fireEvent.click(screen.getByRole('button', { name: /İleri|Next/i }));
     expect(screen.getByTestId('onboarding-step-4')).toBeInTheDocument();
 
-    // Step 5: 3-Step Optical Grading Workflow (Preserved Step 2)
+    // Step 5 / 7: 4 Core Capabilities (2x2 Grid)
     fireEvent.click(screen.getByRole('button', { name: /İleri|Next/i }));
     expect(screen.getByTestId('onboarding-step-5')).toBeInTheDocument();
 
-    // Step 6: Ready to Launch & Quick Start
+    // Step 6 / 7: Smart Grading Preview & Keyboard Shortcuts
     fireEvent.click(screen.getByRole('button', { name: /İleri|Next/i }));
     expect(screen.getByTestId('onboarding-step-6')).toBeInTheDocument();
+
+    // Step 7 / 7: Privacy, Multi-Cloud Sync & Recovery
+    fireEvent.click(screen.getByRole('button', { name: /İleri|Next/i }));
+    expect(screen.getByTestId('onboarding-step-7')).toBeInTheDocument();
 
     // Finish tour
     fireEvent.click(screen.getByRole('button', { name: /^Başla$|^Get Started$/i }));

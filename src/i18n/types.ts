@@ -46,6 +46,8 @@ export interface UiDictionary {
     scan: string;
     templates: string;
     results: string;
+    assistant: string;
+    integrations: string;
     guide: string;
     docs: string;
     data: string;

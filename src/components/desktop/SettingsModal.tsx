@@ -420,7 +420,7 @@ export function SettingsModal({ isOpen, initialTab = 'appearance', onClose }: Se
                 </div>
               </section>
 
-              {/* Monochrome Application & Desktop Icon Picker (Power Pilot Parity) */}
+              {/* Monochrome Application & Desktop Icon Picker */}
               <section className="v-settings-group">
                 <div className="v-group-head">
                   <h3 id="v-app-icon-label">{t.settingsModal.appIconTitle}</h3>

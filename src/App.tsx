@@ -14,6 +14,8 @@ const HomePage = lazy(() => import('./pages/HomePage').then((m) => ({ default: m
 const ScannerPage = lazy(() => import('./pages/ScannerPage').then((m) => ({ default: m.ScannerPage })));
 const TemplatesPage = lazy(() => import('./pages/TemplatesPage').then((m) => ({ default: m.TemplatesPage })));
 const ResultsPage = lazy(() => import('./pages/ResultsPage').then((m) => ({ default: m.ResultsPage })));
+const AiAssistantPage = lazy(() => import('./pages/AiAssistantPage').then((m) => ({ default: m.AiAssistantPage })));
+const IntegrationsPage = lazy(() => import('./pages/IntegrationsPage').then((m) => ({ default: m.IntegrationsPage })));
 const GuidePage = lazy(() => import('./pages/GuidePage').then((m) => ({ default: m.GuidePage })));
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 const AboutPage = lazy(() => import('./pages/AboutPage').then((m) => ({ default: m.AboutPage })));
@@ -96,6 +98,8 @@ function RoutedApplication() {
           <Route path="/sablonlar" element={<TemplatesPage />} />
           <Route path="/sonuclar" element={<ResultsPage />} />
           <Route path="/sonuclar/:sessionId" element={<ResultsPage />} />
+          <Route path="/asistan" element={<AiAssistantPage />} />
+          <Route path="/entegrasyonlar" element={<IntegrationsPage />} />
           <Route path="/rehber" element={<GuidePage />} />
           <Route path="/ayarlar" element={<SettingsPage />} />
           <Route path="/hakkinda" element={<AboutPage />} />

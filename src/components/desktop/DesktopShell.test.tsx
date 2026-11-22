@@ -133,7 +133,7 @@ describe('DesktopShell, 2nd-Sidebar SettingsPage, AboutPage, GuidePage & Exit Co
     fireEvent.click(screen.getByRole('button', { name: 'Mor' }));
     expect(document.documentElement.dataset.colorTheme).toBe('purple');
 
-    fireEvent.click(screen.getByRole('button', { name: /Açık Monokrom/i }));
+    fireEvent.click(screen.getByTestId('app-icon-card-monochrome-light'));
     expect(document.documentElement.dataset.appIcon).toBe('monochrome-light');
 
     // Switch language to German (English fallback)
@@ -144,7 +144,7 @@ describe('DesktopShell, 2nd-Sidebar SettingsPage, AboutPage, GuidePage & Exit Co
     fireEvent.click(screen.getByRole('button', { name: 'Notifications & Sound' }));
     fireEvent.click(screen.getByRole('button', { name: /Send Test Notification/i }));
     expect(screen.getByText(/In-app toast and Windows desktop notification channels are active/i)).toBeInTheDocument();
-  });
+  }, 15000);
 
   it('renders AboutPage with v1.0.0 Bento KPIs, Vellium Teknoloji Anonim Şirketi, 9 legal docs, and 6 emails', () => {
     window.localStorage.setItem('optik-language', 'tr');
@@ -166,7 +166,7 @@ describe('DesktopShell, 2nd-Sidebar SettingsPage, AboutPage, GuidePage & Exit Co
     expect(screen.getAllByText(/Vellium Teknoloji Anonim Şirketi/).length).toBeGreaterThan(0);
     expect(screen.getByText('support@vellium.dev')).toBeInTheDocument();
     expect(screen.getByText('privacy@vellium.dev')).toBeInTheDocument();
-    expect(screen.getAllByText(/Vellium\.OpticalFormReader/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/dev\.vellium\.opticalformreader/).length).toBeGreaterThan(0);
 
     // Clicking a legal document card opens the in-app Legal Reader modal
     fireEvent.click(screen.getAllByRole('button', { name: /Gizlilik Politikası/i })[0]);

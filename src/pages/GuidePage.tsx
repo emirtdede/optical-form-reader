@@ -1,11 +1,13 @@
-import { useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
   AlertCircle,
   BarChart3,
   BookOpen,
+  Bot,
   Camera,
   CheckCircle2,
+  Cloud,
   Download,
   Edit3,
   FileCheck2,
@@ -15,15 +17,14 @@ import {
   LayoutTemplate,
   ListChecks,
   Maximize2,
+  Network,
   Printer,
   Rocket,
   RotateCcw,
   ScanLine,
   Search,
   ShieldAlert,
-  ShieldCheck,
   SunMedium,
-  X,
   XCircle,
 } from 'lucide-react';
 import { FORM_TEMPLATE_URL } from '../constants';
@@ -37,6 +38,9 @@ type DocsSectionId =
   | 'camera'
   | 'booklets'
   | 'analytics'
+  | 'ai-rag'
+  | 'integrations'
+  | 'cloud'
   | 'shortcuts';
 
 const steps = [
@@ -126,12 +130,34 @@ const bubbleLetters = ['A', 'B', 'C', 'D', 'E'];
 export function GuidePage() {
   const { lang, t } = useI18n();
   const { prefs } = useAppSettings();
+  const [searchParams] = useSearchParams();
   const isTr = lang === 'tr';
 
   const [activeSection, setActiveSection] = useState<DocsSectionId>('quickstart');
   const [searchQuery, setSearchQuery] = useState('');
   const [interactiveSelections, setInteractiveSelections] = useState<string[]>(['B']);
   const paneRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const sec = searchParams.get('section') as DocsSectionId | null;
+    if (
+      sec &&
+      [
+        'quickstart',
+        'templates',
+        'marking',
+        'camera',
+        'booklets',
+        'analytics',
+        'ai-rag',
+        'integrations',
+        'cloud',
+        'shortcuts',
+      ].includes(sec)
+    ) {
+      setActiveSection(sec);
+    }
+  }, [searchParams]);
 
   const selectSection = (id: DocsSectionId) => {
     setActiveSection(id);
@@ -244,6 +270,36 @@ export function GuidePage() {
       icon: BarChart3,
     },
     {
+      id: 'ai-rag',
+      group: isTr ? 'YAPAY ZEKA VE OTOMASYON' : 'LOCAL AI & AUTOMATION',
+      title: isTr ? 'AI Asistan ve Yerel RAG' : 'AI Assistant & Local RAG',
+      summary: isTr
+        ? 'Sistem gücüne göre indirilebilir yerel yapay zeka modelleri (Qwen3 / Whisper) ve çevrimdışı BM25 doküman RAG.'
+        : 'Hardware-tailored downloadable local AI models (Qwen3 / Whisper) and offline BM25 documentation RAG.',
+      keywords: 'ai asistan yerel yapay zeka rag bm25 qwen3 whisper indir sil aktif pasif',
+      icon: Bot,
+    },
+    {
+      id: 'integrations',
+      group: isTr ? 'YAPAY ZEKA VE OTOMASYON' : 'LOCAL AI & AUTOMATION',
+      title: isTr ? 'REST API, Webhooks, MCP ve CLI' : 'REST API, Webhooks, MCP & CLI',
+      summary: isTr
+        ? '127.0.0.1:18470 REST API, HMAC-SHA256 HTTPS Webhooks, Claude/Cursor/Antigravity MCP sunucusu ve ofr CLI.'
+        : '127.0.0.1:18470 REST API, HMAC-SHA256 HTTPS Webhooks, Claude/Cursor/Antigravity MCP server, and ofr CLI.',
+      keywords: 'rest api 18470 webhook hmac sha256 mcp claude cursor antigravity cli terminal powershell',
+      icon: Network,
+    },
+    {
+      id: 'cloud',
+      group: isTr ? 'REFERANS' : 'REFERENCE',
+      title: isTr ? 'Çoklu Bulut Klasör Eşitleme' : 'Multi-Cloud Folder Sync',
+      summary: isTr
+        ? 'OneDrive, Google Drive, iCloud Drive, Dropbox ve Özel Klasör ile 15 günlük otomatik yedek geçmişi.'
+        : 'OneDrive, Google Drive, iCloud Drive, Dropbox, and Custom Folder sync with 15-day rolling backups.',
+      keywords: 'bulut yedekleme onedrive google drive icloud dropbox özel klasör cloud sync',
+      icon: Cloud,
+    },
+    {
       id: 'shortcuts',
       group: isTr ? 'REFERANS' : 'REFERENCE',
       title: isTr ? 'Kısayollar ve Sorun Giderme' : 'Shortcuts & Troubleshooting',
@@ -278,7 +334,7 @@ export function GuidePage() {
 
   return (
     <div id="view-docs" className="pp-split-layout">
-      {/* 2nd Sidebar (Power Pilot Documentation Center Split Sidebar) */}
+      {/* 2nd Sidebar (Documentation Center Split Sidebar) */}
       <aside
         className="pp-split-sidebar"
         aria-label={isTr ? 'Dokümantasyon konuları' : 'Documentation topics'}
@@ -700,6 +756,151 @@ export function GuidePage() {
                       Her öğrenci için konu/bölüm başarı grafiği, soru bazlı doğru-yanlış anahtarı ve sınıf sıralaması içeren PDF karneleri tek dosyada veya ayrı ZIP olarak indirir.
                     </span>
                   </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* DOCS SUB-PAGE 7: LOCAL AI ASSISTANT & RAG */}
+          {activeSection === 'ai-rag' && (
+            <section id="docs-sec-ai-rag" className="pp-settings-section">
+              <div className="pp-section-bar">
+                <span className="pp-section-bar-icon">
+                  <Bot size={15} />
+                </span>
+                <h2 className="pp-section-bar-title">
+                  {isTr
+                    ? 'Sistem Gücüne Göre Yerel Yapay Zeka ve Çevrimdışı BM25 RAG'
+                    : 'Hardware-Aware Local AI & Offline BM25 RAG'}
+                </h2>
+              </div>
+
+              <div className="pp-bento-panel">
+                <div className="pp-docs-code-card">
+                  <div className="pp-docs-code-header">
+                    <span>
+                      {isTr
+                        ? 'Donanım Seviyelerine Göre İndirilebilir Yerel Modeller'
+                        : 'Hardware-Tailored Downloadable Local AI Models'}
+                    </span>
+                    <Bot size={15} />
+                  </div>
+                  <div className="pp-docs-cmd-row">
+                    <span className="v-row-title">OFR-Qwen3 0.6B Lite (4-8 GB RAM)</span>
+                    <span className="v-row-desc">
+                      395 MB boyutunda Q4_K_M kuantize model. Hafif dizüstü bilgisayarlarda düşük bellek tüketimiyle çalışır.
+                    </span>
+                  </div>
+                  <div className="pp-docs-cmd-row">
+                    <span className="v-row-title">OFR-Qwen3 1.7B Standart (8-16 GB RAM)</span>
+                    <span className="v-row-desc">
+                      1.12 GB boyutunda dengeli Türkçe/İngilizce RAG sentezi, KR-20 yorumlama ve özel şablon oluşturma modeli.
+                    </span>
+                  </div>
+                  <div className="pp-docs-cmd-row">
+                    <span className="v-row-title">OFR-Qwen3 4B Pro (16+ GB RAM)</span>
+                    <span className="v-row-desc">
+                      2.48 GB boyutunda derin madde/çeldirici analizi ve kurumsal raporlama modeli. Tüm modeller istenildiği an indirilebilir, silinebilir, aktif veya pasif yapılabilir.
+                    </span>
+                  </div>
+                </div>
+                <div className="pp-panel-actions">
+                  <Link className="pp-btn-primary" to="/asistan">
+                    <Bot size={14} />
+                    <span>{isTr ? 'AI Asistanı Aç' : 'Open AI Assistant'}</span>
+                  </Link>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* DOCS SUB-PAGE 8: REST API, WEBHOOKS, MCP & CLI */}
+          {activeSection === 'integrations' && (
+            <section id="docs-sec-integrations" className="pp-settings-section">
+              <div className="pp-section-bar">
+                <span className="pp-section-bar-icon">
+                  <Network size={15} />
+                </span>
+                <h2 className="pp-section-bar-title">
+                  {isTr
+                    ? 'Entegrasyonlar: Yerel REST API (18470), Webhooks, MCP ve CLI'
+                    : 'Integrations: Local REST API (18470), Webhooks, MCP & CLI'}
+                </h2>
+              </div>
+
+              <div className="pp-bento-panel">
+                <div className="pp-docs-code-card">
+                  <div className="pp-docs-code-header">
+                    <span>{isTr ? 'Otomasyon Kanalları' : 'Automation Channels'}</span>
+                    <Network size={15} />
+                  </div>
+                  <div className="pp-docs-cmd-row">
+                    <span className="v-row-title">Yerel REST API (127.0.0.1:18470)</span>
+                    <span className="v-row-desc">
+                      Admin, Operator ve Viewer yetkili SHA-256 Bearer API anahtarlarıyla yerel sınav okuma ve raporlama uç noktaları sunar.
+                    </span>
+                  </div>
+                  <div className="pp-docs-cmd-row">
+                    <span className="v-row-title">HTTPS Webhooks (HMAC-SHA256)</span>
+                    <span className="v-row-desc">
+                      Tarama tamamlandığında veya şüpheli kağıt algılandığında X-OFR-Signature-256 imzalı HTTPS POST bildirimi gönderir.
+                    </span>
+                  </div>
+                  <div className="pp-docs-cmd-row">
+                    <span className="v-row-title">MCP Sunucusu &amp; ofr CLI</span>
+                    <span className="v-row-desc">
+                      Claude Desktop, Cursor, Windsurf ve Google Antigravity için 8 araçlı MCP sunucusu ve PowerShell CLI otomasyonu sağlar.
+                    </span>
+                  </div>
+                </div>
+                <div className="pp-panel-actions">
+                  <Link className="pp-btn-primary" to="/entegrasyonlar">
+                    <Network size={14} />
+                    <span>{isTr ? 'Entegrasyonlar Sayfasını Aç' : 'Open Integrations Page'}</span>
+                  </Link>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* DOCS SUB-PAGE 9: MULTI-CLOUD SYNC */}
+          {activeSection === 'cloud' && (
+            <section id="docs-sec-cloud" className="pp-settings-section">
+              <div className="pp-section-bar">
+                <span className="pp-section-bar-icon">
+                  <Cloud size={15} />
+                </span>
+                <h2 className="pp-section-bar-title">
+                  {isTr
+                    ? 'Çoklu Bulut Klasör Eşitleme (OneDrive, Google Drive, iCloud, Dropbox)'
+                    : 'Multi-Cloud Folder Sync (OneDrive, Google Drive, iCloud, Dropbox)'}
+                </h2>
+              </div>
+
+              <div className="pp-bento-panel">
+                <div className="pp-docs-code-card">
+                  <div className="pp-docs-code-header">
+                    <span>{isTr ? 'Sunucusuz Yerel Klasör Eşitleme Mimarisi' : 'Serverless Local Folder Sync'}</span>
+                    <Cloud size={15} />
+                  </div>
+                  <div className="pp-docs-cmd-row">
+                    <span className="v-row-title">5 Bulut Sağlayıcı Desteği</span>
+                    <span className="v-row-desc">
+                      Microsoft OneDrive, Google Drive, iCloud Drive, Dropbox veya Özel Klasör üzerinden üçüncü taraf sunucu olmadan yedekleme yapar.
+                    </span>
+                  </div>
+                  <div className="pp-docs-cmd-row">
+                    <span className="v-row-title">15 Günlük Otomatik Yedek Geçmişi</span>
+                    <span className="v-row-desc">
+                      Her eşitlemede ana yedek dosyası güncellenir ve backups/ alt klasöründe son 15 günün tarihli kopyaları saklanır.
+                    </span>
+                  </div>
+                </div>
+                <div className="pp-panel-actions">
+                  <Link className="pp-btn-primary" to="/ayarlar?section=data">
+                    <Cloud size={14} />
+                    <span>{isTr ? 'Bulut Yedekleme Ayarlarını Aç' : 'Open Cloud Backup Settings'}</span>
+                  </Link>
                 </div>
               </div>
             </section>

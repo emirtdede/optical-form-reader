@@ -53,7 +53,8 @@ export function DesktopShell({ children }: DesktopShellProps) {
     () => typeof window !== 'undefined' && window.innerWidth < 960 && window.innerWidth >= 768,
   );
 
-  const isSplitView = pathname === '/ayarlar' || pathname === '/rehber';
+  const isSplitView =
+    pathname === '/ayarlar' || pathname === '/rehber' || pathname === '/entegrasyonlar';
 
   useEffect(() => {
     const syncWidth = () => {
@@ -126,6 +127,8 @@ export function DesktopShell({ children }: DesktopShellProps) {
           '4': '/rehber',
           '5': '/ayarlar',
           '6': '/hakkinda',
+          '7': '/asistan',
+          '8': '/entegrasyonlar',
         };
         const route = routes[event.key];
         if (route) {

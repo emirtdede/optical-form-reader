@@ -10,6 +10,7 @@ import {
   normalizeHexColor,
   readInitialThemeState,
   resolveAppIconPalette,
+  resolveEffectiveThemeMode,
   type AppIconVariant,
   type ColorTheme,
   type ThemeId,
@@ -18,8 +19,10 @@ import {
 
 export interface ThemeContextValue {
   mode: ThemeMode;
+  effectiveMode: 'light' | 'dark';
   themeId: ThemeId;
   customAccent: string;
+  customIconAccent: string;
   reduceMotion: boolean;
   appIconVariant: AppIconVariant;
   uiScale: number;
@@ -30,6 +33,7 @@ export interface ThemeContextValue {
   toggleMode: () => void;
   setThemeId: (id: ThemeId) => void;
   setCustomAccent: (hex: string) => void;
+  setCustomIconAccent: (hex: string) => void;
   setReduceMotion: (reduce: boolean) => void;
   setAppIconVariant: (variant: AppIconVariant) => void;
   setUiScale: (scale: number) => void;
@@ -39,8 +43,10 @@ export interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue>({
   mode: 'light',
+  effectiveMode: 'light',
   themeId: DEFAULT_THEME_ID,
   customAccent: DEFAULT_CUSTOM_ACCENT,
+  customIconAccent: DEFAULT_CUSTOM_ACCENT,
   reduceMotion: false,
   appIconVariant: DEFAULT_APP_ICON_VARIANT,
   uiScale: 100,
@@ -51,6 +57,7 @@ const ThemeContext = createContext<ThemeContextValue>({
   toggleMode: () => {},
   setThemeId: () => {},
   setCustomAccent: () => {},
+  setCustomIconAccent: () => {},
   setReduceMotion: () => {},
   setAppIconVariant: () => {},
   setUiScale: () => {},
@@ -63,11 +70,33 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [mode, setModeState] = useState<ThemeMode>(initial.mode);
   const [themeId, setThemeIdState] = useState<ThemeId>(initial.themeId);
   const [customAccent, setCustomAccentState] = useState<string>(initial.customAccent);
+  const [customIconAccent, setCustomIconAccentState] = useState<string>(initial.customIconAccent);
   const [reduceMotion, setReduceMotionState] = useState<boolean>(initial.reduceMotion);
   const [appIconVariant, setAppIconVariantState] = useState<AppIconVariant>(initial.appIconVariant);
   const [uiScale, setUiScaleState] = useState<number>(initial.uiScale);
   const [highContrast, setHighContrastState] = useState<boolean>(initial.highContrast);
   const [largeFocusRing, setLargeFocusRingState] = useState<boolean>(initial.largeFocusRing);
+  const [systemPrefersDark, setSystemPrefersDark] = useState<boolean>(() =>
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(prefers-color-scheme: dark)').matches
+      : false,
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e: MediaQueryListEvent) => setSystemPrefersDark(e.matches);
+    if (typeof mq.addEventListener === 'function') {
+      mq.addEventListener('change', handler);
+      return () => mq.removeEventListener('change', handler);
+    }
+    return undefined;
+  }, []);
+
+  const effectiveMode = useMemo<'light' | 'dark'>(
+    () => (mode === 'system' ? (systemPrefersDark ? 'dark' : 'light') : resolveEffectiveThemeMode(mode)),
+    [mode, systemPrefersDark],
+  );
 
   useEffect(() => {
     applyThemeToDocument(
@@ -79,13 +108,31 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       uiScale,
       highContrast,
       largeFocusRing,
+      customIconAccent,
     );
-  }, [themeId, mode, reduceMotion, appIconVariant, customAccent, uiScale, highContrast, largeFocusRing]);
+  }, [
+    themeId,
+    mode,
+    effectiveMode,
+    reduceMotion,
+    appIconVariant,
+    customAccent,
+    customIconAccent,
+    uiScale,
+    highContrast,
+    largeFocusRing,
+  ]);
 
   useEffect(() => {
-    const palette = resolveAppIconPalette(appIconVariant, themeId, mode, customAccent);
+    const palette = resolveAppIconPalette(
+      appIconVariant,
+      themeId,
+      effectiveMode,
+      customAccent,
+      customIconAccent,
+    );
     void setDesktopAppIconVariant(appIconVariant, palette);
-  }, [appIconVariant, themeId, mode, customAccent]);
+  }, [appIconVariant, themeId, effectiveMode, customAccent, customIconAccent]);
 
   // Global Accessibility Keyboard Zoom (Ctrl + + / - / 0)
   useEffect(() => {
@@ -107,11 +154,21 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setMode = useCallback((next: ThemeMode) => setModeState(next), []);
-  const toggleMode = useCallback(() => setModeState((c) => (c === 'dark' ? 'light' : 'dark')), []);
+  const toggleMode = useCallback(
+    () => setModeState((c) => (resolveEffectiveThemeMode(c) === 'dark' ? 'light' : 'dark')),
+    [],
+  );
   const setThemeId = useCallback((next: ThemeId) => setThemeIdState(next), []);
   const setCustomAccent = useCallback((rawHex: string) => {
     const normalized = normalizeHexColor(rawHex);
-    if (normalized) setCustomAccentState(normalized);
+    if (normalized) {
+      setCustomAccentState(normalized);
+      setCustomIconAccentState(normalized);
+    }
+  }, []);
+  const setCustomIconAccent = useCallback((rawHex: string) => {
+    const normalized = normalizeHexColor(rawHex);
+    if (normalized) setCustomIconAccentState(normalized);
   }, []);
   const setReduceMotion = useCallback((next: boolean) => setReduceMotionState(next), []);
   const setAppIconVariant = useCallback((next: AppIconVariant) => setAppIconVariantState(next), []);
@@ -122,8 +179,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const value = useMemo<ThemeContextValue>(
     () => ({
       mode,
+      effectiveMode,
       themeId,
       customAccent,
+      customIconAccent,
       reduceMotion,
       appIconVariant,
       uiScale,
@@ -134,6 +193,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       toggleMode,
       setThemeId,
       setCustomAccent,
+      setCustomIconAccent,
       setReduceMotion,
       setAppIconVariant,
       setUiScale,
@@ -142,8 +202,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }),
     [
       mode,
+      effectiveMode,
       themeId,
       customAccent,
+      customIconAccent,
       reduceMotion,
       appIconVariant,
       uiScale,
@@ -153,6 +215,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       toggleMode,
       setThemeId,
       setCustomAccent,
+      setCustomIconAccent,
       setReduceMotion,
       setAppIconVariant,
       setUiScale,

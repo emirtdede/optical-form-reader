@@ -96,10 +96,28 @@ await page.click('[data-testid="onboarding-modal"] button:has-text("İleri")');
 await page.waitForSelector('[data-testid="onboarding-step-6"]');
 await page.waitForTimeout(150);
 await page.screenshot({ path: path.join(OUT_DIR, 'proof-onboarding-step6.png') });
-await page.click('[data-testid="onboarding-modal"] button:has-text("Başla")');
+
+await page.click('[data-testid="onboarding-modal"] button:has-text("İleri")');
+await page.waitForSelector('[data-testid="onboarding-step-7"]');
+await page.waitForTimeout(150);
+await page.screenshot({ path: path.join(OUT_DIR, 'proof-onboarding-step7.png') });
+await page.click('[data-testid="welcome-step-start"]');
 await page.waitForTimeout(150);
 const modalGone = (await page.locator('[data-testid="onboarding-modal"]').count()) === 0;
-record('TS-007..TS-008', 'Onboarding Step 6 - Ready to Launch & Persistence', modalGone);
+record('TS-007..TS-008', 'Onboarding Step 6 & 7 - Agendamea 7-Step Flow & Persistence', modalGone);
+
+// 1.5 Verify AI Assistant (/asistan) & Integrations (/entegrasyonlar)
+await page.goto('http://127.0.0.1:4191/asistan?desktop=1', { waitUntil: 'networkidle' });
+await page.waitForSelector('[data-testid="ai-rag-response-card"]');
+await page.screenshot({ path: path.join(OUT_DIR, 'proof-ai-assistant-rag.png') });
+record('TS-AI-RAG', 'AI Assistant Hardware-Aware Models & Offline BM25 RAG', true);
+
+await page.goto('http://127.0.0.1:4191/entegrasyonlar?desktop=1', { waitUntil: 'networkidle' });
+await page.waitForSelector('[data-testid="generate-api-key-btn"]');
+await page.screenshot({ path: path.join(OUT_DIR, 'proof-integrations-mcp-cli.png') });
+record('TS-INTEGRATIONS', 'Integrations 2nd-Sidebar (REST API, Webhooks, MCP, CLI)', true);
+
+await page.goto('http://127.0.0.1:4191/tara?desktop=1', { waitUntil: 'networkidle' });
 
 // 2. Category B..E: Desktop Shell, ScannerPage & Camera Modal (TS-009..TS-045)
 const topbarCount = await page.locator('.topbar').count();
@@ -140,6 +158,9 @@ record('TS-068..TS-073', 'GuidePage 2nd-Sidebar Split Layout & 2B Simulator', do
 await page.goto('http://127.0.0.1:4191/ayarlar?desktop=1&section=appearance', { waitUntil: 'networkidle' });
 await page.click('[data-testid="custom-theme-add-btn"]');
 await page.click('[data-testid="app-icon-card-theme-auto"]');
+await page.evaluate(() => {
+  document.querySelector('.pp-split-content-pane')?.scrollTo({ top: 0, behavior: 'instant' });
+});
 await page.waitForTimeout(200);
 await page.screenshot({ path: path.join(OUT_DIR, 'proof-settings-custom-theme-icons.png') });
 
@@ -160,6 +181,10 @@ await page.evaluate(() => {
   localStorage.setItem('optik-theme-id', 'obsidian');
   localStorage.setItem('optik-app-icon', 'monochrome-dark');
 });
+await page.goto('http://127.0.0.1:4191/ayarlar?desktop=1&section=data', { waitUntil: 'networkidle' });
+await page.waitForSelector('[data-testid="cloud-sync-panel"]');
+await page.screenshot({ path: path.join(OUT_DIR, 'proof-settings-cloud-sync.png') });
+
 await page.goto('http://127.0.0.1:4191/ayarlar?desktop=1&section=general', { waitUntil: 'networkidle' });
 await page.click('[data-testid="check-updates-btn"]');
 await page.waitForTimeout(300);

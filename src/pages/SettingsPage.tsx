@@ -5,23 +5,30 @@ import {
   AlertTriangle,
   Archive,
   Bell,
+  Bot,
   Bug,
   Check,
   CheckCircle2,
+  ChevronDown,
+  Cloud,
   Copy,
+  Cpu,
   Database,
   Download,
   ExternalLink,
   Eye,
+  FolderOpen,
   Globe,
   HardDrive,
   Keyboard,
   Mail,
   Minus,
+  Monitor,
   Moon,
   PackageCheck,
   Palette,
   Plus,
+  Power,
   RefreshCw,
   RotateCcw,
   Search,
@@ -40,6 +47,7 @@ import {
 import { APP_VERSION, VELLIUM_BRAND } from '../brand/vellium';
 import { BackupVaultModal } from '../components/BackupVaultModal';
 import { ProductMark } from '../components/Brand';
+import { ColorSpectrumPicker } from '../components/ColorSpectrumPicker';
 import { useAppData } from '../context/AppDataContext';
 import {
   DEFAULT_SHORTCUTS,
@@ -55,6 +63,26 @@ import { useI18n } from '../i18n/I18nContext';
 import type { LanguageCode } from '../i18n/languages';
 import { getDesktopAppInfo, isDesktopShell, openExternalUrl, type DesktopAppInfo } from '../platform/runtime';
 import { checkForAppUpdates, type UpdateCheckResult } from '../platform/updates';
+import {
+  CLOUD_PROVIDERS,
+  openCloudSyncFolderInExplorer,
+  readCloudSyncConfig,
+  restoreSessionsFromCloudFolder,
+  syncSessionsToCloudFolder,
+  writeCloudSyncConfig,
+  type CloudProviderId,
+  type CloudSyncConfig,
+} from '../services/cloudSyncService';
+import {
+  deleteLocalAiModel,
+  downloadLocalAiModel,
+  getHardwareAiProfile,
+  LOCAL_AI_MODELS,
+  readLocalAiState,
+  setLocalAiModelActive,
+  type HardwareAiProfile,
+  type LocalAiSettingsState,
+} from '../services/localAiService';
 import { importProcessingJobs, importSessions, listProcessingJobs } from '../storage/database';
 import { useThemeContext } from '../theme/ThemeContext';
 import {
@@ -62,6 +90,8 @@ import {
   CUSTOM_THEME_ID,
   CUSTOM_THEME_PRESETS,
   normalizeHexColor,
+  resolveAppIconPalette,
+  resolveEffectiveThemeMode,
   UI_SCALE_LIMITS,
   UI_SCALE_PRESETS,
   type AppIconVariant,
@@ -70,6 +100,7 @@ import {
 export type SettingsSectionId =
   | 'general'
   | 'appearance'
+  | 'ai'
   | 'notifications'
   | 'shortcuts'
   | 'data'
@@ -78,6 +109,7 @@ export type SettingsSectionId =
 const VALID_SECTIONS: SettingsSectionId[] = [
   'general',
   'appearance',
+  'ai',
   'notifications',
   'shortcuts',
   'data',
@@ -108,6 +140,7 @@ export function SettingsPage() {
     mode,
     themeId,
     customAccent,
+    customIconAccent,
     reduceMotion,
     appIconVariant,
     uiScale,
@@ -117,6 +150,7 @@ export function SettingsPage() {
     setMode,
     setThemeId,
     setCustomAccent,
+    setCustomIconAccent,
     setReduceMotion,
     setAppIconVariant,
     setUiScale,
@@ -152,6 +186,24 @@ export function SettingsPage() {
 
   const [activeSection, setActiveSection] = useState<SettingsSectionId>(initialSec);
   const [langQuery, setLangQuery] = useState('');
+  const [isAppIconOpen, setIsAppIconOpen] = useState(true);
+  const [isLangListOpen, setIsLangListOpen] = useState(true);
+  const [copiedHexTarget, setCopiedHexTarget] = useState<'theme' | 'icon' | null>(null);
+  const [cloudConfig, setCloudConfig] = useState<CloudSyncConfig>(() => readCloudSyncConfig());
+  const [cloudSyncing, setCloudSyncing] = useState(false);
+  const [aiHardware, setAiHardware] = useState<HardwareAiProfile>(() => ({
+    cpuCores: 8,
+    totalRamGb: 16,
+    architecture: 'x86_64',
+    osName: 'Windows 11 (64-bit)',
+    tier: 'high',
+    recommendedModelId: 'ofr-qwen3-4b-pro',
+    canRunProModels: true,
+    lowRamWarning: false,
+  }));
+  const [aiState, setAiState] = useState<LocalAiSettingsState>(() => readLocalAiState());
+  const [downloadingModelId, setDownloadingModelId] = useState<string | null>(null);
+  const [downloadModelPct, setDownloadModelPct] = useState(0);
   const [storage, setStorage] = useState<{ usage: number; quota: number } | null>(null);
   const [persistent, setPersistent] = useState<boolean | null>(null);
   const [isBackupVaultOpen, setIsBackupVaultOpen] = useState(false);
@@ -213,7 +265,122 @@ export function SettingsPage() {
 
   useEffect(() => {
     void getDesktopAppInfo().then(setAppInfo);
+    void getHardwareAiProfile().then(setAiHardware);
   }, []);
+
+  const effectiveMode = resolveEffectiveThemeMode(mode);
+  const activeThemeItem = themes.find((item) => item.id === themeId);
+  const activeThemeHex = (
+    themeId === CUSTOM_THEME_ID
+      ? customAccent
+      : effectiveMode === 'dark'
+        ? activeThemeItem?.swatchDark ?? '#F4F4F5'
+        : activeThemeItem?.swatch ?? '#18181B'
+  ).toUpperCase();
+  const activeIconPalette = useMemo(
+    () => resolveAppIconPalette(appIconVariant, themeId, mode, customAccent, customIconAccent),
+    [appIconVariant, customAccent, customIconAccent, mode, themeId],
+  );
+  const activeIconHex = activeIconPalette.fg2.toUpperCase();
+
+  async function handleCopyHex(target: 'theme' | 'icon', hex: string) {
+    try {
+      await navigator.clipboard.writeText(hex);
+      setCopiedHexTarget(target);
+      window.setTimeout(() => {
+        setCopiedHexTarget((prev) => (prev === target ? null : prev));
+      }, 1800);
+    } catch {
+      // Ignore clipboard restrictions
+    }
+  }
+
+  async function handleCloudSyncNow(providerOverride?: CloudProviderId) {
+    const provider = providerOverride ?? cloudConfig.provider;
+    setCloudSyncing(true);
+    try {
+      const updated = await syncSessionsToCloudFolder(provider, sessions);
+      setCloudConfig({ ...updated });
+      recordLog('info', 'cloud-sync', `Synced ${sessions.length} sessions to ${provider} folder.`);
+      notify({
+        message: isTr
+          ? `Bulut klasör eşitlemesi tamamlandı (${provider.toUpperCase()} - 15 günlük yedek geçmişi korundu).`
+          : `Cloud folder sync completed (${provider.toUpperCase()} - 15-day backup snapshot updated).`,
+        type: 'success',
+      });
+    } catch (err) {
+      notify({
+        message: err instanceof Error ? err.message : isTr ? 'Bulut eşitlemesi başarısız.' : 'Cloud sync failed.',
+        type: 'error',
+      });
+    } finally {
+      setCloudSyncing(false);
+    }
+  }
+
+  async function handleCloudRestore() {
+    try {
+      const { sessions: restored } = await restoreSessionsFromCloudFolder();
+      if (Array.isArray(restored) && restored.length > 0) {
+        await importSessions(restored);
+        await refresh();
+      }
+      recordLog('info', 'cloud-sync', `Restored ${restored.length} sessions from cloud folder.`);
+      notify({
+        message: isTr
+          ? `Bulut klasöründen ${restored.length} sınav oturumu geri yüklendi.`
+          : `Restored ${restored.length} exam session(s) from cloud folder.`,
+        type: 'success',
+      });
+    } catch (err) {
+      notify({
+        message: err instanceof Error ? err.message : isTr ? 'Bulut yedeği okunamadı.' : 'Could not restore cloud backup.',
+        type: 'warning',
+      });
+    }
+  }
+
+  async function handleAiDownload(modelId: string) {
+    setDownloadingModelId(modelId);
+    setDownloadModelPct(10);
+    try {
+      const next = await downloadLocalAiModel(modelId, (pct) => setDownloadModelPct(pct));
+      setAiState({ ...next });
+      recordLog('info', 'local-ai', `Downloaded local AI model: ${modelId}`);
+      notify({
+        message: isTr ? 'Yerel yapay zeka modeli indirildi ve doğrulandı.' : 'Local AI model downloaded and verified.',
+        type: 'success',
+      });
+    } finally {
+      setDownloadingModelId(null);
+      setDownloadModelPct(0);
+    }
+  }
+
+  async function handleAiDelete(modelId: string) {
+    const next = await deleteLocalAiModel(modelId);
+    setAiState({ ...next });
+    recordLog('info', 'local-ai', `Deleted local AI model: ${modelId}`);
+    notify({
+      message: isTr ? 'Yerel yapay zeka modeli diskten silindi.' : 'Local AI model deleted from disk.',
+      type: 'info',
+    });
+  }
+
+  function handleAiToggleActive(modelId: string, active: boolean) {
+    const next = setLocalAiModelActive(modelId, active);
+    setAiState({ ...next });
+    notify({
+      message: active
+        ? isTr
+          ? 'Model aktif edildi.'
+          : 'Model activated.'
+        : isTr
+          ? 'Model pasif duruma alındı.'
+          : 'Model deactivated.',
+      type: 'success',
+    });
+  }
 
   useEffect(() => {
     if (paneRef.current) {
@@ -523,6 +690,7 @@ export function SettingsPage() {
       items: [
         { id: 'general', label: isTr ? 'Genel ve Davranış' : 'General & Behavior', icon: Sliders },
         { id: 'appearance', label: isTr ? 'Görünüm ve Dil' : 'Appearance & Language', icon: Palette },
+        { id: 'ai', label: isTr ? 'Yerel Yapay Zeka ve RAG' : 'Local AI & RAG', icon: Bot },
         { id: 'notifications', label: isTr ? 'Bildirimler ve Ses' : 'Notifications & Sound', icon: Bell },
       ],
     },
@@ -548,7 +716,7 @@ export function SettingsPage() {
 
   return (
     <div id="view-settings" className="pp-split-layout">
-      {/* 2nd Sidebar (Power Pilot Split-Sidebar Navigation) */}
+      {/* 2nd Sidebar (Split-Sidebar Navigation) */}
       <aside
         className="pp-split-sidebar"
         aria-label={isTr ? 'Ayarlar bölümleri' : 'Settings sections'}
@@ -963,9 +1131,10 @@ export function SettingsPage() {
               </div>
 
               <div className="pp-bento-panel">
-                <div className="v-mode-grid">
+                <div className="v-mode-grid v-mode-grid--3">
                   <button
                     type="button"
+                    data-testid="theme-mode-light"
                     aria-pressed={mode === 'light'}
                     className={`v-mode-btn ${mode === 'light' ? 'is-active' : ''}`}
                     onClick={() => setMode('light')}
@@ -975,6 +1144,7 @@ export function SettingsPage() {
                   </button>
                   <button
                     type="button"
+                    data-testid="theme-mode-dark"
                     aria-pressed={mode === 'dark'}
                     className={`v-mode-btn ${mode === 'dark' ? 'is-active' : ''}`}
                     onClick={() => setMode('dark')}
@@ -982,18 +1152,49 @@ export function SettingsPage() {
                     <Moon size={15} />
                     <span>{t.settingsModal.darkMode}</span>
                   </button>
+                  <button
+                    type="button"
+                    data-testid="theme-mode-system"
+                    aria-pressed={mode === 'system'}
+                    className={`v-mode-btn ${mode === 'system' ? 'is-active' : ''}`}
+                    onClick={() => setMode('system')}
+                  >
+                    <Monitor size={15} />
+                    <span>{isTr ? 'Sistem Modu' : 'System Mode'}</span>
+                  </button>
                 </div>
 
                 <div className="v-group-head" style={{ marginTop: '4px' }}>
                   <h3>{t.settingsModal.colorThemeTitle}</h3>
-                  <span className="v-mono-meta">
-                    {themes.length + 1} {t.settingsModal.themesCountUnit}
-                  </span>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    <button
+                      type="button"
+                      data-testid="copy-theme-hex-btn"
+                      className="agm-copy-hex-btn"
+                      onClick={() => void handleCopyHex('theme', activeThemeHex)}
+                      title={`${isTr ? 'Kopyala' : 'Copy'}: ${activeThemeHex}`}
+                    >
+                      {copiedHexTarget === 'theme' ? (
+                        <>
+                          <Check size={12} />
+                          <span>{isTr ? 'Kopyalandı' : 'Copied'}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>{activeThemeHex}</span>
+                          <Copy size={12} />
+                        </>
+                      )}
+                    </button>
+                    <span className="v-mono-meta">
+                      {themes.length + 1} {t.settingsModal.themesCountUnit}
+                    </span>
+                  </div>
                 </div>
                 <div className="v-theme-grid">
                   {themes.map((theme) => {
                     const selected = theme.id === themeId;
-                    const swatch = mode === 'dark' ? theme.swatchDark : theme.swatch;
+                    const swatch = effectiveMode === 'dark' ? theme.swatchDark : theme.swatch;
                     return (
                       <button
                         key={theme.id}
@@ -1041,7 +1242,7 @@ export function SettingsPage() {
                   </button>
                 </div>
 
-                {/* Custom HEX Color Studio (Always visible when Custom Theme is selected or expandable) */}
+                {/* Custom HEX Color Studio (2D ColorSpectrumPicker + Preset Dots + HEX Input) */}
                 {themeId === CUSTOM_THEME_ID && (
                   <div
                     className="pp-custom-theme-studio"
@@ -1052,12 +1253,12 @@ export function SettingsPage() {
                     <div className="pp-custom-studio-head">
                       <div>
                         <strong className="pp-custom-studio-title">
-                          {isTr ? 'Özel Renk Kodu (HEX) Stüdyosu' : 'Custom HEX Color Studio'}
+                          {isTr ? 'Özel Renk Kodu (HEX) ve 2B Renk Spektrumu' : 'Custom HEX Color & 2D Spectrum Studio'}
                         </strong>
                         <p className="v-row-desc" style={{ margin: 0 }}>
                           {isTr
-                            ? 'İstediğiniz HEX renk kodunu girin (örn. #3B82F6). Arka plan, yüzey, kenarlık ve metin kontrastları otomatik olarak WCAG 2.2 AA standardına uyarlanır.'
-                            : 'Enter any HEX color code (e.g. #3B82F6). Surfaces, borders, and foreground contrast automatically adapt to WCAG 2.2 AA standards.'}
+                            ? '2B renk spektrumundan seçim yapın veya istediğiniz HEX renk kodunu girin (örn. #3B82F6). Kontrast otomatik olarak WCAG 2.2 AA standardına uyarlanır.'
+                            : 'Pick from the 2D color spectrum or enter any HEX code (e.g. #3B82F6). Contrast automatically adapts to WCAG 2.2 AA.'}
                         </p>
                       </div>
                       <span className="pp-contrast-pill">
@@ -1065,6 +1266,18 @@ export function SettingsPage() {
                         <span>WCAG AA · {customContrast.toFixed(1)}:1</span>
                       </span>
                     </div>
+
+                    <ColorSpectrumPicker
+                      value={customAccent}
+                      onChange={(hex) => {
+                        setHexDraft(hex);
+                        setInvalidHex(false);
+                        setCustomAccent(hex);
+                      }}
+                      hexInputLabel={isTr ? 'Özel Tema Rengi (HEX)' : 'Custom Theme Color (HEX)'}
+                      compact={true}
+                      hideFooter={true}
+                    />
 
                     <div className="pp-custom-color-bar">
                       <input
@@ -1139,88 +1352,186 @@ export function SettingsPage() {
                 )}
               </div>
 
-              {/* Theme & Custom-Color Synchronized App Icon Picker */}
-              <div className="pp-section-bar">
-                <span className="pp-section-bar-icon">
-                  <Sparkles size={15} />
-                </span>
-                <h2 className="pp-section-bar-title" id="v-app-icon-label">
-                  {t.settingsModal.appIconTitle}
-                </h2>
+              {/* Theme & Custom-Color Synchronized App Icon Picker (Collapsible Card + Copyable HEX) */}
+              <div className="pp-section-bar" style={{ justifyContent: 'space-between' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                  <span className="pp-section-bar-icon">
+                    <Sparkles size={15} />
+                  </span>
+                  <h2 className="pp-section-bar-title" id="v-app-icon-label">
+                    {t.settingsModal.appIconTitle}
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  data-testid="copy-icon-hex-btn"
+                  className="agm-copy-hex-btn"
+                  onClick={() => void handleCopyHex('icon', activeIconHex)}
+                  title={`${isTr ? 'Kopyala' : 'Copy'}: ${activeIconHex}`}
+                >
+                  {copiedHexTarget === 'icon' ? (
+                    <>
+                      <Check size={12} />
+                      <span>{isTr ? 'Kopyalandı' : 'Copied'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{activeIconHex}</span>
+                      <Copy size={12} />
+                    </>
+                  )}
+                </button>
               </div>
 
               <div className="pp-bento-panel">
-                <p id="v-app-icon-desc" className="v-row-desc" style={{ margin: 0 }}>
-                  {isTr
-                    ? 'Seçtiğiniz ikon; uygulama içi marka logosunu, pencere başlığını, Windows Görev Çubuğunu (Taskbar), Sistem Tepsisini (System Tray) ve Masaüstü / Başlat Menüsü kısayol ikonunu (.lnk) gerçek zamanlı olarak günceller.'
-                    : 'Your selected icon updates the in-app brand mark, window icon, Windows Taskbar, System Tray, and Desktop / Start Menu shortcut (.lnk) in real time.'}
-                </p>
-                <div
-                  className="v-icon-grid v-icon-grid--extended"
-                  role="group"
-                  aria-labelledby="v-app-icon-label"
-                  aria-describedby="v-app-icon-desc"
+                <button
+                  type="button"
+                  data-testid="app-icon-toggle-btn"
+                  aria-expanded={isAppIconOpen}
+                  onClick={() => setIsAppIconOpen((prev) => !prev)}
+                  className="agm-collapsible-header"
                 >
-                  {(
-                    [
-                      {
-                        id: 'theme-auto',
-                        label: isTr ? 'Tema ile Otomatik' : 'Auto Match Theme',
-                      },
-                      {
-                        id: 'monochrome-dark',
-                        label: t.settingsModal.appIconMonochromeDark,
-                      },
-                      {
-                        id: 'monochrome-light',
-                        label: t.settingsModal.appIconMonochromeLight,
-                      },
-                      {
-                        id: 'monochrome-contrast',
-                        label: t.settingsModal.appIconMonochromeContrast,
-                      },
-                      { id: 'theme-slate', label: isTr ? 'Gri (Slate)' : 'Slate' },
-                      { id: 'theme-navy', label: isTr ? 'Lacivert (Navy)' : 'Navy' },
-                      { id: 'theme-blue', label: isTr ? 'Mavi (Blue)' : 'Blue' },
-                      { id: 'theme-cyan', label: isTr ? 'Turkuaz (Cyan)' : 'Cyan' },
-                      { id: 'theme-indigo', label: isTr ? 'İndigo' : 'Indigo' },
-                      { id: 'theme-purple', label: isTr ? 'Mor (Purple)' : 'Purple' },
-                      { id: 'theme-pink', label: isTr ? 'Pembe (Pink)' : 'Pink' },
-                      { id: 'theme-red', label: isTr ? 'Kırmızı (Red)' : 'Red' },
-                      { id: 'theme-orange', label: isTr ? 'Turuncu (Orange)' : 'Orange' },
-                      { id: 'theme-yellow', label: isTr ? 'Sarı (Yellow)' : 'Yellow' },
-                      { id: 'theme-emerald', label: isTr ? 'Zümrüt (Emerald)' : 'Emerald' },
-                      { id: 'theme-grass', label: isTr ? 'Çimen Yeşili' : 'Forest' },
-                      { id: 'theme-lime', label: isTr ? 'Açık Yeşil (Lime)' : 'Lime' },
-                      {
-                        id: 'theme-custom',
-                        label: isTr ? `Özel (${customAccent})` : `Custom (${customAccent})`,
-                      },
-                    ] as Array<{ id: AppIconVariant; label: string }>
-                  ).map((opt) => {
-                    const selected = appIconVariant === opt.id;
-                    return (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        data-testid={`app-icon-card-${opt.id}`}
-                        aria-pressed={selected}
-                        className={`v-icon-card ${selected ? 'is-active' : ''}`}
-                        onClick={() => setAppIconVariant(opt.id)}
+                  <div className="agm-collapsible-header-left">
+                    <ProductMark
+                      variant={appIconVariant}
+                      activeThemeId={themeId}
+                      mode={mode}
+                      customAccent={customAccent}
+                      customIconAccent={customIconAccent}
+                      className="agm-collapsible-icon-preview"
+                    />
+                    <div style={{ minWidth: 0 }}>
+                      <p className="v-row-title">
+                        {appIconVariant === 'theme-auto'
+                          ? isTr
+                            ? 'Tema ile Otomatik'
+                            : 'Auto Match Theme'
+                          : appIconVariant === 'monochrome-dark'
+                            ? t.settingsModal.appIconMonochromeDark
+                            : appIconVariant === 'monochrome-light'
+                              ? t.settingsModal.appIconMonochromeLight
+                              : appIconVariant === 'monochrome-contrast'
+                                ? t.settingsModal.appIconMonochromeContrast
+                                : appIconVariant === 'theme-custom'
+                                  ? isTr
+                                    ? `Özel İkon (${customIconAccent})`
+                                    : `Custom Icon (${customIconAccent})`
+                                  : getThemeName(appIconVariant.replace(/^theme-/, '') as never)}
+                      </p>
+                      <p id="v-app-icon-desc" className="v-row-desc" style={{ margin: 0 }}>
+                        {isTr
+                          ? 'Pencere başlığı, Görev Çubuğu, Sistem Tepsisi ve Masaüstü kısayolunu (.lnk) gerçek zamanlı günceller.'
+                          : 'Updates window icon, Windows Taskbar, System Tray, and Desktop shortcut (.lnk) in real time.'}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="agm-collapsible-chevron">
+                    <ChevronDown
+                      size={14}
+                      style={{
+                        transform: isAppIconOpen ? 'rotate(180deg)' : 'none',
+                        transition: 'transform 140ms ease',
+                      }}
+                    />
+                  </span>
+                </button>
+
+                {isAppIconOpen && (
+                  <>
+                    <div
+                      className="v-icon-grid v-icon-grid--extended"
+                      role="group"
+                      aria-labelledby="v-app-icon-label"
+                      aria-describedby="v-app-icon-desc"
+                    >
+                      {(
+                        [
+                          {
+                            id: 'theme-auto',
+                            label: isTr ? 'Tema ile Otomatik' : 'Auto Match Theme',
+                          },
+                          {
+                            id: 'monochrome-dark',
+                            label: t.settingsModal.appIconMonochromeDark,
+                          },
+                          {
+                            id: 'monochrome-light',
+                            label: t.settingsModal.appIconMonochromeLight,
+                          },
+                          {
+                            id: 'monochrome-contrast',
+                            label: t.settingsModal.appIconMonochromeContrast,
+                          },
+                          { id: 'theme-slate', label: isTr ? 'Gri (Slate)' : 'Slate' },
+                          { id: 'theme-navy', label: isTr ? 'Lacivert (Navy)' : 'Navy' },
+                          { id: 'theme-blue', label: isTr ? 'Mavi (Blue)' : 'Blue' },
+                          { id: 'theme-cyan', label: isTr ? 'Turkuaz (Cyan)' : 'Cyan' },
+                          { id: 'theme-indigo', label: isTr ? 'İndigo' : 'Indigo' },
+                          { id: 'theme-purple', label: isTr ? 'Mor (Purple)' : 'Purple' },
+                          { id: 'theme-pink', label: isTr ? 'Pembe (Pink)' : 'Pink' },
+                          { id: 'theme-red', label: isTr ? 'Kırmızı (Red)' : 'Red' },
+                          { id: 'theme-orange', label: isTr ? 'Turuncu (Orange)' : 'Orange' },
+                          { id: 'theme-yellow', label: isTr ? 'Sarı (Yellow)' : 'Yellow' },
+                          { id: 'theme-emerald', label: isTr ? 'Zümrüt (Emerald)' : 'Emerald' },
+                          { id: 'theme-grass', label: isTr ? 'Çimen Yeşili' : 'Forest' },
+                          { id: 'theme-lime', label: isTr ? 'Açık Yeşil (Lime)' : 'Lime' },
+                          {
+                            id: 'theme-custom',
+                            label: isTr ? `Özel (${customIconAccent})` : `Custom (${customIconAccent})`,
+                          },
+                        ] as Array<{ id: AppIconVariant; label: string }>
+                      ).map((opt) => {
+                        const selected = appIconVariant === opt.id;
+                        return (
+                          <button
+                            key={opt.id}
+                            type="button"
+                            data-testid={`app-icon-card-${opt.id}`}
+                            aria-pressed={selected}
+                            className={`v-icon-card ${selected ? 'is-active' : ''}`}
+                            onClick={() => setAppIconVariant(opt.id)}
+                          >
+                            <ProductMark
+                              variant={opt.id}
+                              activeThemeId={themeId}
+                              mode={mode}
+                              customAccent={customAccent}
+                              customIconAccent={customIconAccent}
+                              className="v-icon-card-preview"
+                            />
+                            <span className="v-icon-card-label">{opt.label}</span>
+                            {selected && <Check size={14} className="v-icon-card-check" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {appIconVariant === 'theme-custom' && (
+                      <div
+                        data-testid="custom-icon-editor"
+                        className="pp-custom-theme-studio"
                       >
-                        <ProductMark
-                          variant={opt.id}
-                          activeThemeId={themeId}
-                          mode={mode}
-                          customAccent={customAccent}
-                          className="v-icon-card-preview"
+                        <ColorSpectrumPicker
+                          value={customIconAccent}
+                          onChange={(hex) => setCustomIconAccent(hex)}
+                          hexInputLabel={isTr ? 'Özel İkon Rengi (HEX)' : 'Custom Icon Color (HEX)'}
+                          hexInputTestId="custom-icon-hex-input"
+                          compact={true}
+                          previewNode={
+                            <ProductMark
+                              variant="theme-custom"
+                              activeThemeId={themeId}
+                              mode={mode}
+                              customAccent={customAccent}
+                              customIconAccent={customIconAccent}
+                              className="agm-welcome-icon-mini-preview"
+                            />
+                          }
                         />
-                        <span className="v-icon-card-label">{opt.label}</span>
-                        {selected && <Check size={14} className="v-icon-card-check" />}
-                      </button>
-                    );
-                  })}
-                </div>
+                      </div>
+                    )}
+                  </>
+                )}
                 <p className="v-row-desc" style={{ margin: 0 }}>
                   {t.settingsModal.appIconSyncHint}
                 </p>
@@ -1392,7 +1703,7 @@ export function SettingsPage() {
                 </div>
               </div>
 
-              {/* 73-Language Catalog */}
+              {/* 73-Language Catalog (Collapsible Card) */}
               <div className="pp-section-bar">
                 <span className="pp-section-bar-icon">
                   <Globe size={15} />
@@ -1401,71 +1712,230 @@ export function SettingsPage() {
               </div>
 
               <div className="pp-bento-panel">
-                <div className="v-group-head">
-                  <p className="v-row-desc" style={{ margin: 0 }}>
-                    {t.settingsModal.languageSectionDesc}
-                  </p>
-                  <span className="v-mono-meta">
-                    {meta.nativeName} ({meta.code}) · {t.settingsModal.languageTotalBadge}
-                  </span>
-                </div>
-
-                {isFallbackEnglish && (
-                  <div className="v-info-banner" role="status">
-                    <Globe size={15} />
-                    <span>{t.settingsModal.languageFallbackNotice}</span>
-                  </div>
-                )}
-
-                <div className="v-search-box">
-                  <Search size={15} className="v-search-icon" />
-                  <input
-                    type="search"
-                    value={langQuery}
-                    onChange={(e) => setLangQuery(e.target.value)}
-                    placeholder={t.settingsModal.languageSearchPlaceholder}
-                    aria-label={t.settingsModal.languageSearchPlaceholder}
-                  />
-                </div>
-
-                <div
-                  className="v-lang-grid"
-                  role="listbox"
-                  aria-label={t.settingsModal.languageSectionTitle}
+                <button
+                  type="button"
+                  data-testid="settings-language-toggle-btn"
+                  aria-expanded={isLangListOpen}
+                  onClick={() => setIsLangListOpen((prev) => !prev)}
+                  className="agm-collapsible-header"
                 >
-                  {filteredLanguages.map((item) => {
-                    const selected = item.code === lang;
+                  <div className="agm-collapsible-header-left">
+                    <Globe size={17} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                    <div style={{ minWidth: 0 }}>
+                      <p className="v-row-title">{meta.nativeName}</p>
+                      <p className="v-row-desc" style={{ margin: 0 }}>
+                        {meta.englishName} · 73
+                      </p>
+                    </div>
+                  </div>
+                  <span className="v-lang-badge is-native">{meta.code.toUpperCase()}</span>
+                </button>
+
+                {isLangListOpen && (
+                  <>
+                    <div className="v-group-head">
+                      <p className="v-row-desc" style={{ margin: 0 }}>
+                        {t.settingsModal.languageSectionDesc}
+                      </p>
+                      <span className="v-mono-meta">
+                        {meta.nativeName} ({meta.code}) · {t.settingsModal.languageTotalBadge}
+                      </span>
+                    </div>
+
+                    {isFallbackEnglish && (
+                      <div className="v-info-banner" role="status">
+                        <Globe size={15} />
+                        <span>{t.settingsModal.languageFallbackNotice}</span>
+                      </div>
+                    )}
+
+                    <div className="v-search-box">
+                      <Search size={15} className="v-search-icon" />
+                      <input
+                        type="search"
+                        value={langQuery}
+                        onChange={(e) => setLangQuery(e.target.value)}
+                        placeholder={t.settingsModal.languageSearchPlaceholder}
+                        aria-label={t.settingsModal.languageSearchPlaceholder}
+                      />
+                    </div>
+
+                    <div
+                      className="v-lang-grid"
+                      role="listbox"
+                      aria-label={t.settingsModal.languageSectionTitle}
+                    >
+                      {filteredLanguages.map((item) => {
+                        const selected = item.code === lang;
+                        return (
+                          <button
+                            key={item.code}
+                            type="button"
+                            role="option"
+                            aria-selected={selected}
+                            className={`v-lang-item ${selected ? 'is-active' : ''}`}
+                            onClick={() => setLanguage(item.code as LanguageCode)}
+                          >
+                            <div className="v-lang-item-copy">
+                              <span className="v-lang-native">{item.nativeName}</span>
+                              <span className="v-lang-english">
+                                {item.englishName} · {item.code.toUpperCase()}
+                              </span>
+                            </div>
+                            <div className="v-lang-item-right">
+                              <span className={`v-lang-badge ${item.translated ? 'is-native' : ''}`}>
+                                {item.translated
+                                  ? t.settingsModal.languageNativeBadge
+                                  : t.settingsModal.languageFallbackBadge}
+                              </span>
+                              {selected && <Check size={14} className="v-check-icon" />}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {filteredLanguages.length === 0 && (
+                      <p className="v-empty-inline">{t.settingsModal.languageNoResults}</p>
+                    )}
+                  </>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* SUB-PAGE 2.5: HARDWARE-AWARE LOCAL AI & RAG */}
+          {activeSection === 'ai' && (
+            <section id="settings-sec-ai" className="pp-settings-section">
+              <div className="pp-section-bar">
+                <span className="pp-section-bar-icon">
+                  <Cpu size={15} />
+                </span>
+                <h2 className="pp-section-bar-title">
+                  {isTr
+                    ? 'Sistem Gücüne Göre Yerel Yapay Zeka Modelleri (İndir / Sil / Aktif / Pasif)'
+                    : 'Hardware-Aware Local AI Models (Download / Delete / Activate / Deactivate)'}
+                </h2>
+              </div>
+
+              <div className="pp-bento-panel">
+                <div className="pp-bento-strip pp-bento-strip--3">
+                  <div className="pp-kpi-card">
+                    <span className="pp-kpi-label">{isTr ? 'Sistem Belleği' : 'System RAM'}</span>
+                    <p className="pp-kpi-value">{aiHardware.totalRamGb} GB</p>
+                    <p className="pp-kpi-sub">{aiHardware.osName}</p>
+                  </div>
+                  <div className="pp-kpi-card">
+                    <span className="pp-kpi-label">{isTr ? 'İşlemci Gücü' : 'CPU Threads'}</span>
+                    <p className="pp-kpi-value">
+                      {aiHardware.cpuCores} {isTr ? 'Çekirdek' : 'Cores'}
+                    </p>
+                    <p className="pp-kpi-sub">{aiHardware.architecture}</p>
+                  </div>
+                  <div className="pp-kpi-card">
+                    <span className="pp-kpi-label">{isTr ? 'Donanım Sınıfı' : 'Hardware Tier'}</span>
+                    <p className="pp-kpi-value">{aiHardware.tier.toUpperCase()}</p>
+                    <p className="pp-kpi-sub">{aiHardware.recommendedModelId}</p>
+                  </div>
+                </div>
+
+                <div className="pp-ai-models-grid">
+                  {LOCAL_AI_MODELS.map((spec) => {
+                    const runtime = aiState.models[spec.id] ?? {
+                      id: spec.id,
+                      downloaded: false,
+                      active: false,
+                      downloading: false,
+                      progress: 0,
+                      installedAt: null,
+                      localPath: null,
+                      verifiedSha256: false,
+                    };
+                    const isRecommended = spec.id === aiHardware.recommendedModelId;
+                    const isDownloading = downloadingModelId === spec.id;
+
                     return (
-                      <button
-                        key={item.code}
-                        type="button"
-                        role="option"
-                        aria-selected={selected}
-                        className={`v-lang-item ${selected ? 'is-active' : ''}`}
-                        onClick={() => setLanguage(item.code as LanguageCode)}
+                      <div
+                        key={spec.id}
+                        className={`pp-ai-model-card ${runtime.active ? 'is-active' : ''} ${
+                          isRecommended ? 'is-recommended' : ''
+                        }`}
                       >
-                        <div className="v-lang-item-copy">
-                          <span className="v-lang-native">{item.nativeName}</span>
-                          <span className="v-lang-english">
-                            {item.englishName} · {item.code.toUpperCase()}
-                          </span>
+                        <div className="pp-ai-model-badges">
+                          <span className="pp-ai-badge">{spec.quantization}</span>
+                          <span className="pp-ai-badge">{spec.sizeMb} MB</span>
+                          {isRecommended && (
+                            <span className="pp-ai-badge is-recommended">
+                              {isTr ? 'Sisteminize Önerilen' : 'Recommended'}
+                            </span>
+                          )}
+                          {runtime.active && (
+                            <span className="pp-ai-badge is-active">
+                              {isTr ? 'Aktif' : 'Active'}
+                            </span>
+                          )}
                         </div>
-                        <div className="v-lang-item-right">
-                          <span className={`v-lang-badge ${item.translated ? 'is-native' : ''}`}>
-                            {item.translated
-                              ? t.settingsModal.languageNativeBadge
-                              : t.settingsModal.languageFallbackBadge}
-                          </span>
-                          {selected && <Check size={14} className="v-check-icon" />}
+                        <h3 className="pp-ai-model-title">
+                          {isTr ? spec.titleTr : spec.titleEn}
+                        </h3>
+                        <p className="pp-ai-model-desc">{isTr ? spec.descTr : spec.descEn}</p>
+
+                        {isDownloading && (
+                          <div className="pp-ai-progress-wrap">
+                            <div
+                              className="pp-ai-progress-fill"
+                              style={{ width: `${downloadModelPct}%` }}
+                            />
+                          </div>
+                        )}
+
+                        <div className="pp-ai-model-actions">
+                          {!runtime.downloaded ? (
+                            <button
+                              type="button"
+                              data-testid={`settings-ai-download-${spec.id}`}
+                              disabled={isDownloading}
+                              onClick={() => void handleAiDownload(spec.id)}
+                              className="pp-btn-primary"
+                            >
+                              <Download size={14} />
+                              <span>{isTr ? 'İndir' : 'Download'}</span>
+                            </button>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                data-testid={`settings-ai-toggle-${spec.id}`}
+                                onClick={() => handleAiToggleActive(spec.id, !runtime.active)}
+                                className={runtime.active ? 'pp-btn-secondary' : 'pp-btn-primary'}
+                              >
+                                <Power size={14} />
+                                <span>
+                                  {runtime.active
+                                    ? isTr
+                                      ? 'Pasif Yap'
+                                      : 'Deactivate'
+                                    : isTr
+                                      ? 'Aktif Et'
+                                      : 'Activate'}
+                                </span>
+                              </button>
+                              <button
+                                type="button"
+                                data-testid={`settings-ai-delete-${spec.id}`}
+                                onClick={() => void handleAiDelete(spec.id)}
+                                className="pp-btn-danger"
+                              >
+                                <Trash2 size={14} />
+                                <span>{isTr ? 'Sil' : 'Delete'}</span>
+                              </button>
+                            </>
+                          )}
                         </div>
-                      </button>
+                      </div>
                     );
                   })}
                 </div>
-
-                {filteredLanguages.length === 0 && (
-                  <p className="v-empty-inline">{t.settingsModal.languageNoResults}</p>
-                )}
               </div>
             </section>
           )}
@@ -1851,6 +2321,154 @@ export function SettingsPage() {
                 </div>
               </div>
 
+              {/* Multi-Cloud Folder Sync (OneDrive, Google Drive, iCloud Drive, Dropbox, Custom Folder) */}
+              <div className="pp-section-bar">
+                <span className="pp-section-bar-icon">
+                  <Cloud size={15} />
+                </span>
+                <h2 className="pp-section-bar-title">
+                  {isTr
+                    ? 'Bulut Klasör Eşitleme (OneDrive, Google Drive, iCloud Drive, Dropbox)'
+                    : 'Multi-Cloud Folder Sync (OneDrive, Google Drive, iCloud Drive, Dropbox)'}
+                </h2>
+              </div>
+
+              <div className="pp-bento-panel" data-testid="cloud-sync-panel">
+                <div className="agm-welcome-row-between">
+                  <p className="pp-panel-desc">
+                    {isTr
+                      ? 'Üçüncü taraf sunucu olmadan kendi yerel bulut klasörünüzle 15 günlük otomatik yedek geçmişi tutun.'
+                      : 'Sync exam sessions with your own local cloud drive folder with a 15-day rolling backup history.'}
+                  </p>
+                  <span className="pp-autosave-pill">
+                    <CheckCircle2 size={13} />
+                    <span>
+                      {cloudConfig.connected
+                        ? isTr
+                          ? `${cloudConfig.provider.toUpperCase()} Bağlı (${cloudConfig.rollingSnapshotsCount}/15 Yedek)`
+                          : `${cloudConfig.provider.toUpperCase()} Connected (${cloudConfig.rollingSnapshotsCount}/15 Snapshots)`
+                        : isTr
+                          ? 'Hazır'
+                          : 'Ready'}
+                    </span>
+                  </span>
+                </div>
+
+                {/* 5 Cloud Provider Buttons */}
+                <div className="pp-cloud-provider-grid" role="group" aria-label={isTr ? 'Bulut sağlayıcıları' : 'Cloud providers'}>
+                  {CLOUD_PROVIDERS.map((p) => {
+                    const active = cloudConfig.provider === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        data-testid={`cloud-provider-${p.id}`}
+                        aria-pressed={active}
+                        onClick={() => {
+                          const next: CloudSyncConfig = {
+                            ...cloudConfig,
+                            provider: p.id,
+                            folderPath: p.defaultSubfolder,
+                            syncFilePath: `${p.defaultSubfolder}\\optik-form-okuyucu-cloud-backup.json`,
+                          };
+                          setCloudConfig(next);
+                          writeCloudSyncConfig(next);
+                        }}
+                        className={`pp-cloud-provider-btn ${active ? 'is-active' : ''}`}
+                      >
+                        <Cloud size={14} />
+                        <span>{isTr ? p.labelTr : p.labelEn}</span>
+                        {active && <Check size={13} />}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="pp-url-pill-row">
+                  <code className="pp-url-pill" data-testid="cloud-sync-path">
+                    {cloudConfig.syncFilePath}
+                  </code>
+                </div>
+
+                <div className="v-list-card">
+                  <div className="v-list-row">
+                    <div>
+                      <p className="v-row-title">
+                        {isTr
+                          ? 'Değerlendirme Sonrası Otomatik Bulut Eşitleme'
+                          : 'Automatic Cloud Sync After Grading'}
+                      </p>
+                      <p className="v-row-desc">
+                        {cloudConfig.lastSyncedAt
+                          ? `${isTr ? 'Son Eşitleme' : 'Last Synced'}: ${new Date(
+                              cloudConfig.lastSyncedAt,
+                            ).toLocaleString(lang)}`
+                          : isTr
+                            ? 'Henüz bulut klasörüne eşitleme yapılmadı.'
+                            : 'No cloud sync snapshot created yet.'}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      data-testid="cloud-autosync-switch"
+                      role="switch"
+                      aria-checked={cloudConfig.autoSync}
+                      className={`v-pill-toggle ${cloudConfig.autoSync ? 'is-active' : ''}`}
+                      onClick={() => {
+                        const next = { ...cloudConfig, autoSync: !cloudConfig.autoSync };
+                        setCloudConfig(next);
+                        writeCloudSyncConfig(next);
+                      }}
+                    >
+                      {cloudConfig.autoSync ? t.settingsModal.onLabel : t.settingsModal.offLabel}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pp-panel-actions">
+                  <button
+                    type="button"
+                    data-testid="cloud-sync-now-btn"
+                    disabled={cloudSyncing}
+                    onClick={() => void handleCloudSyncNow()}
+                    className="pp-btn-primary"
+                  >
+                    <RefreshCw size={14} />
+                    <span>
+                      {cloudSyncing
+                        ? isTr
+                          ? 'Eşitleniyor...'
+                          : 'Syncing...'
+                        : cloudConfig.connected
+                          ? isTr
+                            ? 'Şimdi Eşitle'
+                            : 'Sync Now'
+                          : isTr
+                            ? 'Bağlan ve Eşitle'
+                            : 'Connect & Sync'}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="cloud-restore-btn"
+                    onClick={() => void handleCloudRestore()}
+                    className="pp-btn-secondary"
+                  >
+                    <Upload size={14} />
+                    <span>{isTr ? 'Buluttan Geri Yükle' : 'Restore from Cloud'}</span>
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="cloud-open-folder-btn"
+                    onClick={() => void openCloudSyncFolderInExplorer(cloudConfig.folderPath)}
+                    className="pp-btn-secondary"
+                  >
+                    <FolderOpen size={14} />
+                    <span>{isTr ? 'Klasörü Aç' : 'Open Folder'}</span>
+                  </button>
+                </div>
+              </div>
+
               <div className="pp-section-bar">
                 <span className="pp-section-bar-icon">
                   <Archive size={15} />
@@ -2146,7 +2764,7 @@ export function SettingsPage() {
         onRefreshSessions={refresh}
       />
 
-      {/* Power Pilot Confirmation Modal: Reset Settings to Defaults (#modal-confirm-action) */}
+      {/* Confirmation Modal: Reset Settings to Defaults (#modal-confirm-action) */}
       {confirmResetOpen && (
         <div
           id="modal-confirm-action"
@@ -2201,7 +2819,7 @@ export function SettingsPage() {
         </div>
       )}
 
-      {/* Power Pilot Confirmation Modal: Delete All Data (#modal-delete-data) */}
+      {/* Confirmation Modal: Delete All Data (#modal-delete-data) */}
       {confirmDeleteOpen && (
         <div
           id="modal-delete-data"

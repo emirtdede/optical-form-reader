@@ -1,4 +1,22 @@
-export type ThemeMode = 'light' | 'dark';
+export type ThemeMode = 'light' | 'dark' | 'system';
+
+export function resolveEffectiveThemeMode(mode: ThemeMode): 'light' | 'dark' {
+  if (mode === 'light' || mode === 'dark') return mode;
+  if (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+  ) {
+    return 'dark';
+  }
+  return 'light';
+}
+
+export function getContrastingForeground(hex: string): '#FFFFFF' | '#09090B' {
+  const rgb = hexToRgb(hex);
+  const lum = relativeLuminance(rgb);
+  return lum > 0.36 ? '#09090B' : '#FFFFFF';
+}
 
 export const CUSTOM_THEME_ID = 'custom' as const;
 
@@ -123,6 +141,7 @@ export const STORAGE_KEYS = {
   themeMode: 'optik-theme-mode',
   themeId: 'optik-theme-id',
   customAccent: 'optik-custom-accent',
+  customIconAccent: 'optik-custom-icon-accent',
   reduceMotion: 'optik-reduce-motion',
   appIconVariant: 'optik-app-icon',
   uiScale: 'optik-ui-scale',
@@ -903,7 +922,9 @@ export function resolveAppIconPalette(
   activeThemeId: ThemeId = DEFAULT_THEME_ID,
   mode: ThemeMode = 'dark',
   customAccent: string = DEFAULT_CUSTOM_ACCENT,
+  customIconAccent?: string,
 ): AppIconPalette {
+  const effectiveMode = resolveEffectiveThemeMode(mode);
   if (variant === 'monochrome-light') {
     return {
       variant,
@@ -945,20 +966,21 @@ export function resolveAppIconPalette(
   }
 
   if (variant === 'theme-custom') {
-    return buildTintedIconPalette(variant, customAccent);
+    return buildTintedIconPalette(variant, customIconAccent ?? customAccent);
   }
 
   if (variant === 'theme-auto') {
     if (activeThemeId === 'obsidian') {
       return resolveAppIconPalette(
-        mode === 'light' ? 'monochrome-light' : 'monochrome-dark',
+        effectiveMode === 'light' ? 'monochrome-light' : 'monochrome-dark',
         activeThemeId,
-        mode,
+        effectiveMode,
         customAccent,
+        customIconAccent,
       );
     }
     const theme = getThemeById(activeThemeId, customAccent);
-    const swatch = mode === 'dark' ? theme.swatchDark : theme.swatch;
+    const swatch = effectiveMode === 'dark' ? theme.swatchDark : theme.swatch;
     return buildTintedIconPalette(variant, swatch);
   }
 
@@ -971,6 +993,7 @@ export interface InitialThemeState {
   mode: ThemeMode;
   themeId: ThemeId;
   customAccent: string;
+  customIconAccent: string;
   reduceMotion: boolean;
   appIconVariant: AppIconVariant;
   uiScale: number;
@@ -983,6 +1006,8 @@ export function readInitialThemeState(): InitialThemeState {
     const savedMode = localStorage.getItem(STORAGE_KEYS.themeMode) ?? localStorage.getItem(STORAGE_KEYS.legacyTheme);
     const savedId = localStorage.getItem(STORAGE_KEYS.themeId);
     const savedCustomAccent = normalizeHexColor(localStorage.getItem(STORAGE_KEYS.customAccent)) ?? DEFAULT_CUSTOM_ACCENT;
+    const savedCustomIconAccent =
+      normalizeHexColor(localStorage.getItem(STORAGE_KEYS.customIconAccent)) ?? savedCustomAccent;
     const savedReduceMotion = localStorage.getItem(STORAGE_KEYS.reduceMotion) === 'true';
     const savedIconVariant = localStorage.getItem(STORAGE_KEYS.appIconVariant);
     const savedUiScale = clampUiScale(Number(localStorage.getItem(STORAGE_KEYS.uiScale) || '100'));
@@ -990,7 +1015,7 @@ export function readInitialThemeState(): InitialThemeState {
     const savedLargeFocus = localStorage.getItem(STORAGE_KEYS.largeFocusRing) === 'true';
 
     const mode: ThemeMode =
-      savedMode === 'light' || savedMode === 'dark'
+      savedMode === 'light' || savedMode === 'dark' || savedMode === 'system'
         ? savedMode
         : typeof window !== 'undefined' &&
             typeof window.matchMedia === 'function' &&
@@ -1007,6 +1032,7 @@ export function readInitialThemeState(): InitialThemeState {
       mode,
       themeId,
       customAccent: savedCustomAccent,
+      customIconAccent: savedCustomIconAccent,
       reduceMotion: savedReduceMotion,
       appIconVariant,
       uiScale: savedUiScale,
@@ -1018,6 +1044,7 @@ export function readInitialThemeState(): InitialThemeState {
       mode: 'light',
       themeId: DEFAULT_THEME_ID,
       customAccent: DEFAULT_CUSTOM_ACCENT,
+      customIconAccent: DEFAULT_CUSTOM_ACCENT,
       reduceMotion: false,
       appIconVariant: DEFAULT_APP_ICON_VARIANT,
       uiScale: 100,
@@ -1036,25 +1063,29 @@ export function applyThemeToDocument(
   uiScale: number = 100,
   highContrast = false,
   largeFocusRing = false,
+  customIconAccent?: string,
 ): void {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
+  const effectiveMode = resolveEffectiveThemeMode(mode);
   const normalizedCustom = normalizeHexColor(customAccent) ?? DEFAULT_CUSTOM_ACCENT;
+  const normalizedIconCustom = normalizeHexColor(customIconAccent) ?? normalizedCustom;
   const theme = getThemeById(themeId, normalizedCustom);
-  const tokens = mode === 'dark' ? theme.dark : theme.light;
+  const tokens = effectiveMode === 'dark' ? theme.dark : theme.light;
   const validIcon = isValidAppIconVariant(appIconVariant) ? appIconVariant : DEFAULT_APP_ICON_VARIANT;
   const clampedScale = clampUiScale(uiScale);
-  const iconPal = resolveAppIconPalette(validIcon, theme.id, mode, normalizedCustom);
+  const iconPal = resolveAppIconPalette(validIcon, theme.id, effectiveMode, normalizedCustom, normalizedIconCustom);
 
-  root.dataset.theme = mode;
+  root.dataset.theme = effectiveMode;
+  root.dataset.themeMode = mode;
   root.dataset.colorTheme = theme.id;
   root.dataset.reduceMotion = reduceMotion ? 'true' : 'false';
   root.dataset.appIcon = validIcon;
   root.dataset.highContrast = highContrast ? 'true' : 'false';
   root.dataset.largeFocus = largeFocusRing ? 'true' : 'false';
   root.dataset.uiScale = String(clampedScale);
-  root.style.colorScheme = mode;
-  root.classList.toggle('dark', mode === 'dark');
+  root.style.colorScheme = effectiveMode;
+  root.classList.toggle('dark', effectiveMode === 'dark');
 
   // Apply Accessibility UI Zoom Scale
   root.style.setProperty('--ui-scale', String(clampedScale / 100));
@@ -1097,7 +1128,7 @@ export function applyThemeToDocument(
   root.style.setProperty('--cyan', tokens.accentHover);
   root.style.setProperty(
     '--surface-glass',
-    mode === 'dark'
+    effectiveMode === 'dark'
       ? `color-mix(in srgb, ${tokens.surface} 84%, transparent)`
       : `color-mix(in srgb, ${tokens.surface} 82%, transparent)`,
   );
@@ -1118,12 +1149,13 @@ export function applyThemeToDocument(
     localStorage.setItem(STORAGE_KEYS.themeMode, mode);
     localStorage.setItem(STORAGE_KEYS.themeId, theme.id);
     localStorage.setItem(STORAGE_KEYS.customAccent, normalizedCustom);
+    localStorage.setItem(STORAGE_KEYS.customIconAccent, normalizedIconCustom);
     localStorage.setItem(STORAGE_KEYS.reduceMotion, String(reduceMotion));
     localStorage.setItem(STORAGE_KEYS.appIconVariant, validIcon);
     localStorage.setItem(STORAGE_KEYS.uiScale, String(clampedScale));
     localStorage.setItem(STORAGE_KEYS.highContrast, String(highContrast));
     localStorage.setItem(STORAGE_KEYS.largeFocusRing, String(largeFocusRing));
-    localStorage.setItem(STORAGE_KEYS.legacyTheme, mode);
+    localStorage.setItem(STORAGE_KEYS.legacyTheme, effectiveMode);
   } catch {
     // Ignore restricted storage contexts
   }

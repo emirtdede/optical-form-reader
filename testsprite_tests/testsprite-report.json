@@ -1,6 +1,6 @@
 {
   "suite": "Optical Form Reader v1.0.0 - TestSprite 110 End-User Scenario Verification",
-  "executedAt": "2026-11-22T02:49:06.899Z",
+  "executedAt": "2026-11-22T09:39:44.817Z",
   "totalScenarios": 110,
   "passedScenarios": 110,
   "failedScenarios": 0,
@@ -37,7 +37,19 @@
     },
     {
       "id": "TS-007..TS-008",
-      "name": "Onboarding Step 6 - Ready to Launch & Persistence",
+      "name": "Onboarding Step 6 & 7 - Agendamea 7-Step Flow & Persistence",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "id": "TS-AI-RAG",
+      "name": "AI Assistant Hardware-Aware Models & Offline BM25 RAG",
+      "status": "PASS",
+      "details": ""
+    },
+    {
+      "id": "TS-INTEGRATIONS",
+      "name": "Integrations 2nd-Sidebar (REST API, Webhooks, MCP, CLI)",
       "status": "PASS",
       "details": ""
     },

@@ -18,6 +18,8 @@ export interface ProductMarkProps extends SVGProps<SVGSVGElement> {
   mode?: ThemeMode;
   /** Optional custom HEX color for resolving `theme-custom` or `theme-auto`. */
   customAccent?: string;
+  /** Optional custom icon HEX color for resolving `theme-custom`. */
+  customIconAccent?: string;
   /** Optional explicit palette override. */
   palette?: AppIconPalette;
 }
@@ -27,6 +29,7 @@ export function ProductMark({
   activeThemeId = DEFAULT_THEME_ID,
   mode = 'dark',
   customAccent = DEFAULT_CUSTOM_ACCENT,
+  customIconAccent,
   palette,
   className,
   ...props
@@ -37,7 +40,9 @@ export function ProductMark({
   const laserId = `ofr-laser-${uid}`;
   const pal =
     palette ??
-    (variant ? resolveAppIconPalette(variant, activeThemeId, mode, customAccent) : null);
+    (variant
+      ? resolveAppIconPalette(variant, activeThemeId, mode, customAccent, customIconAccent)
+      : null);
 
   return (
     <svg

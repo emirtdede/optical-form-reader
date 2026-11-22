@@ -2,8 +2,10 @@ import { NavLink, useLocation } from 'react-router-dom';
 import {
   BarChart3,
   BookOpen,
+  Bot,
   Info,
   LayoutTemplate,
+  Network,
   ScanLine,
   Settings,
   X,
@@ -82,12 +84,13 @@ export function DesktopSidebar({
 
   const compact = collapsed || isNarrowAuto;
 
-  // 1st Sidebar Top-Level Pages (Power Pilot Parity: Scan, Templates, Results, Documentation, Settings, About)
-  // Recent assessments live on the dedicated /sonuclar page rather than cluttering the 1st sidebar.
+  // 1st Sidebar Top-Level Pages (Scan, Templates, Results, AI Assistant, Integrations, Documentation, Settings, About)
   const navItems = [
     { to: '/tara', label: t.nav.scan, icon: ScanLine, badge: null as number | null },
     { to: '/sablonlar', label: t.nav.templates, icon: LayoutTemplate, badge: null as number | null },
     { to: '/sonuclar', label: t.nav.results, icon: BarChart3, badge: sessions.length > 0 ? sessions.length : null },
+    { to: '/asistan', label: t.nav.assistant, icon: Bot, badge: null as number | null },
+    { to: '/entegrasyonlar', label: t.nav.integrations, icon: Network, badge: null as number | null },
     { to: '/rehber', label: t.nav.docs, icon: BookOpen, badge: null as number | null },
     { to: '/ayarlar', label: t.nav.settings, icon: Settings, badge: null as number | null },
     { to: '/hakkinda', label: t.nav.about, icon: Info, badge: null as number | null },
@@ -99,7 +102,7 @@ export function DesktopSidebar({
       data-collapsed={isCompact ? 'true' : 'false'}
       className={`desktop-sidebar ${isCompact ? 'is-compact' : ''}`}
     >
-      {/* Power Pilot Pixel-Aligned Brand Header (drag region, no separate top bar) */}
+      {/* Pixel-Aligned Brand Header (drag region, no separate top bar) */}
       {isCompact ? (
         <div className="desktop-sidebar-head is-compact" data-tauri-drag-region>
           <button
@@ -158,7 +161,7 @@ export function DesktopSidebar({
         </div>
       )}
 
-      {/* Primary Workspace Navigation (Power Pilot 1st Sidebar) */}
+      {/* Primary Workspace Navigation (1st Sidebar) */}
       <div className="desktop-sidebar-scroll">
         <nav aria-label={t.nav.primaryLabel} className="desktop-nav-list">
           {navItems.map(({ to, label, icon: Icon, badge }) => {
@@ -189,7 +192,7 @@ export function DesktopSidebar({
         </nav>
       </div>
 
-      {/* Power Pilot Side-by-Side GitHub + Sponsor Footer Links (identical icon color) */}
+      {/* Side-by-Side GitHub + Sponsor Footer Links (identical icon color) */}
       <div className={`desktop-sidebar-footer ${isCompact ? 'is-compact' : ''}`}>
         <button
           type="button"

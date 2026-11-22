@@ -132,7 +132,7 @@ export function AboutPage() {
         </div>
       </div>
 
-      {/* 4-Card Bento KPI Strip (Power Pilot & Dev Cleaner Parity) */}
+      {/* 4-Card Bento KPI Strip */}
       <div className="pp-bento-strip">
         <div className="pp-kpi-card">
           <div className="pp-kpi-head">
@@ -233,7 +233,7 @@ export function AboutPage() {
             <div className="pp-meta-row">
               <span className="pp-meta-label">{t.settingsModal.aboutIdentityLabel}</span>
               <span className="pp-meta-value">
-                {appInfo?.identityName ?? VELLIUM_BRAND.msix.identityName}
+                {VELLIUM_BRAND.msix.tauriIdentifier}
               </span>
             </div>
             <div className="pp-meta-row">
@@ -250,6 +250,16 @@ export function AboutPage() {
                 onClick={() => void openExternalUrl(VELLIUM_BRAND.repositoryUrl)}
               >
                 github.com/emirtdede/optical-form-reader
+              </button>
+            </div>
+            <div className="pp-meta-row">
+              <span className="pp-meta-label">{isTr ? 'Açık Kaynak Sponsorluğu' : 'Sponsor'}</span>
+              <button
+                type="button"
+                className="pp-meta-link"
+                onClick={() => void openExternalUrl(VELLIUM_BRAND.sponsorUrl)}
+              >
+                github.com/sponsors/emirtdede
               </button>
             </div>
             <div className="pp-meta-row">
@@ -368,13 +378,13 @@ export function AboutPage() {
           <div className="pp-about-copyright-bar">
             <span>{t.settingsModal.copyrightLine}</span>
             <span>
-              {VELLIUM_BRAND.companyFullName} · {VELLIUM_BRAND.msix.identityName}
+              {VELLIUM_BRAND.companyFullName} · vellium.dev
             </span>
           </div>
         </div>
       </section>
 
-      {/* In-App Legal Document Reader Modal (Power Pilot #modal-eula / #modal-privacy Parity) */}
+      {/* In-App Legal Document Reader Modal */}
       {activeDoc && (
         <div
           className="pp-modal-backdrop"
