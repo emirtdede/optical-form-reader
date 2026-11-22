@@ -108,6 +108,15 @@ for (const spec of packageSpecs) {
   }
 }
 
+// Remove intermediate duplicate msix and staging directory after canonical copy
+if (fs.existsSync(msixLegacyPath)) {
+  fs.rmSync(msixLegacyPath, { force: true });
+}
+const msixStageDir = path.join(ROOT, 'msix', 'stage');
+if (fs.existsSync(msixStageDir)) {
+  fs.rmSync(msixStageDir, { recursive: true, force: true });
+}
+
 fs.writeFileSync(path.join(RELEASE_DIR, 'SHA256SUMS.txt'), checksumLines.join('\n') + '\n', 'utf8');
 
 const latestManifest = {
